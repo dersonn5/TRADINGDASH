@@ -1,0 +1,11 @@
+{
+  "name": "tradingdash",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cd cockpit && npm install && npm run build"
+  },
+  "dependencies": {
+    "next": "16.2.9"
+  }
+}
