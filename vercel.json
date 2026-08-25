@@ -1,4 +1,4 @@
 {
-  "buildCommand": "cd cockpit && npm install && npm run build",
+  "buildCommand": "cd cockpit && npm run build",
   "outputDirectory": "cockpit/.next"
 }
