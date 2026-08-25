@@ -1,0 +1,23 @@
+{
+  "market": "ES",
+  "overrides": {
+    "min_score": 60.0,
+    "target_rr": 4.0,
+    "displacement_atr": 1.2
+  },
+  "holdout": {
+    "total_trades": 184,
+    "win_rate": 43.48,
+    "profit_factor": 1.15,
+    "total_pnl_usd": 1781.97,
+    "max_drawdown_percent": 10.25
+  },
+  "base_holdout": {
+    "total_trades": 193,
+    "win_rate": 45.6,
+    "profit_factor": 1.17,
+    "total_pnl_usd": 2132.1,
+    "max_drawdown_percent": 9.76
+  },
+  "beat_base": false
+}

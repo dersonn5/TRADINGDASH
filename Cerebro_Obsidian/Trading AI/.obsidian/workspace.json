@@ -1,0 +1,220 @@
+{
+  "main": {
+    "id": "9e423af12972593e",
+    "type": "split",
+    "children": [
+      {
+        "id": "242b8d39e8a427de",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5fbc439951a36523",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Visualização em gráfico"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6f7b01f5287713ca",
+    "type": "split",
+    "children": [
+      {
+        "id": "120955abaaa09029",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0c0adba207293af7",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de arquivos"
+            }
+          },
+          {
+            "id": "b99c9b0a7d3ac54c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Procurar"
+            }
+          },
+          {
+            "id": "8a0e8ca6b0d779d4",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "4d4ae8eef786e80b",
+    "type": "split",
+    "children": [
+      {
+        "id": "2d67d3374bda0583",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4e6d39a619903b95",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Links inversos"
+            }
+          },
+          {
+            "id": "ca929e9cefc0242a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída"
+            }
+          },
+          {
+            "id": "0459e118ab610389",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "927b76086106d466",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "10896750e352148b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir a troca rápida": false,
+      "graph:Abrir visualização em gráfico": false,
+      "canvas:Criar novo canvas": false,
+      "daily-notes:Abrir a nota de hoje": false,
+      "templates:Inserir modelo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Criar nova base": false
+    }
+  },
+  "active": "0c0adba207293af7",
+  "lastOpenFiles": [
+    "Sem título",
+    "Sem título 1.base",
+    "Sem título.base",
+    "Sem título.md",
+    "Sem título.canvas",
+    "B03 Regras ICT/ICT_GestaoRisco_YouTube_Distilled.md",
+    "B03 Regras ICT/ICT_ModelosTrade_YouTube_Distilled.md",
+    "B03 Regras ICT/ICT_OTE_YouTube_Distilled.md",
+    "B03 Regras ICT/ICT_PowerOfThree_YouTube_Distilled.md",
+    "B03 Regras ICT/ICT_Killzones_YouTube_Distilled.md",
+    "B03 Regras ICT/ICT_Liquidity_YouTube_Distilled.md",
+    "B03 Regras ICT/ICT_MarketStructure_YouTube_Distilled.md",
+    "B03 Regras ICT/MOC_YouTube_Distilled.md",
+    "2026-06-29.md",
+    "Sem título 1.canvas",
+    "A00 Mapas de Conteudo/MOC_Estrategias.md",
+    "A00 Mapas de Conteudo/MOC_Diario_Trades.md",
+    "B05 Trade System/POS_TRADE/Cenarios_Finalizacao.md",
+    "B04 Backtests/Logs de Trades",
+    "B05 Trade System/Pos-Trade/Protocolo_de_Review.md",
+    "B05 Trade System/Pos-Trade/Licoes_e_Ajustes.md",
+    "B05 Trade System/Pos-Trade/MOC_PosTrade.md",
+    "B05 Trade System/Pos-Trade/Gravacao_Sinapse_Obsidian.md",
+    "B05 Trade System/Pos-Trade/Cenarios_Finalizacao.md",
+    "B05 Trade System/Pos-Trade",
+    "B05 Trade System/Durante o Trade/Regras_Nao_Intervir.md",
+    "B05 Trade System/Durante o Trade/Quando_Fechar_Antecipado.md",
+    "B05 Trade System/Durante o Trade/MOC_DuranteTrade.md",
+    "B05 Trade System/Durante o Trade/Cenarios_Possiveis.md",
+    "B05 Trade System/Durante o Trade/Alertas_de_Invalidacao.md",
+    "B05 Trade System/Durante o Trade",
+    "B05 Trade System/Mentalidade Pre-Trade/MOC_PreTrade.md",
+    "B05 Trade System/Mentalidade Pre-Trade/Mapeamento_de_Liquidez.md",
+    "B05 Trade System/Mentalidade Pre-Trade",
+    "B05 Trade System/Conducao de Trade",
+    "B05 Trade System/Gerenciamento Validado",
+    "B05 Trade System/Estrategias Validadas",
+    "C02 Licoes Aprendidas"
+  ]
+}

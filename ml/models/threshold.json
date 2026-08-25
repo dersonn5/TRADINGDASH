@@ -1,0 +1,6 @@
+{
+  "threshold": 0.45,
+  "f1": 1.0,
+  "auc_mean": 0.5966,
+  "n_signals": 334
+}

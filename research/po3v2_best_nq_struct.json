@@ -1,0 +1,33 @@
+{
+  "stage": 2,
+  "ov": {
+    "target_rr": 2.836,
+    "min_rr": 1.65,
+    "displacement_atr": 0.737,
+    "sweep_window_5m": 10,
+    "mss_window_5m": 8,
+    "reclaim_buffer_atr": 0.365,
+    "partial_rr": 1.598,
+    "break_even_trigger_rr": 2.439,
+    "trail_trigger_rr": 1.91,
+    "judas_ref": "asia",
+    "require_open_side": true,
+    "target_mode": "rr",
+    "smt_gate": true,
+    "trail_mode": "structure",
+    "trail_swing_bars": 3,
+    "trail_struct_buffer_atr": 0.39
+  },
+  "val": {
+    "total_trades": 25,
+    "profit_factor": 1.49,
+    "win_rate": 56.0,
+    "max_drawdown_percent": 4.04
+  },
+  "is": {
+    "total_trades": 50,
+    "profit_factor": 1.1,
+    "win_rate": 44.0,
+    "max_drawdown_percent": 10.95
+  }
+}

@@ -1,0 +1,26 @@
+fastapi>=0.115
+uvicorn>=0.30
+pydantic>=2.10
+google-genai>=1.0.0
+python-dotenv==1.0.1
+httpx>=0.27
+pandas==2.2.2
+numpy==1.26.4
+MetaTrader5>=5.0.45 ; sys_platform == 'win32'
+mcp>=1.0.0
+smartmoneyconcepts>=0.0.27
+yfinance>=0.2.40
+polygon-api-client>=1.14.0
+plotly>=5.20.0
+pandas-ta>=0.3.14b
+# backtrader removido: último release abr/2023, suporta apenas Python 3.2-3.7
+
+ccxt[pro]>=4.4.0
+
+# ─── ICT Brain (Segundo Cérebro do YouTube) ──────────────────────────────
+yt-dlp>=2024.1.0
+youtube-transcript-api>=0.6.0
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+requests>=2.31.0           # Distiller → Ollama local (HTTP)
+groq>=0.11.0               # fallback LLM (opcional)

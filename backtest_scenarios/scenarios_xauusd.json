@@ -1,0 +1,1482 @@
+[
+    {
+        "id": "SCENARIO-001",
+        "date": "2025-11-04",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2214.5,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2215.3,
+        "fvg_low": 2213.7,
+        "fvg_ce": 2214.5,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2208.5,
+            "real_sl": 2216.5,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-002",
+        "date": "2025-11-10",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2214.0,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2214.8,
+        "fvg_low": 2213.2,
+        "fvg_ce": 2214.0,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2209.5,
+            "real_sl": 2216.0,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-003",
+        "date": "2025-11-11",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2215.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2216.3,
+        "fvg_low": 2214.7,
+        "fvg_ce": 2215.5,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2220.5,
+            "real_sl": 2213.5,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-004",
+        "date": "2025-11-17",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2226.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2226.8,
+        "fvg_low": 2225.2,
+        "fvg_ce": 2226.0,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2231.0,
+            "real_sl": 2223.5,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-005",
+        "date": "2025-11-18",
+        "time_of_day_est": "09:45 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2222.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2223.3,
+        "fvg_low": 2221.7,
+        "fvg_ce": 2222.5,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2226.5,
+            "real_sl": 2221.0,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-006",
+        "date": "2025-11-24",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2237.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2237.8,
+        "fvg_low": 2236.2,
+        "fvg_ce": 2237.0,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2231.0,
+            "real_sl": 2239.0,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-007",
+        "date": "2025-11-25",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2236.5,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2237.3,
+        "fvg_low": 2235.7,
+        "fvg_ce": 2236.5,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2232.0,
+            "real_sl": 2238.5,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-008",
+        "date": "2025-12-01",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2238.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2238.8,
+        "fvg_low": 2237.2,
+        "fvg_ce": 2238.0,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2243.0,
+            "real_sl": 2236.0,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-009",
+        "date": "2025-12-02",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2248.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2249.3,
+        "fvg_low": 2247.7,
+        "fvg_ce": 2248.5,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2253.5,
+            "real_sl": 2246.0,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-010",
+        "date": "2025-12-08",
+        "time_of_day_est": "14:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2245.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Silver Bullet Bearish FVG",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2245.8,
+        "fvg_low": 2244.2,
+        "fvg_ce": 2245.0,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2249.0,
+            "real_sl": 2243.5,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-011",
+        "date": "2025-12-09",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2259.5,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2260.3,
+        "fvg_low": 2258.7,
+        "fvg_ce": 2259.5,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2253.5,
+            "real_sl": 2261.5,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-012",
+        "date": "2025-12-15",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2259.0,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2259.8,
+        "fvg_low": 2258.2,
+        "fvg_ce": 2259.0,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2254.5,
+            "real_sl": 2261.0,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-013",
+        "date": "2025-12-16",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2260.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2261.3,
+        "fvg_low": 2259.7,
+        "fvg_ce": 2260.5,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2265.5,
+            "real_sl": 2258.5,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-014",
+        "date": "2025-12-22",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2271.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2271.8,
+        "fvg_low": 2270.2,
+        "fvg_ce": 2271.0,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2276.0,
+            "real_sl": 2268.5,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-015",
+        "date": "2025-12-23",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2267.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG Touch",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2268.3,
+        "fvg_low": 2266.7,
+        "fvg_ce": 2267.5,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2271.5,
+            "real_sl": 2266.0,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-016",
+        "date": "2025-12-29",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2282.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2282.8,
+        "fvg_low": 2281.2,
+        "fvg_ce": 2282.0,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2276.0,
+            "real_sl": 2284.0,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-017",
+        "date": "2025-12-30",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2281.5,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2282.3,
+        "fvg_low": 2280.7,
+        "fvg_ce": 2281.5,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2277.0,
+            "real_sl": 2283.5,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-018",
+        "date": "2026-01-05",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2283.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2283.8,
+        "fvg_low": 2282.2,
+        "fvg_ce": 2283.0,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2288.0,
+            "real_sl": 2281.0,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-019",
+        "date": "2026-01-06",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2293.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2294.3,
+        "fvg_low": 2292.7,
+        "fvg_ce": 2293.5,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2298.5,
+            "real_sl": 2291.0,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-020",
+        "date": "2026-01-12",
+        "time_of_day_est": "14:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2290.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Silver Bullet Bearish FVG",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2290.8,
+        "fvg_low": 2289.2,
+        "fvg_ce": 2290.0,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2294.0,
+            "real_sl": 2288.5,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-021",
+        "date": "2026-01-13",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2304.5,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2305.3,
+        "fvg_low": 2303.7,
+        "fvg_ce": 2304.5,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2298.5,
+            "real_sl": 2306.5,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-022",
+        "date": "2026-01-19",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2304.0,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2304.8,
+        "fvg_low": 2303.2,
+        "fvg_ce": 2304.0,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2299.5,
+            "real_sl": 2306.0,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-023",
+        "date": "2026-01-20",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2305.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2306.3,
+        "fvg_low": 2304.7,
+        "fvg_ce": 2305.5,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2310.5,
+            "real_sl": 2303.5,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-024",
+        "date": "2026-01-26",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2316.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2316.8,
+        "fvg_low": 2315.2,
+        "fvg_ce": 2316.0,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2321.0,
+            "real_sl": 2313.5,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-025",
+        "date": "2026-01-27",
+        "time_of_day_est": "09:45 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2312.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2313.3,
+        "fvg_low": 2311.7,
+        "fvg_ce": 2312.5,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2316.5,
+            "real_sl": 2311.0,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-026",
+        "date": "2026-02-02",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2327.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2327.8,
+        "fvg_low": 2326.2,
+        "fvg_ce": 2327.0,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2321.0,
+            "real_sl": 2329.0,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-027",
+        "date": "2026-02-03",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2326.5,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2327.3,
+        "fvg_low": 2325.7,
+        "fvg_ce": 2326.5,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2322.0,
+            "real_sl": 2328.5,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-028",
+        "date": "2026-02-09",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2328.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2328.8,
+        "fvg_low": 2327.2,
+        "fvg_ce": 2328.0,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2333.0,
+            "real_sl": 2326.0,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-029",
+        "date": "2026-02-10",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2338.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2339.3,
+        "fvg_low": 2337.7,
+        "fvg_ce": 2338.5,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2343.5,
+            "real_sl": 2336.0,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-030",
+        "date": "2026-02-16",
+        "time_of_day_est": "03:30 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2335.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bullish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2335.8,
+        "fvg_low": 2334.2,
+        "fvg_ce": 2335.0,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2339.0,
+            "real_sl": 2333.5,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-031",
+        "date": "2026-02-17",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2349.5,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2350.3,
+        "fvg_low": 2348.7,
+        "fvg_ce": 2349.5,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2343.5,
+            "real_sl": 2351.5,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-032",
+        "date": "2026-02-23",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2349.0,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2349.8,
+        "fvg_low": 2348.2,
+        "fvg_ce": 2349.0,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2344.5,
+            "real_sl": 2351.0,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-033",
+        "date": "2026-02-24",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2350.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2351.3,
+        "fvg_low": 2349.7,
+        "fvg_ce": 2350.5,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2355.5,
+            "real_sl": 2348.5,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-034",
+        "date": "2026-03-02",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2361.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2361.8,
+        "fvg_low": 2360.2,
+        "fvg_ce": 2361.0,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2366.0,
+            "real_sl": 2358.5,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-035",
+        "date": "2026-03-03",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2357.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG Touch",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2358.3,
+        "fvg_low": 2356.7,
+        "fvg_ce": 2357.5,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2361.5,
+            "real_sl": 2356.0,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-036",
+        "date": "2026-03-09",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2372.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2372.8,
+        "fvg_low": 2371.2,
+        "fvg_ce": 2372.0,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2366.0,
+            "real_sl": 2374.0,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-037",
+        "date": "2026-03-10",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2371.5,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2372.3,
+        "fvg_low": 2370.7,
+        "fvg_ce": 2371.5,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2367.0,
+            "real_sl": 2373.5,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-038",
+        "date": "2026-03-16",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2373.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2373.8,
+        "fvg_low": 2372.2,
+        "fvg_ce": 2373.0,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2378.0,
+            "real_sl": 2371.0,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-039",
+        "date": "2026-03-17",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2383.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2384.3,
+        "fvg_low": 2382.7,
+        "fvg_ce": 2383.5,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2388.5,
+            "real_sl": 2381.0,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-040",
+        "date": "2026-03-23",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2380.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG Touch",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2380.8,
+        "fvg_low": 2379.2,
+        "fvg_ce": 2380.0,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2384.0,
+            "real_sl": 2378.5,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-041",
+        "date": "2026-03-24",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2394.5,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2395.3,
+        "fvg_low": 2393.7,
+        "fvg_ce": 2394.5,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2388.5,
+            "real_sl": 2396.5,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-042",
+        "date": "2026-03-30",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2394.0,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2394.8,
+        "fvg_low": 2393.2,
+        "fvg_ce": 2394.0,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2389.5,
+            "real_sl": 2396.0,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-043",
+        "date": "2026-03-31",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2395.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2396.3,
+        "fvg_low": 2394.7,
+        "fvg_ce": 2395.5,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2400.5,
+            "real_sl": 2393.5,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-044",
+        "date": "2026-04-06",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2406.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2406.8,
+        "fvg_low": 2405.2,
+        "fvg_ce": 2406.0,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2411.0,
+            "real_sl": 2403.5,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-045",
+        "date": "2026-04-07",
+        "time_of_day_est": "14:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2402.5,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Silver Bullet Bearish FVG",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2403.3,
+        "fvg_low": 2401.7,
+        "fvg_ce": 2402.5,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2406.5,
+            "real_sl": 2401.0,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    },
+    {
+        "id": "SCENARIO-046",
+        "date": "2026-04-13",
+        "time_of_day_est": "03:45 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2417.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Daily Bias fortemente bullish. Ordem de fluxo HTF de alta dominando o mercado.",
+        "draw_on_liquidity": "BSL pendente em niveis muito mais altos.",
+        "liquidity_swept": "Pequena varredura local de BSL, mas insignificante perante o fluxo macro.",
+        "fvg_high": 2417.8,
+        "fvg_low": 2416.2,
+        "fvg_ce": 2417.0,
+        "commentary": "O preco tocou a zona Premium OTE de 79%, porem o Daily Bias diario macro e extremamente de alta (BULLISH) e o order flow H4 nao apresenta nenhuma quebra de estrutura de baixa. Operar contra a tendencia principal e de alto risco.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2411.0,
+            "real_sl": 2419.0,
+            "narrative": "Setup contra a tendencia diaria forte de alta. IA rejeitou corretamente salvando stop."
+        }
+    },
+    {
+        "id": "SCENARIO-047",
+        "date": "2026-04-14",
+        "time_of_day_est": "12:15 EST",
+        "symbol": "XAUUSD",
+        "action": "SELL",
+        "price": 2416.5,
+        "timeframe": "15m",
+        "ict_signal": "Late NY Bearish FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF bearish, porem sem momentum na sessao da tarde.",
+        "draw_on_liquidity": "Suporte local fraco.",
+        "liquidity_swept": "Nenhuma varredura de liquidez de HTF antes do setup.",
+        "fvg_high": 2417.3,
+        "fvg_low": 2415.7,
+        "fvg_ce": 2416.5,
+        "commentary": "O sinal de FVG foi mitigado as 12:15 EST, que esta completamente fora de qualquer Killzone institucional valida de ICT. Baixo volume de mercado devido ao horario de almoco dos bancos americanos, alta chance de consolidaçoes manipulativas.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 2412.0,
+            "real_sl": 2418.5,
+            "narrative": "Operacao executada no horario de almoco de NY, sem liquidez institucional. Preco consolidou e violou o SL."
+        }
+    },
+    {
+        "id": "SCENARIO-048",
+        "date": "2026-04-20",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2418.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas fraqueza local invalidou a FVG.",
+        "draw_on_liquidity": "Resistencia local.",
+        "liquidity_swept": "Varrido SSL local de forma apressada.",
+        "fvg_high": 2418.8,
+        "fvg_low": 2417.2,
+        "fvg_ce": 2418.0,
+        "commentary": "ATENÇAO CRITICA: O corpo de vela do grafico de M5 fechou de forma nitida e decisiva ABAIXO do Consequent Encroachment (50%) do Fair Value Gap em andamento, violando o suporte institucional.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 70.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 2423.0,
+            "real_sl": 2416.0,
+            "narrative": "O preco fechou com corpo de vela M5 abaixo de 50% (CE) da FVG, invalidando o setup. IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-049",
+        "date": "2026-04-21",
+        "time_of_day_est": "10:05 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2428.5,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF em consolidaçao estreita de H4.",
+        "draw_on_liquidity": "Indefinido devido a lateralidade.",
+        "liquidity_swept": "Sem varredura relevante.",
+        "fvg_high": 2429.3,
+        "fvg_low": 2427.7,
+        "fvg_ce": 2428.5,
+        "commentary": "O preco de H4 esta preso em um range lateral extremamente apertado (consolidaçao) ha 3 dias consecutivos. Ausencia completa de expansao institucional e falta de direcionamento claro de mercado, alto risco de violinaçoes.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 50.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 2433.5,
+            "real_sl": 2426.0,
+            "narrative": "Preco travado em range lateral ha 3 dias. Mercado sem expansao macro. IA rejeitou."
+        }
+    },
+    {
+        "id": "SCENARIO-050",
+        "date": "2026-04-27",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "XAUUSD",
+        "action": "BUY",
+        "price": 2425.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG Touch",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "Estrutura HTF fortemente bullish, tendencia diaria fazendo topos e fundos ascendentes.",
+        "draw_on_liquidity": "BSL pendente na maxima diaria anterior.",
+        "liquidity_swept": "Sell-side Liquidity (SSL) capturada na abertura da sessao fisica.",
+        "fvg_high": 2425.8,
+        "fvg_low": 2424.2,
+        "fvg_ce": 2425.0,
+        "commentary": "Preco mitigou perfeitamente o CE da FVG de M15 apos varrer o SSL da abertura de Londres, com forte rejeicao (pavio longo) e formacao de MSS com deslocamento agressivo no grafico de 1m.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 400.0,
+            "max_drawdown_usd": -60.0,
+            "real_tp": 2429.0,
+            "real_sl": 2423.5,
+            "narrative": "Alinhamento de elite! SSL capturado na Killzone, preco respeitou o CE da FVG e atingiu o TP de forma explosiva."
+        }
+    }
+]

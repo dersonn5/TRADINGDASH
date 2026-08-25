@@ -1,0 +1,23 @@
+{
+  "market": "NQ",
+  "overrides": {
+    "target_rr": 4.0,
+    "trail_trigger_rr": 5.0,
+    "min_momentum_atr": 1.0
+  },
+  "holdout": {
+    "total_trades": 179,
+    "win_rate": 44.13,
+    "profit_factor": 1.17,
+    "total_pnl_usd": 2008.44,
+    "max_drawdown_percent": 13.31
+  },
+  "base_holdout": {
+    "total_trades": 193,
+    "win_rate": 43.52,
+    "profit_factor": 1.14,
+    "total_pnl_usd": 1730.31,
+    "max_drawdown_percent": 13.13
+  },
+  "beat_base": true
+}

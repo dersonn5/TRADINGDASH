@@ -1,0 +1,1482 @@
+[
+    {
+        "id": "SCENARIO-001",
+        "date": "2025-11-04",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 17035.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 17039.0,
+        "fvg_low": 17031.0,
+        "fvg_ce": 17035.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 17065.0,
+            "real_sl": 17025.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-002",
+        "date": "2025-11-10",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16990.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16994.0,
+        "fvg_low": 16986.0,
+        "fvg_ce": 16990.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 17015.0,
+            "real_sl": 16980.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-003",
+        "date": "2025-11-11",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16965.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16969.0,
+        "fvg_low": 16961.0,
+        "fvg_ce": 16965.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16945.0,
+            "real_sl": 16973.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-004",
+        "date": "2025-11-17",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16970.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16974.0,
+        "fvg_low": 16966.0,
+        "fvg_ce": 16970.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16945.0,
+            "real_sl": 16980.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-005",
+        "date": "2025-11-18",
+        "time_of_day_est": "09:45 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16925.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet Bullish MSS",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16929.0,
+        "fvg_low": 16921.0,
+        "fvg_ce": 16925.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16900.0,
+            "real_sl": 16933.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-006",
+        "date": "2025-11-24",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16960.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16964.0,
+        "fvg_low": 16956.0,
+        "fvg_ce": 16960.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16990.0,
+            "real_sl": 16950.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-007",
+        "date": "2025-11-25",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16915.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16919.0,
+        "fvg_low": 16911.0,
+        "fvg_ce": 16915.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16940.0,
+            "real_sl": 16905.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-008",
+        "date": "2025-12-01",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16890.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16894.0,
+        "fvg_low": 16886.0,
+        "fvg_ce": 16890.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16870.0,
+            "real_sl": 16898.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-009",
+        "date": "2025-12-02",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16895.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16899.0,
+        "fvg_low": 16891.0,
+        "fvg_ce": 16895.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16870.0,
+            "real_sl": 16905.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-010",
+        "date": "2025-12-08",
+        "time_of_day_est": "03:30 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16850.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16854.0,
+        "fvg_low": 16846.0,
+        "fvg_ce": 16850.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16825.0,
+            "real_sl": 16858.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-011",
+        "date": "2025-12-09",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16885.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16889.0,
+        "fvg_low": 16881.0,
+        "fvg_ce": 16885.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16915.0,
+            "real_sl": 16875.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-012",
+        "date": "2025-12-15",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16840.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16844.0,
+        "fvg_low": 16836.0,
+        "fvg_ce": 16840.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16865.0,
+            "real_sl": 16830.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-013",
+        "date": "2025-12-16",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16815.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16819.0,
+        "fvg_low": 16811.0,
+        "fvg_ce": 16815.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16795.0,
+            "real_sl": 16823.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-014",
+        "date": "2025-12-22",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16820.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16824.0,
+        "fvg_low": 16816.0,
+        "fvg_ce": 16820.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16795.0,
+            "real_sl": 16830.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-015",
+        "date": "2025-12-23",
+        "time_of_day_est": "03:30 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16775.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16779.0,
+        "fvg_low": 16771.0,
+        "fvg_ce": 16775.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16750.0,
+            "real_sl": 16783.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-016",
+        "date": "2025-12-29",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16810.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16814.0,
+        "fvg_low": 16806.0,
+        "fvg_ce": 16810.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16840.0,
+            "real_sl": 16800.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-017",
+        "date": "2025-12-30",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16765.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16769.0,
+        "fvg_low": 16761.0,
+        "fvg_ce": 16765.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16790.0,
+            "real_sl": 16755.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-018",
+        "date": "2026-01-05",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16740.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16744.0,
+        "fvg_low": 16736.0,
+        "fvg_ce": 16740.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16720.0,
+            "real_sl": 16748.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-019",
+        "date": "2026-01-06",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16745.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16749.0,
+        "fvg_low": 16741.0,
+        "fvg_ce": 16745.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16720.0,
+            "real_sl": 16755.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-020",
+        "date": "2026-01-12",
+        "time_of_day_est": "11:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16700.0,
+        "timeframe": "15m",
+        "ict_signal": "London Close Sweep & FVG",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16704.0,
+        "fvg_low": 16696.0,
+        "fvg_ce": 16700.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16675.0,
+            "real_sl": 16708.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-021",
+        "date": "2026-01-13",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16735.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16739.0,
+        "fvg_low": 16731.0,
+        "fvg_ce": 16735.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16765.0,
+            "real_sl": 16725.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-022",
+        "date": "2026-01-19",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16690.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16694.0,
+        "fvg_low": 16686.0,
+        "fvg_ce": 16690.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16715.0,
+            "real_sl": 16680.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-023",
+        "date": "2026-01-20",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16665.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16669.0,
+        "fvg_low": 16661.0,
+        "fvg_ce": 16665.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16645.0,
+            "real_sl": 16673.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-024",
+        "date": "2026-01-26",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16670.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16674.0,
+        "fvg_low": 16666.0,
+        "fvg_ce": 16670.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16645.0,
+            "real_sl": 16680.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-025",
+        "date": "2026-01-27",
+        "time_of_day_est": "14:20 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16625.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16629.0,
+        "fvg_low": 16621.0,
+        "fvg_ce": 16625.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16600.0,
+            "real_sl": 16633.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-026",
+        "date": "2026-02-02",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16660.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16664.0,
+        "fvg_low": 16656.0,
+        "fvg_ce": 16660.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16690.0,
+            "real_sl": 16650.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-027",
+        "date": "2026-02-03",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16615.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16619.0,
+        "fvg_low": 16611.0,
+        "fvg_ce": 16615.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16640.0,
+            "real_sl": 16605.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-028",
+        "date": "2026-02-09",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16590.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16594.0,
+        "fvg_low": 16586.0,
+        "fvg_ce": 16590.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16570.0,
+            "real_sl": 16598.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-029",
+        "date": "2026-02-10",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16595.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16599.0,
+        "fvg_low": 16591.0,
+        "fvg_ce": 16595.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16570.0,
+            "real_sl": 16605.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-030",
+        "date": "2026-02-16",
+        "time_of_day_est": "03:30 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16550.0,
+        "timeframe": "15m",
+        "ict_signal": "London Open Bearish OTE",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16554.0,
+        "fvg_low": 16546.0,
+        "fvg_ce": 16550.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16525.0,
+            "real_sl": 16558.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-031",
+        "date": "2026-02-17",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16585.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16589.0,
+        "fvg_low": 16581.0,
+        "fvg_ce": 16585.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16615.0,
+            "real_sl": 16575.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-032",
+        "date": "2026-02-23",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16540.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16544.0,
+        "fvg_low": 16536.0,
+        "fvg_ce": 16540.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16565.0,
+            "real_sl": 16530.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-033",
+        "date": "2026-02-24",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16515.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16519.0,
+        "fvg_low": 16511.0,
+        "fvg_ce": 16515.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16495.0,
+            "real_sl": 16523.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-034",
+        "date": "2026-03-02",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16520.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16524.0,
+        "fvg_low": 16516.0,
+        "fvg_ce": 16520.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16495.0,
+            "real_sl": 16530.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-035",
+        "date": "2026-03-03",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16475.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16479.0,
+        "fvg_low": 16471.0,
+        "fvg_ce": 16475.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16450.0,
+            "real_sl": 16483.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-036",
+        "date": "2026-03-09",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16510.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16514.0,
+        "fvg_low": 16506.0,
+        "fvg_ce": 16510.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16540.0,
+            "real_sl": 16500.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-037",
+        "date": "2026-03-10",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16465.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16469.0,
+        "fvg_low": 16461.0,
+        "fvg_ce": 16465.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16490.0,
+            "real_sl": 16455.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-038",
+        "date": "2026-03-16",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16440.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16444.0,
+        "fvg_low": 16436.0,
+        "fvg_ce": 16440.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16420.0,
+            "real_sl": 16448.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-039",
+        "date": "2026-03-17",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16445.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16449.0,
+        "fvg_low": 16441.0,
+        "fvg_ce": 16445.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16420.0,
+            "real_sl": 16455.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-040",
+        "date": "2026-03-23",
+        "time_of_day_est": "09:45 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16400.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet Bullish MSS",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16404.0,
+        "fvg_low": 16396.0,
+        "fvg_ce": 16400.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16375.0,
+            "real_sl": 16408.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-041",
+        "date": "2026-03-24",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16435.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16439.0,
+        "fvg_low": 16431.0,
+        "fvg_ce": 16435.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16465.0,
+            "real_sl": 16425.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-042",
+        "date": "2026-03-30",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16390.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16394.0,
+        "fvg_low": 16386.0,
+        "fvg_ce": 16390.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16415.0,
+            "real_sl": 16380.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-043",
+        "date": "2026-03-31",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16365.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16369.0,
+        "fvg_low": 16361.0,
+        "fvg_ce": 16365.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16345.0,
+            "real_sl": 16373.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-044",
+        "date": "2026-04-06",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16370.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16374.0,
+        "fvg_low": 16366.0,
+        "fvg_ce": 16370.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16345.0,
+            "real_sl": 16380.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-045",
+        "date": "2026-04-07",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16325.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG Touch",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16329.0,
+        "fvg_low": 16321.0,
+        "fvg_ce": 16325.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16300.0,
+            "real_sl": 16333.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    },
+    {
+        "id": "SCENARIO-046",
+        "date": "2026-04-13",
+        "time_of_day_est": "09:50 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16360.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet OTE Discount",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "Daily Bias fortemente de baixa. Order flow HTF dominado por vendedores.",
+        "draw_on_liquidity": "SSL pendente em niveis muito mais baixos.",
+        "liquidity_swept": "Micro varredura local insignificante.",
+        "fvg_high": 16364.0,
+        "fvg_low": 16356.0,
+        "fvg_ce": 16360.0,
+        "commentary": "O sinal de compra (BUY) foi acionado em uma FVG intraday, porem a estrutura diaria de HTF e fortemente de baixa (Daily Bias Bearish) sem nenhum sinal macro de reversao institucional, o que anula a compra por ser contra a tendencia.",
+        "applied_rules": [
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 60.0,
+            "max_drawdown_usd": -250.0,
+            "real_tp": 16390.0,
+            "real_sl": 16350.0,
+            "narrative": "Setup contra a tendencia forte de baixa (Daily Bias Bearish). IA barrou a operacao."
+        }
+    },
+    {
+        "id": "SCENARIO-047",
+        "date": "2026-04-14",
+        "time_of_day_est": "16:20 EST",
+        "symbol": "NQ",
+        "action": "BUY",
+        "price": 16315.0,
+        "timeframe": "15m",
+        "ict_signal": "NY PM Market Close Bullish Sweep",
+        "daily_bias": "BULLISH",
+        "htf_order_flow": "HTF bullish, mas sem volatilidade relevante de volume institucional.",
+        "draw_on_liquidity": "Resistencia de topo fraca.",
+        "liquidity_swept": "Nenhuma varredura importante.",
+        "fvg_high": 16319.0,
+        "fvg_low": 16311.0,
+        "fvg_ce": 16315.0,
+        "commentary": "O sinal tecnico ocorreu as 16:20 EST, que esta localizado no encerramento e apos o fechamento oficial do mercado regular de Nova York. Sem volume e fora das Killzones de execuçao institucional.",
+        "applied_rules": [
+            "Daily_Bias_e_Order_Flow"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -300.0,
+            "real_tp": 16340.0,
+            "real_sl": 16305.0,
+            "narrative": "Operacao fora de Killzone (final de pregao de NY).IA recusou."
+        }
+    },
+    {
+        "id": "SCENARIO-048",
+        "date": "2026-04-20",
+        "time_of_day_est": "10:15 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16290.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet FVG entry",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF de baixa, mas momentum local violou o CE.",
+        "draw_on_liquidity": "Fundo local.",
+        "liquidity_swept": "SSL sweep local fraco.",
+        "fvg_high": 16294.0,
+        "fvg_low": 16286.0,
+        "fvg_ce": 16290.0,
+        "commentary": "ATENÇAO CRITICA: O corpo da vela de M5 fechou de forma decisiva e expressiva ACIMA do Consequent Encroachment (50%) do FVG de baixa, invalidando a resistencia dos vendedores.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica",
+            "Consequent_Encroachment_FVG"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 80.0,
+            "max_drawdown_usd": -400.0,
+            "real_tp": 16270.0,
+            "real_sl": 16298.0,
+            "narrative": "Candle de M5 fechou acima do CE de 50% da FVG de baixa, invalidando o setup. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-049",
+        "date": "2026-04-21",
+        "time_of_day_est": "10:10 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16295.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM FVG entry in Consolidation",
+        "daily_bias": "NEUTRAL",
+        "htf_order_flow": "Estrutura HTF acumulando lateralmente sem tendencia definida.",
+        "draw_on_liquidity": "Indefinido.",
+        "liquidity_swept": "Sem sweep relevante.",
+        "fvg_high": 16299.0,
+        "fvg_low": 16291.0,
+        "fvg_ce": 16295.0,
+        "commentary": "O indice esta travado dentro de uma lateralidade estreita no grafico de H1, sem qualquer sinal de expansao de bias ou deslocamento de ordens institucionais. Alto risco de violinaçao lateral.",
+        "applied_rules": [
+            "Silver_Bullet_Algoritmica"
+        ],
+        "historical_outcome": {
+            "result": "LOSS",
+            "max_runup_usd": 40.0,
+            "max_drawdown_usd": -350.0,
+            "real_tp": 16270.0,
+            "real_sl": 16305.0,
+            "narrative": "Indice preso em lateralidade estreita no grafico de 1 hora. Risco alto de violinada. IA barrou."
+        }
+    },
+    {
+        "id": "SCENARIO-050",
+        "date": "2026-04-27",
+        "time_of_day_est": "09:45 EST",
+        "symbol": "NQ",
+        "action": "SELL",
+        "price": 16250.0,
+        "timeframe": "15m",
+        "ict_signal": "NY AM Silver Bullet Bullish MSS",
+        "daily_bias": "BEARISH",
+        "htf_order_flow": "HTF fortemente de baixa, estrutura fazendo topos e fundos descendentes no D1.",
+        "draw_on_liquidity": "SSL do fundo da semana posicionado em niveis mais baixos.",
+        "liquidity_swept": "BSL capturada acima da maxima da sessao asiatica.",
+        "fvg_high": 16254.0,
+        "fvg_low": 16246.0,
+        "fvg_ce": 16250.0,
+        "commentary": "O indice mitigou de forma precisa a FVG na Killzone de NY logo apos a captura de BSL acima do topo asiatico, confirmando MSS com deslocamento agressivo e corpo de vela fechando na direçao de baixa.",
+        "applied_rules": [
+            "Modelo_Mentoria_2022",
+            "Silver_Bullet_Algoritmica",
+            "Optimal_Trade_Entry_OTE"
+        ],
+        "historical_outcome": {
+            "result": "WIN",
+            "max_runup_usd": 350.0,
+            "max_drawdown_usd": -50.0,
+            "real_tp": 16225.0,
+            "real_sl": 16258.0,
+            "narrative": "Excelente! Mitigacao perfeita no premio da OTE, o preco expandiu e bateu o TP com agressividade."
+        }
+    }
+]

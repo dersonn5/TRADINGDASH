@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cérebro de Trading Cognitivo ICT - Dashboard Live</title>
+    <!-- Google Fonts: Outfit & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandBg: '#05070c',
+                        cardBg: 'rgba(11, 15, 26, 0.65)',
+                        borderColor: 'rgba(255, 255, 255, 0.06)',
+                        accentCyan: '#06b6d4',
+                        accentPurple: '#a855f7',
+                        accentGreen: '#10b981',
+                        accentOrange: '#f97316',
+                        accentRed: '#ef4444',
+                        textPrimary: '#f3f4f6',
+                        textSecondary: '#9ca3af',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #05070c;
+            font-family: 'Outfit', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(11, 15, 26, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05070c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a855f7;
+            border-radius: 3px;
+        }
+        .drawer {
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pulsate {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(16, 185, 129, 0.4);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.8);
+                transform: scale(1.03);
+            }
+        }
+    </style>
+</head>
+<body class="text-textPrimary min-h-screen overflow-x-hidden">
+
+    <!-- Header Section -->
+    <header class="flex justify-between items-center px-8 py-4 border-b border-borderColor bg-brandBg/85 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <i data-lucide="brain" class="text-accentCyan filter drop-shadow-[0_0_8px_rgba(6,182,212,0.5)] w-8 h-8"></i>
+            <span class="font-['Space_Grotesk'] font-bold text-2xl bg-gradient-to-r from-accentCyan to-accentPurple bg-clip-text text-transparent">Cérebro ICT</span>
+        </div>
+        
+        <!-- View Toggle Buttons -->
+        <div class="flex items-center gap-1 bg-white/5 border border-borderColor rounded-full p-1">
+            <button id="toggle-backtest" class="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-300 active bg-gradient-to-r from-accentCyan to-accentPurple text-white" onclick="switchView('BACKTEST')">
+                <i data-lucide="history" class="w-4 h-4"></i>Backtests Históricos
+            </button>
+            <button id="toggle-live" class="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-300 text-textSecondary hover:text-white" onclick="switchView('LIVE')">
+                <i data-lucide="activity" class="w-4 h-4"></i>Operações ao Vivo
+            </button>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div id="live-status-dot" class="status-badge flex items-center gap-2 bg-accentGreen/10 border border-accentGreen text-accentGreen px-4 py-1.5 rounded-full text-sm font-semibold">
+                <span class="w-2.5 h-2.5 bg-accentGreen rounded-full shadow-[0_0_8px_#10b981]"></span>
+                Servidor Ativo
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-[1440px] mx-auto px-6 py-8 flex flex-col gap-8">
+        
+        <!-- Summary Cards Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- P&L Ideal Card -->
+            <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-accentCyan to-accentPurple opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-center text-textSecondary text-sm font-semibold mb-4">
+                    <span>PNL ACUMULADO (IDEAL)</span>
+                    <i data-lucide="trending-up" class="text-accentCyan"></i>
+                </div>
+                <div id="stat-ideal-pnl" class="font-['Space_Grotesk'] text-4xl font-bold mb-2">$0.00</div>
+                <div class="text-xs text-textSecondary flex items-center gap-1">
+                    <span class="text-accentGreen flex items-center"><i data-lucide="arrow-up-right" class="w-3 h-3"></i> Ideal</span>
+                    <span>Curva sem estresse de rede</span>
+                </div>
+            </div>
+
+            <!-- P&L Stressed Card -->
+            <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-accentCyan to-accentPurple opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-center text-textSecondary text-sm font-semibold mb-4">
+                    <span>PNL REAL / ESTRESSADO</span>
+                    <i data-lucide="activity" class="text-accentPurple"></i>
+                </div>
+                <div id="stat-stressed-pnl" class="font-['Space_Grotesk'] text-4xl font-bold mb-2">$0.00</div>
+                <div class="text-xs text-textSecondary flex items-center gap-1">
+                    <span class="text-accentPurple flex items-center"><i data-lucide="trending-down" class="w-3 h-3"></i> Real</span>
+                    <span>Com slippage & spread reais</span>
+                </div>
+            </div>
+
+            <!-- Blocked Trades Card -->
+            <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-accentCyan to-accentPurple opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-center text-textSecondary text-sm font-semibold mb-4">
+                    <span>TRADES BLOQUEADOS</span>
+                    <i data-lucide="shield-check" class="text-accentOrange"></i>
+                </div>
+                <div id="stat-prevented" class="font-['Space_Grotesk'] text-4xl font-bold mb-2">0</div>
+                <div class="text-xs text-textSecondary flex items-center gap-1">
+                    <span class="text-accentOrange flex items-center"><i data-lucide="check" class="w-3 h-3"></i> Gestor Risco</span>
+                    <span>Proteção de overtrading</span>
+                </div>
+            </div>
+
+            <!-- Winrate Card -->
+            <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-accentCyan to-accentPurple opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-center text-textSecondary text-sm font-semibold mb-4">
+                    <span>TAXA DE ACERTO</span>
+                    <i data-lucide="award" class="text-accentGreen"></i>
+                </div>
+                <div id="stat-winrate" class="font-['Space_Grotesk'] text-4xl font-bold mb-2">0.0%</div>
+                <div class="text-xs text-textSecondary flex items-center gap-1">
+                    <span id="stat-winrate-subtitle">de 0 trades tomados</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chart and Config Row -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Chart Container (2/3 cols) -->
+            <div class="glass-card p-6 lg:col-span-2 flex flex-col">
+                <div class="font-['Space_Grotesk'] text-lg font-semibold mb-6 flex items-center gap-2">
+                    <i data-lucide="line-chart" class="text-accentPurple"></i>
+                    Curva de Crescimento Patrimonial
+                </div>
+                <div class="relative h-[350px] w-full">
+                    <canvas id="equityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Config Panel (1/3 col) -->
+            <div class="glass-card p-6 flex flex-col justify-between">
+                <div>
+                    <div class="font-['Space_Grotesk'] text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="settings" class="text-accentCyan"></i>
+                        Controle do Robô
+                    </div>
+                    <form id="config-form" class="flex flex-col gap-4 text-sm">
+                        <div>
+                            <label class="block text-textSecondary font-semibold mb-1">Modo de Execução</label>
+                            <select id="cfg-execution-mode" class="w-full bg-white/5 border border-borderColor rounded-lg p-2.5 text-white outline-none focus:border-accentCyan transition-all">
+                                <option class="bg-brandBg" value="SIMULATOR">SIMULATOR (Paper Trading)</option>
+                                <option class="bg-brandBg" value="MT5">MT5 (Conta Real/Demo)</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-textSecondary font-semibold mb-1">Risco / Trade (%)</label>
+                                <input id="cfg-risk-pct" type="number" step="0.1" min="0.1" max="5.0" class="w-full bg-white/5 border border-borderColor rounded-lg p-2 text-white outline-none focus:border-accentCyan transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-textSecondary font-semibold mb-1">Lote Máx (USD)</label>
+                                <input id="cfg-max-trade-usd" type="number" step="10" min="10" class="w-full bg-white/5 border border-borderColor rounded-lg p-2 text-white outline-none focus:border-accentCyan transition-all">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-textSecondary font-semibold mb-1">DD Máx Diário (%)</label>
+                                <input id="cfg-max-daily-dd" type="number" step="0.5" min="1.0" max="10.0" class="w-full bg-white/5 border border-borderColor rounded-lg p-2 text-white outline-none focus:border-accentCyan transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-textSecondary font-semibold mb-1">Meta Diária (%)</label>
+                                <input id="cfg-daily-target" type="number" step="0.5" min="1.0" max="20.0" class="w-full bg-white/5 border border-borderColor rounded-lg p-2 text-white outline-none focus:border-accentCyan transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-textSecondary font-semibold mb-1">Fuso Horário Broker (UTC Offset)</label>
+                            <input id="cfg-broker-offset" type="number" step="1" min="-12" max="14" class="w-full bg-white/5 border border-borderColor rounded-lg p-2 text-white outline-none focus:border-accentCyan transition-all">
+                        </div>
+                    </form>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="saveConfig()" class="flex-2 bg-gradient-to-r from-accentCyan to-accentPurple text-white px-4 py-2.5 rounded-lg font-bold cursor-pointer transition-all hover:brightness-110 flex justify-center items-center gap-2 w-2/3">
+                        <i data-lucide="save" class="w-4 h-4"></i>Salvar
+                    </button>
+                    <button id="btn-kill-switch" type="button" onclick="toggleKillSwitch()" class="flex-1 bg-accentRed text-white px-4 py-2.5 rounded-lg font-bold cursor-pointer transition-all hover:bg-red-600 flex justify-center items-center gap-1 w-1/3">
+                        <i data-lucide="pause-circle" class="w-4 h-4"></i>Pausar
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Logs and Strategy Funnels Row -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Log Terminal (2/3 cols) -->
+            <div class="glass-card p-6 lg:col-span-2 flex flex-col">
+                <div class="font-['Space_Grotesk'] text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="terminal" class="text-accentCyan animate-pulse"></i>
+                    Console de Fluxo de Raciocínio Cognitivo (Logs WebSocket)
+                </div>
+                <div id="log-console" class="bg-black/40 border border-borderColor rounded-lg p-4 font-mono text-[12px] h-[300px] overflow-y-auto flex flex-col gap-1.5 text-cyan-300">
+                    <span class="text-textSecondary">[Console] Conectando ao Live Daemon via WebSocket...</span>
+                </div>
+            </div>
+
+            <!-- Strategy Funnels (1/3 col) -->
+            <div class="glass-card p-6 flex flex-col">
+                <div class="font-['Space_Grotesk'] text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="filter" class="text-accentPurple"></i>
+                    Filtros e Gates Ativos (Funil)
+                </div>
+                <div id="funnels-container" class="flex flex-col gap-3 overflow-y-auto max-h-[300px] pr-1">
+                    <div class="text-center py-8 text-textSecondary text-sm">
+                        <i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto mb-2 text-accentPurple"></i>
+                        Aguardando leitura de mercado...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trades Ledger -->
+        <section class="glass-card p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div class="font-['Space_Grotesk'] text-lg font-semibold flex items-center gap-2">
+                    <i data-lucide="list-filter" class="text-accentGreen"></i>
+                    <span id="ledger-title">Histórico Completo de Cenários Auditados</span>
+                </div>
+                
+                <!-- Filters Toolbar -->
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="relative max-w-[280px]">
+                        <i data-lucide="search" class="w-4 h-4 text-textSecondary absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input id="search-box" type="text" placeholder="Buscar ativo ou estratégia..." class="w-full bg-white/5 border border-borderColor rounded-lg pl-9 pr-3 py-1.5 text-sm outline-none focus:border-accentCyan transition-all text-white">
+                    </div>
+                    <div class="flex gap-1 bg-white/5 border border-borderColor rounded-lg p-1 text-xs font-semibold">
+                        <button class="filter-btn px-3 py-1 rounded-md text-textSecondary transition-all duration-200 active" onclick="filterTrades('ALL')">Todos</button>
+                        <button class="filter-btn px-3 py-1 rounded-md text-textSecondary transition-all duration-200" onclick="filterTrades('WIN')">Wins</button>
+                        <button class="filter-btn px-3 py-1 rounded-md text-textSecondary transition-all duration-200" onclick="filterTrades('PREVENTED_LOSS')">Bloqueados</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ledger Table -->
+            <div class="overflow-x-auto rounded-lg border border-borderColor bg-black/20">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/5 border-b border-borderColor text-textSecondary text-xs font-semibold uppercase tracking-wider">
+                            <th class="p-4">Identificador</th>
+                            <th class="p-4">Data/Hora (EST)</th>
+                            <th class="p-4">Ativo</th>
+                            <th class="p-4">Estratégia</th>
+                            <th class="p-4">Viés HTF</th>
+                            <th class="p-4">Decisão IA</th>
+                            <th class="p-4">Resultado Real</th>
+                            <th class="p-4">Avaliação RAG</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trades-tbody" class="divide-y divide-borderColor text-sm">
+                        <!-- Dynamic rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Side Slide Drawer Modal -->
+    <div id="drawer-overlay" class="drawer-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeDrawer()"></div>
+    <div id="drawer" class="drawer fixed top-0 right-[-600px] w-[600px] max-w-full h-full bg-[#0b0e17] border-l border-borderColor z-[1001] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col">
+        <div class="drawer-header p-5 border-b border-borderColor flex justify-between items-center bg-[#07090e]">
+            <h2 id="drawer-title" class="font-['Space_Grotesk'] text-xl font-bold">Detalhe do Trade</h2>
+            <button class="text-textSecondary hover:text-white cursor-pointer" onclick="closeDrawer()">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="drawer-body p-6 overflow-y-auto flex-1 flex flex-col gap-6">
+            <!-- ID & Pnl Cards -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/2 border border-borderColor rounded-xl p-4">
+                    <div class="text-xs text-textSecondary font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
+                        <i data-lucide="info" class="w-3.5 h-3.5"></i> Identificação
+                    </div>
+                    <p id="drawer-meta-id" class="text-sm font-semibold">-</p>
+                    <p id="drawer-meta-signal" class="text-xs text-textSecondary mt-1">-</p>
+                </div>
+                <div class="bg-white/2 border border-borderColor rounded-xl p-4">
+                    <div class="text-xs text-textSecondary font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
+                        <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i> Financeiro
+                    </div>
+                    <p id="drawer-meta-pnl" class="text-sm font-bold text-accentGreen">-</p>
+                    <p id="drawer-meta-eval" class="text-xs text-textSecondary mt-1 uppercase font-semibold">-</p>
+                </div>
+            </div>
+
+            <!-- Strategy Checklist -->
+            <div class="bg-white/2 border border-borderColor rounded-xl p-4">
+                <div class="text-xs text-textSecondary font-semibold uppercase tracking-wider mb-3 flex items-center gap-1">
+                    <i data-lucide="check-square" class="w-3.5 h-3.5"></i> Checklist de Validação ICT
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div id="chk-killzone" class="flex items-center justify-between bg-white/2 border border-borderColor rounded-lg p-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-accentCyan"></i>
+                            <span>Killzone Ativa</span>
+                        </div>
+                        <i data-lucide="check" class="chk-icon w-4 h-4 text-accentGreen"></i>
+                    </div>
+                    <div id="chk-sweep" class="flex items-center justify-between bg-white/2 border border-borderColor rounded-lg p-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="droplet" class="w-4 h-4 text-accentCyan"></i>
+                            <span>Liquidity Sweep</span>
+                        </div>
+                        <i data-lucide="check" class="chk-icon w-4 h-4 text-accentGreen"></i>
+                    </div>
+                    <div id="chk-mss" class="flex items-center justify-between bg-white/2 border border-borderColor rounded-lg p-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-4 h-4 text-accentCyan"></i>
+                            <span>Structure Shift</span>
+                        </div>
+                        <i data-lucide="check" class="chk-icon w-4 h-4 text-accentGreen"></i>
+                    </div>
+                    <div id="chk-payout" class="flex items-center justify-between bg-white/2 border border-borderColor rounded-lg p-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-accentCyan"></i>
+                            <span>Payout Mínimo</span>
+                        </div>
+                        <i data-lucide="check" class="chk-icon w-4 h-4 text-accentGreen"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candlestick Visualizer -->
+            <div class="bg-white/2 border border-borderColor rounded-xl p-4">
+                <div class="text-xs text-textSecondary font-semibold uppercase tracking-wider mb-3 flex items-center gap-1">
+                    <i data-lucide="candlestick-chart" class="w-3.5 h-3.5"></i> Gráfico Esquemático
+                </div>
+                <div class="bg-black/30 border border-borderColor rounded-lg p-4 text-xs font-mono">
+                    <pre id="drawer-ascii" class="text-textSecondary leading-normal">
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Cognitive AI Reasoning -->
+            <div class="bg-white/2 border border-borderColor rounded-xl p-4 flex-1 flex flex-col">
+                <div class="text-xs text-textSecondary font-semibold uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Raciocínio Cognitivo da IA (CoT)
+                </div>
+                <div id="drawer-reasoning" class="text-sm text-textPrimary leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[220px]">
+                    -
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Block -->
+    <script>
+        let backtestData = null;
+        let chartInstance = null;
+        let currentFilter = 'ALL';
+        let currentView = 'BACKTEST'; // 'BACKTEST' or 'LIVE'
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadData();
+            await loadConfig();
+            connectWebSocket();
+            // Start regular funnels polling
+            setInterval(loadFunnels, 5000);
+            loadFunnels();
+            lucide.createIcons();
+        });
+
+        async function loadData() {
+            try {
+                const endpoint = currentView === 'BACKTEST' ? '/api/backtests' : '/api/live_trades';
+                const response = await fetch(endpoint);
+                if (!response.ok) throw new Error("Erro ao consultar API");
+                backtestData = await response.json();
+                
+                if (currentView === 'LIVE' && (!backtestData.ideal.trades || backtestData.ideal.trades.length === 0)) {
+                    showEmptyLiveTradesMessage();
+                    return;
+                }
+                
+                updateSummaryStats();
+                renderEquityChart();
+                renderTradesTable();
+            } catch (err) {
+                console.error("Erro no carregamento do dashboard:", err);
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const cfg = await response.json();
+                    document.getElementById('cfg-execution-mode').value = cfg.execution_mode;
+                    document.getElementById('cfg-risk-pct').value = cfg.risk_pct;
+                    document.getElementById('cfg-max-trade-usd').value = cfg.max_trade_usd;
+                    document.getElementById('cfg-max-daily-dd').value = cfg.max_daily_dd;
+                    document.getElementById('cfg-daily-target').value = cfg.daily_target;
+                    document.getElementById('cfg-broker-offset').value = cfg.broker_tz_offset;
+                    
+                    updateKillSwitchButton(cfg.is_paused);
+                }
+            } catch (err) {
+                console.error("Falha ao carregar configurações:", err);
+            }
+        }
+
+        async function loadFunnels() {
+            try {
+                const response = await fetch('/api/funnels');
+                if (response.ok) {
+                    const funnels = await response.json();
+                    renderFunnels(funnels);
+                }
+            } catch (err) {
+                console.error("Falha ao carregar funis:", err);
+            }
+        }
+
+        function renderFunnels(funnels) {
+            const container = document.getElementById('funnels-container');
+            if (!funnels || Object.keys(funnels).length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-textSecondary text-xs">Sem varredura pendente...</div>`;
+                return;
+            }
+            
+            let html = '';
+            for (const [key, gates] of Object.entries(funnels)) {
+                const parts = key.split('_');
+                const asset = parts[0];
+                const strategyName = parts.slice(1).join(' ').replace('_', ' ').toUpperCase();
+                
+                html += `
+                <div class="border border-borderColor bg-white/2 rounded-lg p-3 flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <span class="${asset === 'USTEC' ? 'text-accentCyan' : 'text-accentPurple'}">${asset}</span>
+                        <span class="text-textSecondary">${strategyName}</span>
+                    </div>
+                    <div class="flex flex-col gap-1 text-[11px]">
+                `;
+                
+                gates.forEach(gate => {
+                    const pass = gate.passed;
+                    const icon = pass ? 'check' : 'x';
+                    const color = pass ? 'text-accentGreen' : 'text-accentRed';
+                    html += `
+                        <div class="flex justify-between items-center">
+                            <span class="${pass ? 'text-textPrimary' : 'text-textSecondary'}">${gate.name}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-textSecondary font-mono text-[10px]">${gate.value !== null ? gate.value : ''}</span>
+                                <i data-lucide="${icon}" class="${color} w-3 h-3"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    </div>
+                </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        async function saveConfig() {
+            const cfg = {
+                execution_mode: document.getElementById('cfg-execution-mode').value,
+                risk_pct: parseFloat(document.getElementById('cfg-risk-pct').value),
+                max_trade_usd: parseFloat(document.getElementById('cfg-max-trade-usd').value),
+                max_daily_dd: parseFloat(document.getElementById('cfg-max-daily-dd').value),
+                daily_target: parseFloat(document.getElementById('cfg-daily-target').value),
+                broker_tz_offset: parseInt(document.getElementById('cfg-broker-offset').value)
+            };
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(cfg)
+                });
+                
+                if (response.ok) {
+                    alert("Configurações salvas e aplicadas com sucesso!");
+                } else {
+                    alert("Erro ao salvar configurações.");
+                }
+            } catch (err) {
+                alert("Falha de conexão com servidor.");
+            }
+        }
+
+        async function toggleKillSwitch() {
+            try {
+                const response = await fetch('/api/killswitch', {method: 'POST'});
+                if (response.ok) {
+                    const data = await response.json();
+                    updateKillSwitchButton(data.is_paused);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function updateKillSwitchButton(isPaused) {
+            const btn = document.getElementById('btn-kill-switch');
+            const dot = document.getElementById('live-status-dot');
+            
+            if (isPaused) {
+                btn.innerHTML = `<i data-lucide="play-circle" class="w-4 h-4"></i> Retomar`;
+                btn.className = "flex-1 bg-accentGreen text-white px-4 py-2.5 rounded-lg font-bold cursor-pointer hover:bg-green-600 flex justify-center items-center gap-1 w-1/3";
+                
+                dot.innerHTML = `<span class="w-2.5 h-2.5 bg-accentOrange rounded-full shadow-[0_0_8px_#f97316]"></span> Robô Pausado`;
+                dot.className = "status-badge flex items-center gap-2 bg-accentOrange/10 border border-accentOrange text-accentOrange px-4 py-1.5 rounded-full text-sm font-semibold";
+            } else {
+                btn.innerHTML = `<i data-lucide="pause-circle" class="w-4 h-4"></i> Pausar`;
+                btn.className = "flex-1 bg-accentRed text-white px-4 py-2.5 rounded-lg font-bold cursor-pointer hover:bg-red-600 flex justify-center items-center gap-1 w-1/3";
+                
+                dot.innerHTML = `<span class="w-2.5 h-2.5 bg-accentGreen rounded-full shadow-[0_0_8px_#10b981]"></span> Servidor Ativo`;
+                dot.className = "status-badge flex items-center gap-2 bg-accentGreen/10 border border-accentGreen text-accentGreen px-4 py-1.5 rounded-full text-sm font-semibold";
+            }
+            lucide.createIcons();
+        }
+
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws/logs`;
+            const consoleEl = document.getElementById('log-console');
+            
+            const ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                consoleEl.innerHTML = `<span class="text-accentGreen">[SOCKET] Conectado ao console de logs do Cérebro ICT em tempo real.</span>`;
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'log') {
+                    const span = document.createElement('span');
+                    span.textContent = data.message;
+                    
+                    if (data.message.includes('[ERRO]') || data.message.includes('Erro') || data.message.includes('failed')) {
+                        span.className = "text-accentRed";
+                    } else if (data.message.includes('[SINAL') || data.message.includes('🎯')) {
+                        span.className = "text-accentCyan font-bold";
+                    } else if (data.message.includes('APROVADO') || data.message.includes('🎉') || data.message.includes('SUCESSO')) {
+                        span.className = "text-accentGreen font-semibold";
+                    } else if (data.message.includes('[VETO') || data.message.includes('🛡️')) {
+                        span.className = "text-accentOrange";
+                    } else if (data.message.includes('🧠') || data.message.includes('IA')) {
+                        span.className = "text-accentPurple";
+                    }
+                    
+                    consoleEl.appendChild(span);
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                } else if (data.type === 'state_update') {
+                    if (currentView === 'LIVE') {
+                        document.getElementById('stat-ideal-pnl').textContent = `$${data.state.daily_pnl.toFixed(2)}`;
+                        document.getElementById('stat-stressed-pnl').textContent = `$${data.state.daily_pnl.toFixed(2)}`;
+                        document.getElementById('stat-prevented').textContent = data.state.trades_today; // blocked or total trades representation
+                        
+                        // Active position pulsing card highlight
+                        if (data.state.active_positions_count > 0) {
+                            document.getElementById('stat-stressed-pnl').parentElement.classList.add('pulsate');
+                        } else {
+                            document.getElementById('stat-stressed-pnl').parentElement.classList.remove('pulsate');
+                        }
+                    }
+                }
+            };
+            
+            ws.onclose = () => {
+                const span = document.createElement('span');
+                span.className = "text-accentOrange";
+                span.textContent = `[SOCKET] Conexão fechada. Reconectando em 5 segundos...`;
+                consoleEl.appendChild(span);
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        async function switchView(viewType) {
+            currentView = viewType;
+            
+            document.getElementById('toggle-backtest').className = "flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-300 " + 
+                (viewType === 'BACKTEST' ? "bg-gradient-to-r from-accentCyan to-accentPurple text-white" : "text-textSecondary hover:text-white");
+            document.getElementById('toggle-live').className = "flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-300 " + 
+                (viewType === 'LIVE' ? "bg-gradient-to-r from-accentCyan to-accentPurple text-white" : "text-textSecondary hover:text-white");
+            
+            if (viewType === 'BACKTEST') {
+                document.getElementById('ledger-title').textContent = "Histórico Completo de Cenários Auditados";
+            } else {
+                document.getElementById('ledger-title').textContent = "Monitoramento de Operações ao Vivo (MT5/Simulator)";
+            }
+            
+            await loadData();
+            lucide.createIcons();
+        }
+
+        function showEmptyLiveTradesMessage() {
+            updateSummaryStats();
+            
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: ['Início'], datasets: [] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            
+            const tbody = document.getElementById('trades-tbody');
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-12 text-textSecondary">
+                <i data-lucide="alert-circle" class="w-12 h-12 mx-auto text-accentPurple mb-3"></i>
+                <div class="font-bold text-lg text-textPrimary mb-1">Nenhuma Operação ao Vivo Registrada Ainda</div>
+                <p class="text-xs max-w-md mx-auto">O robô em tempo real está executando em background. Assim que os filtros operacionais forem acionados, os logs cognitivos e execuções no MT5 surgirão aqui!</p>
+            </td></tr>`;
+            lucide.createIcons();
+        }
+
+        function updateSummaryStats() {
+            if (!backtestData) return;
+            const stats = currentView === 'BACKTEST' ? backtestData.ideal.statistics : backtestData.ideal.statistics;
+            const stressed = currentView === 'BACKTEST' ? backtestData.stressed.statistics : backtestData.stressed.statistics;
+
+            document.getElementById('stat-ideal-pnl').textContent = `$${stats.total_pnl_usd.toFixed(2)}`;
+            document.getElementById('stat-stressed-pnl').textContent = `$${stressed.total_pnl_usd.toFixed(2)}`;
+            document.getElementById('stat-prevented').textContent = stats.prevented_losses || 0;
+            
+            const total = stats.trades_taken || 0;
+            const wins = stats.wins || 0;
+            const winrate = total > 0 ? (wins / total * 100) : 0.0;
+            document.getElementById('stat-winrate').textContent = `${winrate.toFixed(1)}%`;
+            document.getElementById('stat-winrate-subtitle').textContent = `de ${total} trades tomados`;
+        }
+
+        function renderEquityChart() {
+            if (!backtestData) return;
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            
+            const startBalance = currentView === 'LIVE' ? 0 : 10000;
+            let idealEquity = [startBalance];
+            let stressedEquity = [startBalance];
+            let labels = ['Início'];
+
+            const idealTrades = backtestData.ideal.trades || [];
+            const stressedTrades = backtestData.stressed.trades || [];
+
+            let idealAcc = startBalance;
+            let stressedAcc = startBalance;
+
+            for (let i = 0; i < idealTrades.length; i++) {
+                const tIdeal = idealTrades[i];
+                const tStressed = stressedTrades[i];
+
+                if (tIdeal.ai_decision !== 'PASS') {
+                    idealAcc += tIdeal.pnl_usd;
+                    idealEquity.push(idealAcc);
+                    
+                    stressedAcc += tStressed.pnl_usd;
+                    stressedEquity.push(stressedAcc);
+                    
+                    labels.push(tIdeal.date);
+                }
+            }
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Crescimento Ideal',
+                            data: idealEquity,
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.05)',
+                            borderWidth: 2.5,
+                            tension: 0.25,
+                            fill: true,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Crescimento Real (Stressed)',
+                            data: stressedEquity,
+                            borderColor: '#a855f7',
+                            backgroundColor: 'rgba(168, 85, 247, 0.05)',
+                            borderWidth: 2.5,
+                            tension: 0.25,
+                            fill: true,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.03)' },
+                            ticks: { color: '#9ca3af', font: { family: 'Outfit', size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { family: 'Outfit', size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#f3f4f6', font: { family: 'Outfit', size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTradesTable(filterQuery = '') {
+            if (!backtestData) return;
+            const tbody = document.getElementById('trades-tbody');
+            tbody.innerHTML = '';
+
+            const idealTrades = backtestData.ideal.trades || [];
+            const stressedTrades = backtestData.stressed.trades || [];
+
+            for (let i = 0; i < idealTrades.length; i++) {
+                const tIdeal = idealTrades[i];
+                const tStressed = stressedTrades[i];
+                const evalType = tIdeal.evaluation;
+
+                if (currentFilter !== 'ALL' && evalType !== currentFilter) continue;
+
+                const searchStr = `${tIdeal.scenario_id} ${tIdeal.symbol} ${tIdeal.signal_type}`.toLowerCase();
+                if (filterQuery && !searchStr.includes(filterQuery.toLowerCase())) continue;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/2 cursor-pointer transition-colors';
+                tr.onclick = () => openTradeDetail(tIdeal, tStressed);
+
+                let pillClass = 'bg-accentGreen/10 border border-accentGreen/30 text-accentGreen';
+                let pillLabel = 'Win';
+                if (evalType === 'PREVENTED_LOSS') {
+                    pillClass = 'bg-accentOrange/10 border border-accentOrange/30 text-accentOrange';
+                    pillLabel = 'Bloqueado';
+                } else if (evalType === 'MISSED_WIN') {
+                    pillClass = 'bg-accentCyan/10 border border-accentCyan/30 text-accentCyan';
+                    pillLabel = 'Missed';
+                } else if (evalType === 'LOSS') {
+                    pillClass = 'bg-accentRed/10 border border-accentRed/30 text-accentRed';
+                    pillLabel = 'Loss';
+                } else if (evalType === 'PENDING') {
+                    pillClass = 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-500';
+                    pillLabel = 'Ativo';
+                }
+
+                tr.innerHTML = `
+                    <td class="p-4 font-semibold text-accentCyan">${tIdeal.scenario_id}</td>
+                    <td class="p-4 text-textSecondary text-xs">${tIdeal.date} <span class="text-[10px] opacity-75">(${tIdeal.time_of_day_est})</span></td>
+                    <td class="p-4 font-semibold">${tIdeal.symbol}</td>
+                    <td class="p-4 text-textSecondary text-xs">${tIdeal.signal_type}</td>
+                    <td class="p-4 text-xs">${tIdeal.daily_bias}</td>
+                    <td class="p-4 font-semibold text-accentPurple">${tIdeal.ai_decision}</td>
+                    <td class="p-4 font-bold ${tStressed.pnl_usd > 0 ? 'text-accentGreen' : tStressed.pnl_usd < 0 ? 'text-accentRed' : 'text-textPrimary'}">
+                        ${tStressed.pnl_usd !== 0 ? `$${tStressed.pnl_usd.toFixed(2)}` : '-'}
+                    </td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${pillClass}">${pillLabel}</span></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function filterTrades(filterType) {
+            currentFilter = filterType;
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => {
+                btn.className = "px-3 py-1 rounded-md text-textSecondary transition-all duration-200";
+            });
+            event.target.className = "filter-btn px-3 py-1 rounded-md text-white bg-white/10 transition-all duration-200 active";
+
+            const query = document.getElementById('search-box').value;
+            renderTradesTable(query);
+        }
+
+        document.getElementById('search-box').addEventListener('input', (e) => {
+            renderTradesTable(e.target.value);
+        });
+
+        function openTradeDetail(tIdeal, tStressed) {
+            document.getElementById('drawer-title').textContent = `${tIdeal.scenario_id} - ${tIdeal.symbol}`;
+            document.getElementById('drawer-meta-id').textContent = tIdeal.date;
+            document.getElementById('drawer-meta-signal').textContent = tIdeal.signal_type;
+            
+            let pnlStr = '-';
+            if (tStressed.pnl_usd !== 0) {
+                pnlStr = `Real: $${tStressed.pnl_usd.toFixed(2)} USD`;
+            }
+            const pnlEl = document.getElementById('drawer-meta-pnl');
+            pnlEl.textContent = pnlStr;
+            pnlEl.className = tStressed.pnl_usd > 0 ? 'text-sm font-bold text-accentGreen' : 'text-sm font-bold text-accentRed';
+            
+            document.getElementById('drawer-meta-eval').textContent = tIdeal.evaluation.replace('_', ' ');
+            document.getElementById('drawer-reasoning').textContent = tIdeal.reasoning || "Relatório CoT indisponível.";
+
+            const isBuy = tIdeal.ai_decision === 'BUY';
+            const isSell = tIdeal.ai_decision === 'SELL';
+            const asciiContainer = document.getElementById('drawer-ascii');
+            
+            if (isBuy) {
+                asciiContainer.textContent = `     ▲\n     │       [TARGET] ─────── +R:R Target\n     │    █\n     │  ┌─┴─┐ [ENTRY] ──────── Touch on FVG\n     │  │   │\n     │  └─┬─┘ \n   ──┼──  █   [STOP LOSS] ──── Below Swing Low\n     │\n     └────────────────────────►`;
+                asciiContainer.style.color = '#10b981';
+            } else if (isSell) {
+                asciiContainer.textContent = `     ▲\n   ──┼──  █   [STOP LOSS] ──── Above Swing High\n     │  ┌─┴─┐\n     │  │   │\n     │  └─┬─┘ [ENTRY] ──────── Touch on FVG\n     │    █\n     │    █  [TARGET] ─────── +R:R Target\n     │\n     └────────────────────────►`;
+                asciiContainer.style.color = '#a855f7';
+            } else {
+                asciiContainer.textContent = `     ▲\n     │      ┌──────┐\n     │      │ PASS │ ── Setup Filtrado/Rejeitado.\n     │      └──────┘    Ordem não colocada no broker.\n     │\n     └────────────────────────►`;
+                asciiContainer.style.color = '#9ca3af';
+            }
+
+            updateChecklistBadge('chk-killzone', tIdeal.checklist_killzone !== false);
+            updateChecklistBadge('chk-sweep', tIdeal.checklist_sweep !== false);
+            updateChecklistBadge('chk-mss', tIdeal.checklist_mss !== false);
+            updateChecklistBadge('chk-payout', tIdeal.checklist_payout !== false);
+            
+            lucide.createIcons();
+
+            document.getElementById('drawer-overlay').className = "drawer-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] opacity-100 pointer-events-auto transition-opacity duration-300";
+            document.getElementById('drawer').style.right = "0px";
+        }
+
+        function updateChecklistBadge(elementId, isValid) {
+            const el = document.getElementById(elementId);
+            const icon = el.querySelector('.chk-icon');
+            if (isValid) {
+                el.className = "flex items-center justify-between bg-accentGreen/5 border border-accentGreen/20 rounded-lg p-3";
+                icon.setAttribute('data-lucide', 'check');
+                icon.className = "chk-icon w-4 h-4 text-accentGreen";
+            } else {
+                el.className = "flex items-center justify-between bg-accentRed/5 border border-accentRed/20 rounded-lg p-3";
+                icon.setAttribute('data-lucide', 'x');
+                icon.className = "chk-icon w-4 h-4 text-accentRed";
+            }
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer-overlay').className = "drawer-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] opacity-0 pointer-events-none transition-opacity duration-300";
+            document.getElementById('drawer').style.right = "-600px";
+        }
+    </script>
+</body>
+</html>

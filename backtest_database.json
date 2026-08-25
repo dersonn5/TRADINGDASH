@@ -1,0 +1,60 @@
+{
+    "timestamp": "2026-06-22T19:37:07.605479",
+    "ideal": {
+        "statistics": {
+            "total_scenarios": 1,
+            "trades_taken": 1,
+            "wins": 0,
+            "losses": 0,
+            "prevented_losses": 0,
+            "missed_wins": 0,
+            "total_pnl_usd": -104.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0
+        },
+        "trades": [
+            {
+                "scenario_id": "TRADE-001",
+                "date": "2026-05-05",
+                "time_of_day_est": "10:20 EST",
+                "symbol": "NQ",
+                "signal_type": "High Fidelity Candle Signal",
+                "daily_bias": "BEARISH",
+                "ai_decision": "SELL",
+                "historical_result": "LOSS",
+                "evaluation": "LOSS",
+                "pnl_usd": -104.0,
+                "reasoning": "Ordem executada a 28087.75 com Stop Loss a 28113.00 e Take Profit a 27613.00."
+            }
+        ]
+    },
+    "stressed": {
+        "statistics": {
+            "total_scenarios": 1,
+            "trades_taken": 1,
+            "wins": 0,
+            "losses": 1,
+            "prevented_losses": 0,
+            "missed_wins": 0,
+            "purged_trades": 0,
+            "total_pnl_usd": -113.02,
+            "win_rate": 0.0,
+            "profit_factor": 0.0
+        },
+        "trades": [
+            {
+                "scenario_id": "TRADE-001",
+                "date": "2026-05-05",
+                "time_of_day_est": "10:20 EST",
+                "symbol": "NQ",
+                "signal_type": "High Fidelity Candle Signal",
+                "ai_decision": "SELL",
+                "historical_result": "LOSS",
+                "evaluation": "LOSS",
+                "pnl_usd": -113.02,
+                "slippage_applied": 2.19,
+                "reasoning": "Simulação de estresse: Slippage de 2.19 aplicado à execução operacional."
+            }
+        ]
+    }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "playbook_anderson",
+  "ordem": 1,
+  "nome": "Playbook Anderson",
+  "mercado": ["WIN", "WDO"],
+  "descricao": "Liquidez -> Tendencia -> CHoCH -> Nova liquidez -> Execucao. O modelo das 5 licoes.",
+  "score_minimo": 65,
+  "ambiente_favoravel": [
+    "Tendencia definida no D1/H1",
+    "Liquidez clara marcada (PDH/PDL, EQH/EQL)",
+    "Dia sem noticia de alto impacto na janela de operacao"
+  ],
+  "ambiente_desfavoravel": [
+    "Mercado em range sem direcao",
+    "Bias H1 indefinido",
+    "Dia de Copom/payroll dentro da janela",
+    "Operador em tilt"
+  ],
+  "horarios_validos": [{"inicio": "09:00", "fim": "12:00"}],
+  "regras_ambiente": [
+    {"campo": "contexto",  "op": "=",  "valor": "TENDENCIA",  "efeito": "FAVORAVEL",    "motivo": "modelo opera a favor da tendencia macro (licao 2)"},
+    {"campo": "contexto",  "op": "=",  "valor": "RANGE",      "efeito": "DESFAVORAVEL", "motivo": "sem tendencia, o CHoCH vira falso sinal"},
+    {"campo": "bias_h1",   "op": "=",  "valor": "INDEFINIDO", "efeito": "DESFAVORAVEL", "motivo": "licao 2 exige direcao H1 definida antes de procurar entrada"},
+    {"campo": "tilt",      "op": ">=", "valor": 3,            "efeito": "DESFAVORAVEL", "motivo": "tilt alto: risco de romper o plano (licao 5)"},
+    {"campo": "sono",      "op": "<=", "valor": 2,            "efeito": "DESFAVORAVEL", "motivo": "sono baixo degrada leitura"},
+    {"campo": "tem_noticia_alta", "op": "=", "valor": true,   "efeito": "NEUTRA",       "motivo": "noticia de alto impacto no dia: reduzir exposicao"},
+    {"campo": "niveis_marcados",  "op": ">=", "valor": 2,     "efeito": "FAVORAVEL",    "motivo": "liquidez-alvo ja mapeada"}
+  ],
+  "checklist": [
+    {"id": "k1", "tipo": "KILL", "peso": 0,  "label": "Bias H1 definido e a operacao vai a favor dele", "ajuda": "Licao 2. Se o H1 e comprador, so compra."},
+    {"id": "k2", "tipo": "KILL", "peso": 0,  "label": "Liquidez relevante foi VARRIDA (sweep confirmado)", "ajuda": "Licao 1. Preco rompeu topo/fundo relevante, rejeitou e fechou de volta. Sem sweep, e adivinhacao."},
+    {"id": "k3", "tipo": "KILL", "peso": 0,  "label": "CHoCH confirmado em vela FECHADA", "ajuda": "Licao 3. Estrutura anterior rompida na direcao do bias. Vela fechada, nao em formacao."},
+    {"id": "k4", "tipo": "KILL", "peso": 0,  "label": "Nova liquidez formou apos o CHoCH e o preco voltou para busca-la", "ajuda": "Licao 4. Nao perseguir preco. Espera o retorno."},
+    {"id": "k5", "tipo": "KILL", "peso": 0,  "label": "Stop e alvo definidos ANTES da ordem, RR >= 2", "ajuda": "Licao 5. O trade termina no alvo ou no stop."},
+    {"id": "k6", "tipo": "KILL", "peso": 0,  "label": "Dentro do horario permitido e sem breaker ativo", "ajuda": "Verificado pelo sistema, mas confirme."},
+    {"id": "p1", "tipo": "PONTO", "peso": 15, "label": "Entrada dentro de PD array (FVG / OB / breaker)", "ajuda": ""},
+    {"id": "p2", "tipo": "PONTO", "peso": 15, "label": "Premium/discount correto", "ajuda": "Venda no premium, compra no discount do range."},
+    {"id": "p3", "tipo": "PONTO", "peso": 15, "label": "Liquidez varrida e de QUALIDADE (PDH/PDL, EQH/EQL, max/min semanal)", "ajuda": ""},
+    {"id": "p4", "tipo": "PONTO", "peso": 10, "label": "Displacement forte no CHoCH, deixou FVG", "ajuda": ""},
+    {"id": "p5", "tipo": "PONTO", "peso": 10, "label": "Inducao: o pullback varreu micro-topo/fundo antes da entrada", "ajuda": "Sem inducao, VOCE e a liquidez."},
+    {"id": "p6", "tipo": "PONTO", "peso": 10, "label": "Killzone nobre: dentro de 09:00-12:00, de preferencia 09:00-10:30", "ajuda": "Janela definida pelo operador. Fora dela o breaker bloqueia."},
+    {"id": "p7", "tipo": "PONTO", "peso": 10, "label": "Alvo e liquidez clara, nao numero arbitrario", "ajuda": ""},
+    {"id": "p8", "tipo": "PONTO", "peso": 10, "label": "Sem noticia de alto impacto nos proximos 30 min", "ajuda": ""},
+    {"id": "p9", "tipo": "PONTO", "peso": 5,  "label": "Confluencia WIN x WDO", "ajuda": "Os dois contando a mesma historia."}
+  ]
+}
