@@ -1,355 +1,283 @@
-# SPEC — Gate de janela nobre e checklist único em /checklist
+# SPEC — Redesenho do /checklist: trilha travada, direção "instrumento de precisão"
 
 ## Objetivo
 
-O Anderson opera a Copa BTG Trader a partir de **14/09** (4 dias). A tela que ele
-vai abrir no pregão é `/checklist`, publicada no Vercel com Supabase.
+O `/checklist` já tem a lógica certa (7 KILL, 8 PONTO, gate de janela nobre —
+commit `0af5acb`). O que falta é a interface fazer o modelo ser **sentido**.
 
-Hoje essa tela renderiza um checklist genérico de 7 itens (`c1`…`c7`) que **não é
-o modelo dele**, não distingue item obrigatório de item de confluência, e não tem
-gate nenhum — `risk_approved` é um booleano que o próprio operador marca.
+Hoje os 7 obrigatórios são uma lista de caixas: dá para marcar o passo 6 antes
+do passo 1. Mas o modelo do operador é uma **sequência real** —
 
-O modelo real está em `cockpit/data/strategies.ts` (`PLAYBOOK_ANDERSON`): máquina
-de duas camadas, **7 itens KILL** (obrigatórios, bloqueiam) e **8 itens PONTO**
-(confluência, somam 100).
+`Array HTF` → `liquidez varrida` → `preço chegou na região` → `MSS no LTF` →
+`FVG do displacement` → `reteste` → `risco definido`
 
-Esta task faz `/checklist` renderizar o modelo real, com gate de verdade, e
-aplica a regra de janela de horário que o Anderson definiu:
+— e marcar fora de ordem é exatamente o erro que o sistema existe para impedir
+("não persigo preço"). Esta task trava a sequência na interface: **só o próximo
+passo aceita clique.**
 
-- **10:00–11:00 é a janela nobre.** Abertura do mercado à vista (10:00) e
-  abertura americana (10:30). Volatilidade e manipulação. Score mínimo **65**.
-- **09:00–12:00 fora da janela nobre**: permitido, mas exige score mínimo **80**.
-  Pode operar, só que apenas setup melhor.
-- **Fora de 09:00–12:00**: bloqueado.
+Junto vem a direção visual nova: escuro, denso, tipografia técnica, números
+tabulares, e **cor só onde significa estado**.
 
-Sem isso, dia 14 ele opera com o checklist errado.
+**A referência visual é o artboard `design/Main.dc.html`.** Leia esse arquivo
+antes de escrever qualquer linha: ele tem o layout, as cores exatas, os tamanhos
+e a interação já resolvidos. Copie os valores de lá — não arredonde para grade
+de 4/8px, não invente tom.
 
 ---
 
 ## Arquivos (só estes)
 
-1. `cockpit/lib/gate.ts` — **novo**
-2. `cockpit/lib/trading-db.ts` — editar tipos e `getDefaultChecklist`
-3. `cockpit/data/strategies.ts` — editar `calibracao` e o bloco `checklist`
-4. `cockpit/app/checklist/page.tsx` — reescrever a renderização
-5. `cockpit/scripts/verify.ts` — **novo**, é a prova de aceite
-6. `copa/strategies/playbook_anderson.json` — **só** o bloco `checklist` e
-   `calibracao`, para espelhar o item 3
+1. `cockpit/app/layout.tsx` — trocar a fonte
+2. `cockpit/app/globals.css` — adicionar os tokens de estado
+3. `cockpit/lib/gate.ts` — adicionar as regras de sequência
+4. `cockpit/app/checklist/page.tsx` — reconstruir a interface
+5. `cockpit/scripts/verify.ts` — casos novos para a sequência
 
-Nenhum outro arquivo. `git diff --stat` tem que listar exatamente estes seis.
+`git diff --stat` tem que listar exatamente estes cinco.
 
 ## NÃO MEXER
 
-Ver `.claude/skills/dupla/SKILL.md` deste projeto — a lista completa com motivo.
-Em especial, nesta task: `copa/risk.py`, `core/entry_quality.py`, `strategies/**`,
-`cockpit/supabase/schema.sql`, `cockpit/app/copa/**`, `cockpit/lib/copa-api.ts`.
+Ver `.claude/skills/dupla/SKILL.md`. Nesta task, em especial:
+`copa/**`, `core/**`, `strategies/**`, `cockpit/lib/trading-db.ts`,
+`cockpit/data/strategies.ts`, `cockpit/app/copa/**`, `cockpit/supabase/**`,
+`design/**` (é referência, leitura apenas).
 
-**Não instalar dependência.** `npx tsx` é permitido porque roda avulso e não
-altera `package.json`.
+**Não instalar dependência.** `next/font/google` já vem com o Next.
 
 **Regra de conformidade da Copa vale integralmente** — sem cotação, sem dado de
-mercado, sem detecção de setup, sem integração com plataforma. Ver SKILL.md.
+mercado, sem detecção de setup, sem integração com plataforma.
+
+**Não mudar a lógica de gate existente.** `classificarJanela`,
+`scoreMinimoEfetivo` e `avaliarGate` já estão corretos e testados. Esta task
+ACRESCENTA funções; não reescreve as que existem.
 
 ---
 
-## 1. `cockpit/lib/gate.ts` (novo)
+## 1. `cockpit/app/layout.tsx` — tipografia
 
-Módulo puro, sem React, sem import de Supabase. Precisa ser importável por script
-Node.
+Hoje: `Inter` via `next/font/google` em `--font-sans`.
+
+Trocar por duas famílias, mantendo o mesmo padrão `next/font/google` e as mesmas
+variáveis CSS que o resto do app já consome:
 
 ```ts
-export type Janela = "PRIME" | "VALIDA" | "FORA";
+import { Archivo, IBM_Plex_Mono } from "next/font/google";
 
-export interface ItemAvaliado {
-  id: string;
-  tipo: "KILL" | "PONTO";
-  label: string;
-  checked: boolean;
-  peso: number;
-}
+const archivo = Archivo({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
-export interface GateResult {
-  liberado: boolean;
-  janela: Janela;
-  score: number;
-  scoreMinimo: number;
-  killsFaltando: string[];   // labels dos KILL não marcados
-  motivos: string[];         // todos os motivos de bloqueio, em português
-  avisos: string[];
-}
-
-export const SCORE_MINIMO_PRIME = 65;
-export const BONUS_FORA_DA_PRIME = 15;   // VALIDA exige 65 + 15 = 80
-
-export function classificarJanela(agora: Date): Janela;
-export function scoreMinimoEfetivo(janela: Janela, base: number): number;
-export function avaliarGate(
-  itens: ItemAvaliado[],
-  bias: string,
-  agora: Date,
-  scoreMinimoBase?: number
-): GateResult;
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
 ```
 
-### `classificarJanela`
+Aplicar as duas variáveis na tag `<html>` (hoje aplica só `inter.variable`).
+Não remover `dark h-full antialiased`.
 
-Converte `agora` para **America/Sao_Paulo** — não usar a hora local do navegador,
-porque a tela pode ser aberta de outro fuso. Usar
-`Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false })`
-e comparar em minutos desde a meia-noite.
+**Motivo:** Inter é a fonte padrão de todo template — é parte do que faz o app
+não parecer instrumento. Archivo é industrial e tem peso; IBM Plex Mono carrega
+todo número com `tabular-nums`, para coluna de preço não dançar quando o dígito
+muda.
 
-- `PRIME` — de 10:00 (inclusive) a 11:00 (exclusive)
-- `VALIDA` — de 09:00 (inclusive) a 12:00 (exclusive), fora do PRIME
-- `FORA` — o resto
+## 2. `cockpit/app/globals.css` — tokens de estado
 
-### `scoreMinimoEfetivo`
+**Acrescentar** um bloco novo ao final do arquivo. Não editar nem remover
+nenhum token existente — o resto do app depende deles.
 
-- `PRIME` → `base`
-- `VALIDA` → `base + BONUS_FORA_DA_PRIME`
-- `FORA` → `Number.POSITIVE_INFINITY`
+```css
+/* Tokens do instrumento. Cor aqui NUNCA é decoração: cada uma significa
+   um estado. Ver design/Main.dc.html. */
+:root {
+  --inst-bg:        #0C0E10;
+  --inst-panel:     #0F1215;
+  --inst-panel-2:   #101416;
+  --inst-line:      #1E2327;
+  --inst-line-2:    #262B30;
 
-### `avaliarGate`
+  --inst-text:      #E8ECEF;
+  --inst-text-2:    #A8B2B9;
+  --inst-dim:       #8A949C;
+  --inst-faint:     #5A646C;
+  --inst-ghost:     #4A535A;
 
-`score` = soma dos `peso` dos itens **PONTO marcados**. Itens KILL não somam.
+  --inst-ok:        #3FB27F;  /* cumprido, liberado */
+  --inst-now:       #E0B44E;  /* agora, atenção */
+  --inst-block:     #E0574A;  /* bloqueado, desvio */
+  --inst-lock:      #394148;  /* travado */
 
-Bloqueia, acumulando **todos** os motivos aplicáveis (nunca parar no primeiro):
-
-| Condição | Motivo (texto exato) |
-|---|---|
-| `bias === "NAO_OPERAR"` | `"bias do dia marcado como NAO_OPERAR"` |
-| `janela === "FORA"` | `"fora da janela de operação 09:00–12:00"` |
-| algum KILL não marcado | `"falta obrigatório: <label>"` (um motivo por item) |
-| `score < scoreMinimo` e janela ≠ FORA | `"score <score> abaixo do mínimo <scoreMinimo>"` |
-
-`liberado` = `motivos.length === 0`.
-
-Aviso (não bloqueia): quando `janela === "VALIDA"`, adicionar em `avisos`
-`"fora da janela nobre 10:00–11:00 — exige score 80"`.
-
----
-
-## 2. `cockpit/data/strategies.ts`
-
-### 2a. Corrigir a declaração de calibração
-
-Hoje diz `status: "EM_VALIDACAO"` com observação `"Baseado nos conceitos ICT
-clássicos calibrados para índice e dólar B3"`. **Isso é falso** — nenhum peso foi
-medido em backtest. Trocar por:
-
-```ts
-calibracao: {
-  status: "NAO_CALIBRADO",
-  observacao:
-    "Todos os pesos e o score mínimo são ESTIMADO. Nenhum foi medido em backtest de WIN. Ver COPA_BTG_PLAN_V2.md Fase 3.",
-  atualizado_em: "2026-09-10",
-},
-```
-
-### 2b. Remover o item `p5` e redistribuir os pesos
-
-`p5` era `"Killzone nobre"`. A janela nobre agora é **regra de gate** (score
-mínimo 65 dentro, 80 fora). Mantê-lo como ponto seria contagem dupla: o score
-subiria justo quando a barra já está mais baixa.
-
-**Apagar o item `p5`.** Manter os ids restantes inalterados. Novos pesos, somando
-exatamente 100:
-
-| id | peso novo |
-|---|---|
-| `p1` | 14 |
-| `p2` | 14 |
-| `p3` | 14 |
-| `p4` | 14 |
-| `p6` | 11 |
-| `p7` | 11 |
-| `p8` | 11 |
-| `p9` | 11 |
-
-Resultado: **7 KILL + 8 PONTO**, PONTO somando 100. Todos os PONTO continuam com
-`origem: "ESTIMADO"`.
-
----
-
-## 3. `copa/strategies/playbook_anderson.json`
-
-Espelhar **exatamente** a mudança do item 2: remover `p5`, aplicar os mesmos
-pesos, mesmo bloco `calibracao` (`NAO_CALIBRADO`, mesma observação, mesma data).
-
-Não tocar em mais nada deste arquivo. `copa/strategies_config.py` valida que a
-soma dos PONTO é 100 e **levanta `ValueError`** se não for — se essa validação
-quebrar, a mudança está errada.
-
----
-
-## 4. `cockpit/lib/trading-db.ts`
-
-### 4a. Estender `ChecklistItem`
-
-```ts
-export interface ChecklistItem {
-  id: string;
-  label: string;
-  checked: boolean;
-  weight: number;
-  tipo: "KILL" | "PONTO";          // novo
-  ajuda?: string;                   // novo
-  origem?: "MEDIDO" | "ESTIMADO";   // novo
-  category?: "pre_market" | "bias" | "technical" | "risk" | "emotional";
+  --inst-ok-bg:     #101614;
+  --inst-now-bg:    #15140E;
+  --inst-block-bg:  #150F0E;
+  --inst-ok-line:   #1E3A2E;
+  --inst-now-line:  #3A3020;
+  --inst-block-line:#3A1F1C;
 }
 ```
 
-`category` passa a ser opcional — o modelo novo não usa essas categorias, usa
-`tipo`. Não remover o campo: linhas antigas no Supabase ainda o têm.
+Adicionar também um utilitário para números:
 
-### 4b. Reescrever `getDefaultChecklist`
+```css
+.tabular { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+```
 
-**Apagar a lista `c1`…`c7` inteira.** Os itens passam a ser derivados de
-`PLAYBOOK_ANDERSON.checklist` (importar de `@/data/strategies`), preservando a
-ordem do array: KILL primeiro, depois PONTO.
+## 3. `cockpit/lib/gate.ts` — regras de sequência
 
-Mapeamento por item: `id` → `id`, `label` → `label`, `ajuda` → `ajuda`,
-`tipo` → `tipo`, `peso` → `weight`, `origem` → `origem`, `checked: false`.
+Acrescentar ao módulo (sem tocar no que já existe):
 
-Manter `session_name`, `market: "B3 WIN"`, `bias: "NEUTRO"`, `score: 0`,
-`risk_approved: false`, `notes: ""`.
+```ts
+/**
+ * Quantos KILL consecutivos, a partir do primeiro, estão marcados.
+ * É o número de passos cumpridos da trilha.
+ */
+export function passosCumpridos(itens: ItemAvaliado[]): number;
 
-### 4c. Robustez de linha antiga
+/**
+ * Estado de cada KILL, na ordem do array:
+ * "CUMPRIDO" — já marcado
+ * "AGORA"    — o próximo, único clicável
+ * "TRAVADO"  — ainda não liberado
+ */
+export function estadoDosPassos(itens: ItemAvaliado[]): Array<"CUMPRIDO" | "AGORA" | "TRAVADO">;
 
-`fetchTodayChecklist` pode trazer uma linha salva antes desta mudança, com os
-itens `c1`…`c7` e sem `tipo`. Nesse caso, **descartar os itens salvos e devolver
-o default novo**, preservando `bias` e `notes` da linha. Critério de detecção:
-algum item sem `tipo`, ou conjunto de ids diferente do default.
+/**
+ * Aplica um clique num KILL e devolve a lista nova.
+ * - clicar no passo AGORA: marca ele
+ * - clicar num passo CUMPRIDO de índice n: desmarca ele E TODOS OS SEGUINTES
+ * - clicar num passo TRAVADO: não faz nada (devolve a lista inalterada)
+ */
+export function alternarPasso(itens: ItemAvaliado[], id: string): ItemAvaliado[];
+```
 
-Sem isso o operador abre dia 14 com o checklist velho vindo do banco, que é
-exatamente o bug que esta task existe para corrigir.
+**A regra de desmarcar em cascata não é detalhe.** Se o operador volta ao passo
+3, os passos 4 a 7 descrevem uma estrutura que ele acabou de negar — deixá-los
+marcados guarda um estado que não corresponde ao gráfico. Voltar limpa o que
+vinha depois.
 
----
+Itens PONTO não têm ordem: continuam livres, alternados como hoje.
 
-## 5. `cockpit/app/checklist/page.tsx`
+`passosCumpridos` conta apenas KILL, na ordem em que aparecem no array, parando
+no primeiro não marcado.
 
-Reescrever a renderização. Comportamento existente de carregar/salvar/resetar
-continua.
+## 4. `cockpit/app/checklist/page.tsx` — a interface
 
-### 5a. Faixa de gate no topo
+Reconstruir seguindo `design/Main.dc.html`. Comportamento de carregar, salvar e
+resetar continua igual; `risk_approved` segue derivado de `gate.liberado`.
 
-Acima de tudo, sempre visível:
+### 4a. Barra de estado (topo, largura cheia)
 
-- **Verde `LIBERADO`** quando `gate.liberado`
-- **Vermelho `BLOQUEADO`** caso contrário, listando **todos** os `motivos`, um
-  por linha. Não esconder motivo atrás de tooltip nem truncar a lista.
-- `avisos` em âmbar, num bloco separado dos motivos.
+Células separadas por borda vertical: **PREGÃO** (relógio de São Paulo, segundos,
+atualizado a cada segundo), **JANELA** (ponto colorido + `PRIME · 10:00–11:00` /
+`FORA DA NOBRE` / `FORA DA JANELA` + a nota explicativa), **PERDA DIA**,
+**TRADES**, **MULLIGAN**.
 
-### 5b. Indicador de janela
+As três últimas ainda não têm fonte de dados — renderizar com traço (`—`) e o
+rótulo, **nunca com número inventado**. Elas ganham dado quando as tabelas do
+`schema_v2` existirem.
 
-Mostrar a hora corrente de São Paulo e a janela:
+### 4b. Trilha (coluna principal)
 
-| Janela | Texto |
-|---|---|
-| `PRIME` | `JANELA NOBRE · 10:00–11:00 · score mínimo 65` (verde) |
-| `VALIDA` | `Fora da janela nobre · score mínimo 80` (âmbar) |
-| `FORA` | `Fora da janela de operação 09:00–12:00` (vermelho) |
+Um cartão por KILL, na ordem, com `grid-template-columns: 40px 1fr auto`:
 
-Recalcular a cada 30 s com `setInterval`, e limpar o intervalo no unmount.
+| Estado | Marca | Fundo | Borda esquerda | Texto | Tag |
+|---|---|---|---|---|---|
+| CUMPRIDO | `--inst-ok`, símbolo `✓` | `--inst-panel-2` | 3px `--inst-ok` | `--inst-text-2` | `CUMPRIDO` |
+| AGORA | `--inst-now`, número | `--inst-now-bg` | 3px `--inst-now` | `--inst-text` | `AGORA` |
+| TRAVADO | `--inst-lock`, número | `#0D1013` | 3px `--inst-lock` | `--inst-ghost` | `TRAVADO` |
 
-### 5c. Dois blocos separados
+Cada cartão mostra o `label` e, abaixo, o `ajuda` — mais legível no AGORA, apagado
+nos outros.
 
-**OBRIGATÓRIOS** primeiro, com o rótulo `sem isso, não entra`. Depois
-**CONFLUÊNCIA**, com `soma 100 pontos`. Visualmente distintos — não pode parecer
-uma lista só.
+**Clique na linha inteira**, não só no ícone. CUMPRIDO e AGORA são clicáveis
+(`cursor: pointer`, hover claro); TRAVADO não responde e não tem cursor de
+ponteiro.
 
-Cada item mostra o `ajuda` quando existir. Item PONTO mostra o peso e um badge
-`ESTIMADO` quando `origem === "ESTIMADO"` — o operador precisa ver que aquele
-peso é julgamento, não medição.
+Contador `{cumpridos} / 7` no cabeçalho, âmbar enquanto incompleto, verde em 7.
 
-Clique na linha inteira alterna o item, não só na caixinha.
+Abaixo da trilha, uma linha de orientação: qual passo está liberado e quantos
+faltam; em 7, "Sequência completa. O trade agora termina no alvo ou no stop."
 
-### 5d. Score
+### 4c. Painel lateral — confluência e gate
 
-Barra de progresso 0–100 com a marca do `scoreMinimo` **efetivo** (65 ou 80,
-conforme a janela). Número grande do score ao lado.
+Largura fixa ~452px, fundo `--inst-panel`, borda esquerda.
 
-### 5e. `risk_approved`
+**Score**: número grande, `/ mínimo` ao lado, barra 0–100 com um traço vertical
+na marca do mínimo efetivo (65 ou 80). Verde quando atinge, âmbar quando não.
+Abaixo, a nota do regime: `MÍNIMO 65 NA JANELA NOBRE` / `MÍNIMO 80 FORA DA
+JANELA NOBRE` / `BLOQUEADO PELO HORÁRIO`.
 
-Deixa de ser toggle manual. Passa a ser **derivado**: `risk_approved = gate.liberado`,
-gravado no save. Remover o controle manual.
+**Itens PONTO**: linha compacta com caixa, label, badge `ESTIMADO` e o peso à
+direita. Marcado ganha fundo `--inst-ok-bg` e peso verde.
 
----
+**Gate** (rodapé do painel, fundo e borda conforme o estado):
+`LIBERADO` verde ou `BLOQUEADO` vermelho, seguido de **todos** os `motivos`, um
+por linha, sem truncar e sem tooltip. `avisos` em âmbar, bloco separado.
 
-## 6. `cockpit/scripts/verify.ts` (novo) — a prova
+**Botão ABRIR ORDEM**: sempre visível. Travado, é contorno cinza com texto
+apagado; liberado, fundo `--inst-ok` com texto escuro. Nunca escondido — o
+bloqueio precisa ser visto.
 
-Script Node, sem dependência nova, rodado com `npx tsx cockpit/scripts/verify.ts`.
-Imprime `OK` ou `FALHOU` por caso e sai com código 1 se qualquer um falhar.
+### 4d. Relógio
 
-**Casos de janela** — construir a `Date` de forma que em São Paulo seja o horário
-indicado:
+`setInterval` de 1 s para o relógio e a reavaliação da janela. `clearInterval` no
+unmount. Sempre `America/Sao_Paulo`, nunca a hora local do navegador.
 
-| Hora (SP) | Janela esperada | Score mínimo esperado |
-|---|---|---|
-| 10:30 | `PRIME` | 65 |
-| 10:00 | `PRIME` | 65 |
-| 10:59 | `PRIME` | 65 |
-| 11:00 | `VALIDA` | 80 |
-| 09:30 | `VALIDA` | 80 |
-| 11:59 | `VALIDA` | 80 |
-| 08:59 | `FORA` | bloqueado |
-| 13:00 | `FORA` | bloqueado |
+## 5. `cockpit/scripts/verify.ts` — casos novos
 
-**Casos de gate:**
+Manter os 13 casos existentes. Acrescentar, para uma lista dos 7 KILL:
 
-1. Todos os 7 KILL marcados + PONTO somando 70, às 10:30 → `liberado === true`
-2. Mesmo conjunto às 09:30 → `liberado === false`, motivo cita score 70 e mínimo 80
-3. Todos os PONTO marcados (100) e **um** KILL faltando, às 10:30 →
-   `liberado === false`, e o motivo nomeia o KILL que falta
-4. `bias === "NAO_OPERAR"` com tudo marcado às 10:30 → `liberado === false`
+1. Nenhum marcado → `passosCumpridos` = 0; estados = `["AGORA", "TRAVADO" × 6]`
+2. k1–k3 marcados → `passosCumpridos` = 3; estado do k4 = `AGORA`, k5 = `TRAVADO`
+3. `alternarPasso` no k4 quando k1–k3 estão marcados → k4 marcado, cumpridos = 4
+4. `alternarPasso` no k6 quando só k1–k3 estão marcados → **lista inalterada**
+   (travado não responde)
+5. k1–k7 todos marcados, `alternarPasso` no k3 → k3, k4, k5, k6, k7 desmarcados,
+   k1 e k2 intactos, cumpridos = 2
+6. Marcar KILL fora de ordem direto no array (k1 e k5 marcados, k2–k4 não) →
+   `passosCumpridos` = 1 (conta só os consecutivos do começo)
 
-**Caso de sincronia** — ler `copa/strategies/playbook_anderson.json` e comparar
-com `PLAYBOOK_ANDERSON` de `cockpit/data/strategies.ts`: mesmo conjunto de ids,
-mesmo `tipo` por id, mesmo `peso` por id. Divergência falha o script.
-
-É o que impede as duas fontes de divergirem em silêncio de novo.
+O caso 6 protege contra linha antiga do banco com estado incoerente.
 
 ---
 
 ## Critério de aceite
 
-Rodar e colar a saída de cada um:
-
 ```bash
 cd cockpit && npx tsc --noEmit
-npx tsx cockpit/scripts/verify.ts
-cd "E:/AUTOMAÇÃO IA/TRADING AI" && python -c "from copa.strategies_config import load_one; s=load_one('playbook_anderson'); p=[i for i in s['checklist'] if i['tipo']=='PONTO']; k=[i for i in s['checklist'] if i['tipo']=='KILL']; print('KILL',len(k),'PONTO',len(p),'soma',sum(i['peso'] for i in p))"
-git diff --stat
-grep -c "Calendário Econômico" cockpit/lib/trading-db.ts || echo "0 ocorrencias - OK"
-grep -c "EM_VALIDACAO" cockpit/data/strategies.ts || echo "0 ocorrencias - OK"
+cd .. && npx tsx cockpit/scripts/verify.ts
+cd cockpit && npm run build
+cd .. && git diff --stat
+grep -c "Inter" cockpit/app/layout.tsx || echo "0 ocorrencias - OK"
 ```
 
 Esperado:
 1. `tsc` sem erro
-2. `verify.ts` com todos os casos `OK`, exit 0
-3. Python imprime `KILL 7 PONTO 8 soma 100`
-4. `git diff --stat` lista **exatamente** os 6 arquivos da seção "Arquivos"
-5. `Calendário Econômico` → 0 ocorrências
-6. `EM_VALIDACAO` → 0 ocorrências
+2. `verify.ts` com todos os casos OK e exit 0 (13 antigos + 6 novos)
+3. `npm run build` compila
+4. `git diff --stat` lista exatamente os 5 arquivos
+5. `Inter` → 0 ocorrências em `layout.tsx`
 
-`tsc` limpo não prova tela. O aceite final inclui abrir `/checklist` e conferir:
-faixa de gate visível, dois blocos separados, badge `ESTIMADO` nos PONTO, e o
-indicador de janela mostrando a hora de São Paulo.
-
----
+`tsc` e build limpos **não provam tela**. O aceite inclui rodar `npm run dev`,
+abrir `/checklist` e conferir: só o próximo passo responde ao clique; clicar num
+passo cumprido volta e limpa os seguintes; o relógio mostra hora de São Paulo; o
+botão ABRIR ORDEM está visível e travado.
 
 ## Armadilhas desta task
 
-**Fuso.** Usar hora local do navegador em vez de America/Sao_Paulo faz o gate
-liberar no horário errado. É o tipo de bug que só aparece no dia.
+**Trocar a fonte quebra outras telas.** `--font-sans` é consumido pelo app
+inteiro. Trocar a família é intencional; **mudar o nome da variável não é**.
 
-**Linha antiga do Supabase.** Se `fetchTodayChecklist` devolver os itens velhos
-salvos hoje, a tela mostra o checklist antigo mesmo com o código novo. A regra
-4c existe por isso.
+**Cascata ao voltar.** Desmarcar só o passo clicado, deixando os seguintes
+marcados, é o bug mais provável aqui — e ele guarda um estado que contradiz o
+gráfico. O caso 5 do verify existe por isso.
 
-**Comparação de horário como string.** `"09:30" < "10:00"` funciona por acidente
-lexicográfico, mas quebra em outros casos. Converter para minutos desde a
-meia-noite.
+**Cor fora do sistema.** Se um tom não é `--inst-ok`, `--inst-now`,
+`--inst-block` ou `--inst-lock`, ele não significa estado e não deve existir.
+Nada de gradiente, nada de cor de marca.
 
-**Apagar comentário que explica invariante.** Reescrever arquivo inteiro em vez
-de editar remove comentários em silêncio. `git diff -U0 | grep "^-.*//"` faz
-parte da revisão.
+**Números inventados.** Perda do dia, trades e mulligan ainda não têm fonte.
+Renderizar `—`. Preencher com valor plausível é o erro mais caro deste projeto.
