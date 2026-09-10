@@ -33,6 +33,8 @@ logs/
 
 # === Dados e artefatos pesados ===
 data/
+!cockpit/data/
+!cockpit/data/**
 backups/
 screenshots/
 scratch/
@@ -60,4 +62,8 @@ Desktop.ini
 # === Relatorios HTML gerados por backtest (~5MB cada) ===
 backtesting/reports/
 research/plots_html/
+
+# === Outros subprojetos locais ===
+frontend/
+
 *.html.gz
