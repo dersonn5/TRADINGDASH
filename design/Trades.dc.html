@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #0C0E10; font-family: Archivo, "Helvetica Neue", Arial, sans-serif; }
+    a { color: #E0B44E; } a:hover { color: #F0CA72; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; color: #5A646C; }
+    .card { border: 1px solid #1E2327; background: #0F1215; border-radius: 3px; }
+    .row { display: grid; grid-template-columns: 62px 58px 84px 46px 62px 78px 96px 1fr; gap: 14px; align-items: center; padding: 12px 16px; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; min-height: 900px; background: #0C0E10; color: #E8ECEF; padding: 26px 28px 34px 28px; display: flex; flex-direction: column; gap: 20px;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 1px solid #262B30; padding-bottom: 18px;">
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <span class="lbl">JOURNAL · ETAPA 1</span>
+      <h1 style="margin: 0; font-size: 23px; font-weight: 600; letter-spacing: -0.015em;">Trades</h1>
+    </div>
+    <div style="display: flex; gap: 1px; background: #1E2327; border: 1px solid #1E2327; border-radius: 3px; overflow: hidden;">
+      <div style="background: #0F1215; padding: 11px 20px; display: flex; flex-direction: column; gap: 3px;">
+        <span class="lbl">FECHADOS</span>
+        <span class="mono" style="font-size: 16px; font-weight: 600;">3</span>
+      </div>
+      <div style="background: #0F1215; padding: 11px 20px; display: flex; flex-direction: column; gap: 3px;">
+        <span class="lbl">ACERTO</span>
+        <span class="mono" style="font-size: 16px; font-weight: 600;">66,7%</span>
+      </div>
+      <div style="background: #0F1215; padding: 11px 20px; display: flex; flex-direction: column; gap: 3px;">
+        <span class="lbl">CUSTO DA INDISCIPLINA</span>
+        <span class="mono" style="font-size: 16px; font-weight: 600; color: #E0574A;">−310</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 424px; gap: 20px; align-items: start;">
+
+    <!-- ===== LISTA ===== -->
+    <div style="display: flex; flex-direction: column; gap: 18px;">
+
+      <!-- aberto -->
+      <div style="border: 1px solid #3A3020; border-left: 3px solid #E0B44E; background: #15140E; border-radius: 3px; padding: 17px 20px; display: flex; align-items: center; gap: 22px;">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 120px;">
+          <span class="lbl">EM ABERTO</span>
+          <span class="mono" style="font-size: 15px; font-weight: 600; color: #E0574A;">VENDA · WIN</span>
+        </div>
+        <div style="display: flex; gap: 26px; flex-grow: 1;">
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span class="lbl">ENTRADA</span>
+            <span class="mono" style="font-size: 14px;">146.080</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span class="lbl">STOP</span>
+            <span class="mono" style="font-size: 14px;">146.310</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span class="lbl">ALVO</span>
+            <span class="mono" style="font-size: 14px;">144.720</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span class="lbl">RR</span>
+            <span class="mono" style="font-size: 14px; color: #3FB27F;">5,9</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span class="lbl">SCORE</span>
+            <span class="mono" style="font-size: 14px;">78 <span style="color: #5A646C;">A</span></span>
+          </div>
+        </div>
+        <div style="padding: 11px 24px; border: 1px solid #E0B44E; border-radius: 3px;">
+          <span class="mono" style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #E0B44E;">FECHAR TRADE</span>
+        </div>
+      </div>
+
+      <!-- histórico -->
+      <div class="card" style="overflow: hidden;">
+        <div class="row lbl" style="background: #0C0E10; border-bottom: 1px solid #1E2327; padding-top: 10px; padding-bottom: 10px;">
+          <span>HORA</span><span>JANELA</span><span>ATIVO</span><span>SCORE</span><span>RR</span><span>SAÍDA</span><span style="text-align: right;">RESULTADO</span><span>PLANO</span>
+        </div>
+
+        <div class="row" style="border-bottom: 1px solid #14181B; border-left: 2px solid #3FB27F;">
+          <span class="mono" style="font-size: 12px; color: #8A949C;">10:34</span>
+          <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; color: #3FB27F;">PRIME</span>
+          <span class="mono" style="font-size: 12px;">WIN · VENDA</span>
+          <span class="mono" style="font-size: 12px;">86</span>
+          <span class="mono" style="font-size: 12px;">3,1</span>
+          <span class="mono" style="font-size: 11px; color: #8A949C;">ALVO</span>
+          <span class="mono" style="font-size: 13px; font-weight: 600; color: #3FB27F; text-align: right;">+310</span>
+          <span style="font-size: 11.5px; color: #5A646C;">respeitou o plano</span>
+        </div>
+
+        <div class="row" style="border-bottom: 1px solid #14181B; border-left: 2px solid #E0574A;">
+          <span class="mono" style="font-size: 12px; color: #8A949C;">10:12</span>
+          <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; color: #3FB27F;">PRIME</span>
+          <span class="mono" style="font-size: 12px;">WIN · COMPRA</span>
+          <span class="mono" style="font-size: 12px;">67</span>
+          <span class="mono" style="font-size: 12px;">2,2</span>
+          <span class="mono" style="font-size: 11px; color: #8A949C;">STOP</span>
+          <span class="mono" style="font-size: 13px; font-weight: 600; color: #E0574A; text-align: right;">−140</span>
+          <span style="font-size: 11.5px; color: #5A646C;">respeitou o plano</span>
+        </div>
+
+        <div class="row" style="border-left: 2px solid #E0574A; background: #120E0E;">
+          <span class="mono" style="font-size: 12px; color: #8A949C;">09:41</span>
+          <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; color: #E0B44E;">VÁLIDA</span>
+          <span class="mono" style="font-size: 12px;">WIN · VENDA</span>
+          <span class="mono" style="font-size: 12px;">81</span>
+          <span class="mono" style="font-size: 12px;">4,0</span>
+          <span class="mono" style="font-size: 11px; color: #E0574A;">MANUAL</span>
+          <span class="mono" style="font-size: 13px; font-weight: 600; color: #E0574A; text-align: right;">−60</span>
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <span class="mono" style="font-size: 9px; letter-spacing: 0.08em; color: #E0574A; border: 1px solid #3A1F1C; padding: 2px 6px; border-radius: 2px;">ANTECIPOU STOP</span>
+            <span class="mono" style="font-size: 11px; color: #E0574A;">−310</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 11px; padding: 13px 16px; border: 1px solid #3A1F1C; background: #150F0E; border-radius: 3px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E0574A" stroke-width="1.6" stroke-linecap="round">
+          <path d="M12 8v5"></path><path d="M12 16.5v.01"></path><circle cx="12" cy="12" r="9"></circle>
+        </svg>
+        <span style="font-size: 12.5px; color: #C99A93; line-height: 1.45;">O trade das 09:41 teria ido a alvo. Sair antes custou <b class="mono">R$ 310</b> — mais que o lucro do melhor trade do dia.</span>
+      </div>
+    </div>
+
+    <!-- ===== FECHAMENTO / AUDITORIA ===== -->
+    <div class="card" style="padding: 20px 22px 24px 22px; display: flex; flex-direction: column; gap: 18px;">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <span class="lbl">FECHAR TRADE · VENDA WIN 10:34</span>
+        <span style="font-size: 12px; color: #8A949C; line-height: 1.45;">O trade termina no alvo ou no stop. Se terminou em outro lugar, o sistema precisa saber por quê.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px;">
+        <span class="lbl">PREÇO DE SAÍDA</span>
+        <div style="border: 1px solid #262B30; background: #0C0E10; border-radius: 3px; padding: 12px 14px;">
+          <span class="mono" style="font-size: 17px;">144.720</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px;">
+        <span class="lbl">COMO TERMINOU</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+          <div style="border: 1px solid #1E3A2E; background: #101614; border-radius: 3px; padding: 11px 8px; text-align: center;">
+            <span class="mono" style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #3FB27F;">ALVO</span>
+          </div>
+          <div style="border: 1px solid #262B30; border-radius: 3px; padding: 11px 8px; text-align: center;">
+            <span class="mono" style="font-size: 11px; letter-spacing: 0.06em; color: #6E787F;">STOP</span>
+          </div>
+          <div style="border: 1px solid #262B30; border-radius: 3px; padding: 11px 8px; text-align: center;">
+            <span class="mono" style="font-size: 11px; letter-spacing: 0.06em; color: #6E787F;">MANUAL</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 1px; background: #1E2327;"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 13px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span class="lbl">AUDITORIA DE DISCIPLINA</span>
+          <span style="font-size: 11.5px; color: #5A646C;">Obrigatório. Sem resposta, o trade não fecha.</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="display: grid; grid-template-columns: 1fr 128px; gap: 12px; align-items: center;">
+            <span style="font-size: 13px;">Respeitei o plano?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px;">
+              <div style="border: 1px solid #1E3A2E; background: #101614; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #3FB27F;">SIM</span></div>
+              <div style="border: 1px solid #262B30; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #6E787F;">NÃO</span></div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 128px; gap: 12px; align-items: center;">
+            <span style="font-size: 13px;">Antecipei o stop?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px;">
+              <div style="border: 1px solid #262B30; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #6E787F;">SIM</span></div>
+              <div style="border: 1px solid #2A3138; background: #12161A; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #A8B2B9;">NÃO</span></div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 128px; gap: 12px; align-items: center;">
+            <span style="font-size: 13px;">Fiz parcial emocional?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px;">
+              <div style="border: 1px solid #262B30; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #6E787F;">SIM</span></div>
+              <div style="border: 1px solid #2A3138; background: #12161A; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #A8B2B9;">NÃO</span></div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 128px; gap: 12px; align-items: center;">
+            <span style="font-size: 13px;">Mudei o alvo no meio?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px;">
+              <div style="border: 1px solid #262B30; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #6E787F;">SIM</span></div>
+              <div style="border: 1px solid #2A3138; background: #12161A; border-radius: 3px; padding: 7px; text-align: center;"><span class="mono" style="font-size: 10.5px; color: #A8B2B9;">NÃO</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class="lbl">PRINT DO GRÁFICO</span>
+        <div style="border: 1px dashed #262B30; border-radius: 3px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 7px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A535A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="m3 15 5-5 4 4 3-3 6 6"></path><circle cx="8.5" cy="9" r="1.2"></circle>
+          </svg>
+          <span style="font-size: 12px; color: #5A646C;">Cole com Ctrl+V ou clique para escolher</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; padding: 14px; background: #3FB27F; border-radius: 3px;">
+        <span class="mono" style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.1em; color: #08150F;">REGISTRAR FECHAMENTO</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

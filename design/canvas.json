@@ -1,0 +1,39 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 980, "title": "Checklist — trilha travada", "is_interactive": true },
+    { "file": "Painel.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "title": "Painel do dia" },
+    { "file": "Trades.dc.html", "x": 0, "y": 1160, "w": 1440, "h": 900, "title": "Trades — journal e fechamento" },
+    { "file": "Inteligencia.dc.html", "x": 1560, "y": 1160, "w": 1440, "h": 940, "title": "Inteligência" }
+  ],
+  "annotations": [
+    {
+      "id": "nota-checklist",
+      "x": 0,
+      "y": -150,
+      "w": 620,
+      "text": "PRIORIDADE 1 — clicável de verdade.\nSó o passo seguinte aceita clique. Clique num passo já cumprido para voltar e destravar. O chip JANELA no topo troca entre PRIME / VÁLIDA / FORA para ver os três estados do gate."
+    },
+    {
+      "id": "nota-painel",
+      "x": 1560,
+      "y": -150,
+      "w": 560,
+      "text": "PRIORIDADE 2 — abertura de pregão.\nJunta numa tela só o que hoje está espalhado: pré-sessão, gate, placar da fase com o mulligan e o ambiente da estratégia."
+    },
+    {
+      "id": "nota-restantes",
+      "x": 0,
+      "y": 1010,
+      "w": 620,
+      "text": "Estas duas ficaram prontas junto, para você reagir agora e a gente refinar amanhã."
+    },
+    {
+      "id": "nota-cor",
+      "x": 3060,
+      "y": 0,
+      "w": 300,
+      "text": "REGRA DE COR\nVerde = cumprido / liberado\nÂmbar = agora / atenção\nVermelho = bloqueado / desvio\nCinza = travado\n\nNenhuma cor é decorativa. Se está colorido, significa estado."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

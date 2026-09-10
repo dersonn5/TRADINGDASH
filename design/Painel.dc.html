@@ -1,0 +1,270 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #0C0E10; font-family: Archivo, "Helvetica Neue", Arial, sans-serif; }
+    a { color: #E0B44E; } a:hover { color: #F0CA72; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; color: #5A646C; }
+    .card { border: 1px solid #1E2327; background: #0F1215; border-radius: 3px; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; min-height: 900px; background: #0C0E10; color: #E8ECEF; padding: 26px 28px 34px 28px; display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- cabeçalho -->
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 1px solid #262B30; padding-bottom: 18px;">
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <span class="lbl">SEGUNDA · 14 SET 2026 · CLASSIFICATÓRIA ETAPA 1</span>
+      <h1 style="margin: 0; font-size: 23px; font-weight: 600; letter-spacing: -0.015em;">Abertura de pregão</h1>
+    </div>
+    <div style="display: flex; gap: 1px; background: #1E2327; border: 1px solid #1E2327; border-radius: 3px; overflow: hidden;">
+      <div style="background: #0F1215; padding: 11px 20px; display: flex; flex-direction: column; gap: 3px;">
+        <span class="lbl">DIA DA FASE</span>
+        <span class="mono" style="font-size: 16px; font-weight: 600;">2 <span style="color: #5A646C;">/ 4</span></span>
+      </div>
+      <div style="background: #0F1215; padding: 11px 20px; display: flex; flex-direction: column; gap: 3px;">
+        <span class="lbl">HORÁRIO</span>
+        <span class="mono" style="font-size: 16px; font-weight: 600;">08:41:20</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- faixa de gate -->
+  <div style="border: 1px solid #3A1F1C; border-left: 3px solid #E0574A; background: #150F0E; border-radius: 3px; padding: 17px 22px; display: flex; align-items: center; gap: 26px;">
+    <div style="display: flex; align-items: center; gap: 11px; min-width: 210px;">
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #E0574A;"></span>
+      <span class="mono" style="font-size: 17px; font-weight: 600; letter-spacing: 0.06em; color: #E0574A;">BLOQUEADO</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 5px; flex-grow: 1;">
+      <div style="display: grid; grid-template-columns: 12px 1fr; gap: 9px; align-items: start;">
+        <span class="mono" style="font-size: 11px; color: #E0574A; line-height: 1.5;">—</span>
+        <span style="font-size: 13px; color: #A8B2B9; line-height: 1.5;">fora da janela de operação 09:00–12:00</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 12px 1fr; gap: 9px; align-items: start;">
+        <span class="mono" style="font-size: 11px; color: #E0574A; line-height: 1.5;">—</span>
+        <span style="font-size: 13px; color: #A8B2B9; line-height: 1.5;">pré-sessão do dia não preenchida</span>
+      </div>
+    </div>
+    <div style="padding: 12px 26px; border: 1px solid #E0B44E; border-radius: 3px;">
+      <span class="mono" style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #E0B44E;">PREENCHER PRÉ-SESSÃO</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start;">
+
+    <!-- ===== PRÉ-SESSÃO ===== -->
+    <div class="card" style="padding: 20px 22px 24px 22px; display: flex; flex-direction: column; gap: 20px;">
+      <span class="lbl">PRÉ-SESSÃO · O QUE EU LI ANTES DE ABRIR</span>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span class="lbl">BIAS D1</span>
+          <span class="mono" style="font-size: 15px; font-weight: 600; color: #E0574A;">VENDA</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span class="lbl">BIAS H1</span>
+          <span class="mono" style="font-size: 15px; font-weight: 600; color: #E0574A;">VENDA</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span class="lbl">CONTEXTO</span>
+          <span class="mono" style="font-size: 15px; font-weight: 600;">TENDÊNCIA</span>
+        </div>
+      </div>
+
+      <div style="height: 1px; background: #1E2327;"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span class="lbl">ARRAYS E LIQUIDEZ MAPEADOS</span>
+          <span class="mono" style="font-size: 11px; color: #3FB27F;">4 MARCADOS</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 9px 12px; background: #0C0E10; border-radius: 2px;">
+            <span style="font-size: 13px;">FVG HTF 60m — região</span>
+            <span class="mono" style="font-size: 13px; color: #A8B2B9;">145.880 – 146.310</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 9px 12px; background: #0C0E10; border-radius: 2px;">
+            <span style="font-size: 13px;">PDH — buy side liquidity</span>
+            <span class="mono" style="font-size: 13px; color: #A8B2B9;">146.115</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 9px 12px; background: #0C0E10; border-radius: 2px;">
+            <span style="font-size: 13px;">PDL — sell side liquidity</span>
+            <span class="mono" style="font-size: 13px; color: #A8B2B9;">144.720</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 9px 12px; background: #0C0E10; border-radius: 2px;">
+            <span style="font-size: 13px;">EQH semanal</span>
+            <span class="mono" style="font-size: 13px; color: #A8B2B9;">146.540</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 1px; background: #1E2327;"></div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span class="lbl">AGENDA</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="mono" style="font-size: 12px; color: #8A949C;">11:00</span>
+            <span style="font-size: 13px; flex-grow: 1;">CPI EUA</span>
+            <span class="mono" style="font-size: 9px; letter-spacing: 0.1em; color: #E0574A; border: 1px solid #3A1F1C; padding: 2px 7px; border-radius: 2px;">ALTO</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="mono" style="font-size: 12px; color: #8A949C;">14:30</span>
+            <span style="font-size: 13px; flex-grow: 1;">Estoques de petróleo</span>
+            <span class="mono" style="font-size: 9px; letter-spacing: 0.1em; color: #5A646C; border: 1px solid #262B30; padding: 2px 7px; border-radius: 2px;">MÉDIO</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span class="lbl">ESTADO DO OPERADOR</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; width: 62px; color: #8A949C;">Sono</span>
+            <div style="display: flex; gap: 3px; flex-grow: 1;">
+              <span style="height: 5px; flex-grow: 1; background: #3FB27F; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #3FB27F; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #3FB27F; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #3FB27F; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+            </div>
+            <span class="mono" style="font-size: 12px; color: #A8B2B9;">4</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; width: 62px; color: #8A949C;">Tilt</span>
+            <div style="display: flex; gap: 3px; flex-grow: 1;">
+              <span style="height: 5px; flex-grow: 1; background: #E0B44E; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+            </div>
+            <span class="mono" style="font-size: 12px; color: #A8B2B9;">1</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; width: 62px; color: #8A949C;">Pressão</span>
+            <div style="display: flex; gap: 3px; flex-grow: 1;">
+              <span style="height: 5px; flex-grow: 1; background: #E0B44E; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #E0B44E; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+              <span style="height: 5px; flex-grow: 1; background: #1E2327; border-radius: 1px;"></span>
+            </div>
+            <span class="mono" style="font-size: 12px; color: #A8B2B9;">2</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 11px; padding: 11px 14px; border: 1px solid #3A3020; background: #15140E; border-radius: 3px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E0B44E" stroke-width="1.6" stroke-linecap="round">
+          <path d="M12 8v5"></path><path d="M12 16.5v.01"></path><circle cx="12" cy="12" r="9"></circle>
+        </svg>
+        <span style="font-size: 12.5px; color: #C9B283; line-height: 1.45;">Notícia de alto impacto às 11:00 dentro da janela — o sistema sugere <b>modo defensivo</b>: 1 trade, score mínimo +15.</span>
+      </div>
+    </div>
+
+    <!-- ===== COLUNA DIREITA ===== -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- placar da fase -->
+      <div class="card" style="padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 18px;">
+        <span class="lbl">CLASSIFICATÓRIA ETAPA 1 · 14–17 SET</span>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <span class="lbl">PLACAR BRUTO</span>
+            <span class="mono" style="font-size: 25px; font-weight: 600; color: #A8B2B9;">+30</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <span class="lbl">COM DESCARTE</span>
+            <span class="mono" style="font-size: 25px; font-weight: 600; color: #3FB27F;">+430</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 10px 12px; background: #0C0E10; border-radius: 2px; align-items: center;">
+            <span class="mono" style="font-size: 12px; color: #8A949C;">SEG 14</span>
+            <span class="mono" style="font-size: 13px; color: #3FB27F;">+250</span>
+            <span class="mono" style="font-size: 10px; color: #4A535A; width: 74px; text-align: right;">2 CONTR.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 10px 12px; background: #0C0E10; border-radius: 2px; align-items: center; opacity: 0.5;">
+            <span class="mono" style="font-size: 12px; color: #8A949C;">TER 15</span>
+            <span class="mono" style="font-size: 13px; color: #E0574A; text-decoration: line-through;">−400</span>
+            <span class="mono" style="font-size: 10px; color: #4A535A; width: 74px; text-align: right;">DESCARTADO</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 10px 12px; background: #0C0E10; border-radius: 2px; align-items: center;">
+            <span class="mono" style="font-size: 12px; color: #8A949C;">QUA 16</span>
+            <span class="mono" style="font-size: 13px; color: #3FB27F;">+180</span>
+            <span class="mono" style="font-size: 10px; color: #4A535A; width: 74px; text-align: right;">1 CONTR.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 10px 12px; border: 1px dashed #262B30; border-radius: 2px; align-items: center;">
+            <span class="mono" style="font-size: 12px; color: #4A535A;">QUI 17</span>
+            <span class="mono" style="font-size: 13px; color: #4A535A;">—</span>
+            <span class="mono" style="font-size: 10px; color: #4A535A; width: 74px; text-align: right;">A OPERAR</span>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #3A1F1C; background: #150F0E; border-radius: 3px; padding: 14px 16px; display: flex; flex-direction: column; gap: 7px;">
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #E0574A;"></span>
+            <span class="mono" style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #E0574A;">MULLIGAN CONSUMIDO</span>
+          </div>
+          <span style="font-size: 12px; color: #A8B2B9; line-height: 1.5;">Ter 15 gastou o descarte. Todo dia negativo a partir de agora entra direto no placar. Limite de perda cortado para <b class="mono">150</b> e modo defensivo forçado.</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; border-top: 1px solid #1E2327; padding-top: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">CONTRATOS</span>
+            <span class="mono" style="font-size: 16px; font-weight: 500;">5</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">R$ / CONTRATO</span>
+            <span class="mono" style="font-size: 16px; font-weight: 500; color: #3FB27F;">6,00</span>
+          </div>
+        </div>
+        <span style="font-size: 11px; color: #5A646C; line-height: 1.5; margin-top: -8px;">Desempate oficial da Copa é por menor número de contratos operados.</span>
+      </div>
+
+      <!-- estratégia do dia -->
+      <div class="card" style="padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+        <span class="lbl">ESTRATÉGIA · AMBIENTE DE HOJE</span>
+        <div style="display: flex; align-items: center; gap: 11px;">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #3FB27F;"></span>
+          <span style="font-size: 15px; font-weight: 600; flex-grow: 1;">Playbook Anderson</span>
+          <span class="mono" style="font-size: 10px; letter-spacing: 0.1em; color: #3FB27F; border: 1px solid #1E3A2E; padding: 3px 9px; border-radius: 2px;">FAVORÁVEL</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: grid; grid-template-columns: 12px 1fr; gap: 9px; align-items: start;">
+            <span class="mono" style="font-size: 11px; color: #3FB27F; line-height: 1.5;">+</span>
+            <span style="font-size: 12.5px; color: #A8B2B9; line-height: 1.5;">arrays e liquidez já mapeados antes do pregão</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 12px 1fr; gap: 9px; align-items: start;">
+            <span class="mono" style="font-size: 11px; color: #3FB27F; line-height: 1.5;">+</span>
+            <span style="font-size: 12.5px; color: #A8B2B9; line-height: 1.5;">narrativa HTF definida indica de que lado está o draw</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 12px 1fr; gap: 9px; align-items: start;">
+            <span class="mono" style="font-size: 11px; color: #E0B44E; line-height: 1.5;">~</span>
+            <span style="font-size: 12.5px; color: #A8B2B9; line-height: 1.5;">notícia de alto impacto no dia: reduzir exposição</span>
+          </div>
+        </div>
+        <div style="border-top: 1px solid #1E2327; padding-top: 13px; display: flex; align-items: center; gap: 10px;">
+          <span class="mono" style="font-size: 9px; letter-spacing: 0.12em; color: #8A6D2E; border: 1px solid #3A3020; padding: 3px 8px; border-radius: 2px;">NÃO CALIBRADO</span>
+          <span style="font-size: 11.5px; color: #5A646C; line-height: 1.45;">Pesos ainda são estimativa. Nenhum medido em backtest de WIN.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

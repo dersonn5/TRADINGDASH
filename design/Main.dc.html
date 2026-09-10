@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #0C0E10; font-family: Archivo, "Helvetica Neue", Arial, sans-serif; }
+    a { color: #E0B44E; } a:hover { color: #F0CA72; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .step { transition: background 140ms ease, border-color 140ms ease; }
+    .step-live { cursor: pointer; }
+    .step-live:hover { background: #1B2024 !important; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; min-height: 980px; background: #0C0E10; color: #E8ECEF; display: flex; flex-direction: column;">
+
+  <!-- ============ BARRA DE ESTADO ============ -->
+  <div style="display: flex; align-items: stretch; border-bottom: 1px solid #262B30; background: #0F1215;">
+    <div style="padding: 14px 24px; border-right: 1px solid #262B30; display: flex; flex-direction: column; gap: 3px; min-width: 190px;">
+      <span class="mono" style="font-size: 10px; letter-spacing: 0.14em; color: #5A646C;">PREGÃO</span>
+      <span class="mono" style="font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">{{relogio}}</span>
+    </div>
+
+    <div style="padding: 14px 24px; border-right: 1px solid #262B30; display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
+      <span class="mono" style="font-size: 10px; letter-spacing: 0.14em; color: #5A646C;">JANELA</span>
+      <div style="display: flex; align-items: center; gap: 9px;">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: {{janelaCor}};"></span>
+        <span class="mono" style="font-size: 13px; font-weight: 600; color: {{janelaCor}}; letter-spacing: 0.02em;">{{janelaTexto}}</span>
+        <span style="font-size: 12px; color: #5A646C;">{{janelaNota}}</span>
+      </div>
+    </div>
+
+    <div style="padding: 14px 24px; border-right: 1px solid #262B30; display: flex; flex-direction: column; gap: 3px; min-width: 150px;">
+      <span class="mono" style="font-size: 10px; letter-spacing: 0.14em; color: #5A646C;">PERDA DIA</span>
+      <span class="mono" style="font-size: 15px; font-weight: 500;">−120 <span style="color: #5A646C;">/ 300</span></span>
+    </div>
+    <div style="padding: 14px 24px; border-right: 1px solid #262B30; display: flex; flex-direction: column; gap: 3px; min-width: 140px;">
+      <span class="mono" style="font-size: 10px; letter-spacing: 0.14em; color: #5A646C;">TRADES</span>
+      <span class="mono" style="font-size: 15px; font-weight: 500;">1 <span style="color: #5A646C;">/ 3</span></span>
+    </div>
+    <div style="padding: 14px 24px; display: flex; flex-direction: column; gap: 3px; min-width: 160px;">
+      <span class="mono" style="font-size: 10px; letter-spacing: 0.14em; color: #5A646C;">MULLIGAN</span>
+      <span class="mono" style="font-size: 13px; font-weight: 600; color: #3FB27F;">DISPONÍVEL</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-grow: 1; align-items: stretch;">
+
+    <!-- ============ TRILHA ============ -->
+    <div style="flex-grow: 1; padding: 26px 28px 32px 28px; display: flex; flex-direction: column; gap: 18px;">
+
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="mono" style="font-size: 10px; letter-spacing: 0.16em; color: #5A646C;">PLAYBOOK ANDERSON · WIN</span>
+          <h1 style="margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -0.015em;">Trilha do setup</h1>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span class="mono" style="font-size: 30px; font-weight: 600; color: {{trilhaCor}}; line-height: 1;">{{feitos}}</span>
+          <span class="mono" style="font-size: 15px; color: #5A646C;">/ 7</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <sc-for list="{{passos}}" as="p" hint-placeholder-count="7">
+          <div class="step {{p.classe}}" onClick="{{p.acao}}" style="display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: start; padding: 13px 16px; border: 1px solid {{p.borda}}; border-left: 3px solid {{p.marca}}; background: {{p.fundo}}; border-radius: 3px;">
+
+            <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid {{p.marca}}; border-radius: 2px;">
+              <span class="mono" style="font-size: 12px; font-weight: 600; color: {{p.marca}};">{{p.simbolo}}</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 14px; font-weight: 500; color: {{p.corTexto}}; line-height: 1.35;">{{p.label}}</span>
+              <span style="font-size: 12px; color: {{p.corAjuda}}; line-height: 1.45; max-width: 62ch;">{{p.ajuda}}</span>
+            </div>
+
+            <span class="mono" style="font-size: 10px; letter-spacing: 0.12em; color: {{p.marca}}; padding-top: 5px;">{{p.tag}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px dashed #262B30; border-radius: 3px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A646C" stroke-width="1.6" stroke-linecap="round">
+          <path d="M12 8v5"></path><path d="M12 16.5v.01"></path><circle cx="12" cy="12" r="9"></circle>
+        </svg>
+        <span style="font-size: 12px; color: #8A949C;">{{dica}}</span>
+      </div>
+    </div>
+
+    <!-- ============ CONFLUÊNCIA + GATE ============ -->
+    <div style="width: 452px; border-left: 1px solid #262B30; background: #0F1215; display: flex; flex-direction: column;">
+
+      <div style="padding: 22px 24px 18px 24px; border-bottom: 1px solid #262B30; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span class="mono" style="font-size: 10px; letter-spacing: 0.16em; color: #5A646C;">CONFLUÊNCIA</span>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <span class="mono" style="font-size: 26px; font-weight: 600; color: {{scoreCor}}; line-height: 1;">{{score}}</span>
+            <span class="mono" style="font-size: 13px; color: #5A646C;">/ {{scoreMin}}</span>
+          </div>
+        </div>
+
+        <div style="position: relative; height: 6px; background: #1B1F23; border-radius: 1px; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{scorePct}}; background: {{scoreCor}};"></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: {{minPct}}; width: 1px; background: #8A949C;"></div>
+        </div>
+        <span class="mono" style="font-size: 10px; color: #5A646C; letter-spacing: 0.06em;">{{scoreNota}}</span>
+      </div>
+
+      <div style="flex-grow: 1; padding: 8px 12px; display: flex; flex-direction: column; gap: 1px;">
+        <sc-for list="{{confluencias}}" as="c" hint-placeholder-count="8">
+          <div class="step step-live" onClick="{{c.acao}}" style="display: grid; grid-template-columns: 16px 1fr auto; gap: 12px; align-items: start; padding: 9px 12px; border-radius: 3px; background: {{c.fundo}};">
+            <div style="width: 13px; height: 13px; border: 1px solid {{c.corCaixa}}; background: {{c.fundoCaixa}}; border-radius: 2px; margin-top: 2px;"></div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-size: 12.5px; color: {{c.corTexto}}; line-height: 1.35;">{{c.label}}</span>
+              <span class="mono" style="font-size: 9px; letter-spacing: 0.1em; color: #4A535A;">ESTIMADO</span>
+            </div>
+            <span class="mono" style="font-size: 12px; font-weight: 500; color: {{c.corPeso}}; padding-top: 1px;">{{c.peso}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- GATE -->
+      <div style="border-top: 1px solid {{gateBorda}}; background: {{gateFundo}}; padding: 18px 24px 22px 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: {{gateCor}};"></span>
+          <span class="mono" style="font-size: 15px; font-weight: 600; letter-spacing: 0.06em; color: {{gateCor}};">{{gateTitulo}}</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <sc-for list="{{motivos}}" as="m" hint-placeholder-count="2">
+            <div style="display: grid; grid-template-columns: 12px 1fr; gap: 9px; align-items: start;">
+              <span class="mono" style="font-size: 11px; color: {{gateCor}}; line-height: 1.5;">—</span>
+              <span style="font-size: 12px; color: #A8B2B9; line-height: 1.5;">{{m.texto}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; padding: 15px; border: 1px solid {{botaoBorda}}; background: {{botaoFundo}}; border-radius: 3px; margin-top: 2px;">
+          <span class="mono" style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; color: {{botaoTexto}};">ABRIR ORDEM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"janela":{"editor":"enum","options":["PRIME","VALIDA","FORA"],"default":"PRIME","section":"Estado"},"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // feitos = quantos passos da trilha estão cumpridos. Só o passo (feitos+1)
+    // é clicável: é a regra "não persigo preço" virando interface.
+    this.state = { feitos: 3, conf: { p1: true, p3: true } };
+  }
+
+  renderVals() {
+    const OK = '#3FB27F', NOW = '#E0B44E', BLOCK = '#E0574A', LOCK = '#394148', DIM = '#5A646C';
+
+    const KILLS = [
+      { id: 'k1', label: 'Array HTF não-mitigado identificado como DESTINO',
+        ajuda: 'FVG ou OB de 60m ou maior, ainda não trabalhado. Marque a região inteira: topo, CE, fundo.' },
+      { id: 'k2', label: 'A liquidez que entrega o preço no array foi VARRIDA',
+        ajuda: 'BSL/SSL ou topo/fundo HTF. Penetrou a região, rejeitou e fechou de volta. O sweep é o transporte, não o setup.' },
+      { id: 'k3', label: 'Preço alcançou a REGIÃO do array, no lado certo',
+        ajuda: 'Premium para venda, discount para compra. Região, não linha.' },
+      { id: 'k4', label: 'MSS no LTF em vela FECHADA, dentro do array',
+        ajuda: 'Contra a perna que trouxe o preço até aqui. Vela fechada, não em formação.' },
+      { id: 'k5', label: 'O displacement do MSS deixou FVG no LTF',
+        ajuda: 'A perna que rompeu a estrutura precisa ter deixado desbalanço.' },
+      { id: 'k6', label: 'Entrada no RETESTE do FVG do LTF',
+        ajuda: 'Não perseguir preço. Espera o retorno na região do FVG.' },
+      { id: 'k7', label: 'Alvo em liquidez oposta · stop no topo do swing · RR ≥ 2',
+        ajuda: 'Stop ancorado no extremo do swing que originou o MSS, não na barra do FVG.' }
+    ];
+
+    const PONTOS = [
+      { id: 'p1', peso: 14, label: 'Corpos respeitaram o CE do array HTF' },
+      { id: 'p2', peso: 14, label: 'Confluência de array — FVG e OB sobrepostos' },
+      { id: 'p3', peso: 14, label: 'Displacement forte no MSS' },
+      { id: 'p4', peso: 14, label: 'Indução: micro-sweep no reteste antes da entrada' },
+      { id: 'p6', peso: 11, label: 'Array fresco — deixado na sessão anterior' },
+      { id: 'p7', peso: 11, label: 'Caminho limpo até o alvo' },
+      { id: 'p8', peso: 11, label: 'SMT — WIN e WDO contando a mesma história' },
+      { id: 'p9', peso: 11, label: 'Sem notícia de alto impacto em 30 min' }
+    ];
+
+    const feitos = this.state.feitos;
+    const conf = this.state.conf;
+    const janela = this.props.janela ?? 'PRIME';
+
+    const janelaMap = {
+      PRIME:  { cor: OK,    texto: 'PRIME · 10:00–11:00', nota: 'abertura do à vista + abertura americana', min: 65,  relogio: '10:34:12' },
+      VALIDA: { cor: NOW,   texto: 'FORA DA NOBRE',       nota: 'dentro de 09:00–12:00 · exige score maior', min: 80, relogio: '09:22:47' },
+      FORA:   { cor: BLOCK, texto: 'FORA DA JANELA',      nota: 'operação permitida só das 09:00 às 12:00',   min: 999, relogio: '13:05:31' }
+    };
+    const J = janelaMap[janela] || janelaMap.PRIME;
+
+    const passos = KILLS.map((k, i) => {
+      const n = i + 1;
+      const done = n <= feitos;
+      const now = n === feitos + 1;
+      const marca = done ? OK : (now ? NOW : LOCK);
+      return {
+        label: k.label,
+        ajuda: k.ajuda,
+        simbolo: done ? '✓' : String(n),
+        marca: marca,
+        borda: now ? '#3A3020' : '#1E2327',
+        fundo: now ? '#15140E' : (done ? '#101416' : '#0D1013'),
+        corTexto: done ? '#A8B2B9' : (now ? '#E8ECEF' : '#4A535A'),
+        corAjuda: now ? '#8A949C' : (done ? '#4A535A' : '#333B42'),
+        tag: done ? 'CUMPRIDO' : (now ? 'AGORA' : 'TRAVADO'),
+        classe: (done || now) ? 'step-live' : '',
+        acao: done ? () => this.setState({ feitos: n - 1 })
+            : (now ? () => this.setState({ feitos: n }) : null)
+      };
+    });
+
+    const score = PONTOS.reduce((a, p) => a + (conf[p.id] ? p.peso : 0), 0);
+    const scoreOk = score >= J.min;
+
+    const confluencias = PONTOS.map((p) => {
+      const on = !!conf[p.id];
+      return {
+        label: p.label,
+        peso: p.peso,
+        corCaixa: on ? OK : '#394148',
+        fundoCaixa: on ? OK : 'transparent',
+        fundo: on ? '#101614' : 'transparent',
+        corTexto: on ? '#E8ECEF' : '#6E787F',
+        corPeso: on ? OK : '#4A535A',
+        acao: () => this.setState({ conf: { ...conf, [p.id]: !on } })
+      };
+    });
+
+    const motivos = [];
+    if (janela === 'FORA') motivos.push({ texto: 'fora da janela de operação 09:00–12:00' });
+    if (feitos < 7) motivos.push({ texto: 'falta obrigatório: ' + KILLS[feitos].label });
+    if (janela !== 'FORA' && !scoreOk) motivos.push({ texto: 'score ' + score + ' abaixo do mínimo ' + J.min });
+    if (motivos.length === 0) motivos.push({ texto: 'sequência completa · risco definido · janela nobre' });
+
+    const liberado = motivos.length === 1 && feitos === 7 && scoreOk && janela !== 'FORA';
+    const gateCor = liberado ? OK : BLOCK;
+
+    const restam = 7 - feitos;
+    const dica = feitos === 7
+      ? 'Sequência completa. O trade agora termina no alvo ou no stop.'
+      : 'Só o passo ' + (feitos + 1) + ' está clicável. Faltam ' + restam + ' para a sequência fechar.';
+
+    return {
+      relogio: J.relogio,
+      janelaCor: J.cor, janelaTexto: J.texto, janelaNota: J.nota,
+      feitos: feitos,
+      trilhaCor: feitos === 7 ? OK : NOW,
+      passos: passos,
+      dica: dica,
+      confluencias: confluencias,
+      score: score,
+      scoreMin: janela === 'FORA' ? '—' : J.min,
+      scoreCor: scoreOk && janela !== 'FORA' ? OK : NOW,
+      scorePct: Math.min(100, score) + '%',
+      minPct: (janela === 'FORA' ? 100 : J.min) + '%',
+      scoreNota: janela === 'PRIME' ? 'MÍNIMO 65 NA JANELA NOBRE'
+               : (janela === 'VALIDA' ? 'MÍNIMO 80 FORA DA JANELA NOBRE' : 'BLOQUEADO PELO HORÁRIO'),
+      motivos: motivos,
+      gateTitulo: liberado ? 'LIBERADO' : 'BLOQUEADO',
+      gateCor: gateCor,
+      gateFundo: liberado ? '#0D1512' : '#150F0E',
+      gateBorda: liberado ? '#1E3A2E' : '#3A1F1C',
+      botaoFundo: liberado ? OK : 'transparent',
+      botaoBorda: liberado ? OK : '#2A3138',
+      botaoTexto: liberado ? '#08150F' : '#4A535A'
+    };
+  }
+}
+</script>
+</body>
+</html>
