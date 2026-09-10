@@ -131,9 +131,33 @@
     @apply font-sans;
   }
   
+  /* Mãozinha (cursor: pointer) em todos os botões e elementos interativos */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]):not([disabled]),
+  [type="button"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  summary,
+  select:not(:disabled),
+  a[href] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  [role="button"]:disabled,
+  [type="button"]:disabled,
+  [type="reset"]:disabled,
+  [type="submit"]:disabled,
+  select:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   /* Legibilidade de Dropdowns / Selects no modo escuro */
   select {
     color-scheme: dark;
+    cursor: pointer;
   }
   select option {
     background-color: #18181b !important;
@@ -172,5 +196,29 @@
 .tabular { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 .mono { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 .step { transition: background 140ms ease, border-color 140ms ease; }
-.step-live { cursor: pointer; }
+.step-live { cursor: pointer !important; }
 .step-live:hover { background: #1B2024 !important; }
+
+/* Mãozinha (cursor: pointer) universal em todos os botões e elementos interativos */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]):not([disabled]),
+[type="button"]:not(:disabled),
+[type="reset"]:not(:disabled),
+[type="submit"]:not(:disabled),
+summary,
+select:not(:disabled),
+a[href],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+[role="button"]:disabled,
+[type="button"]:disabled,
+[type="reset"]:disabled,
+[type="submit"]:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+}
