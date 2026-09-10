@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { PLAYBOOK_ANDERSON } from "@/data/strategies";
 
 export interface TradingNote {
   id: string;
@@ -39,8 +40,11 @@ export interface ChecklistItem {
   id: string;
   label: string;
   checked: boolean;
-  category: "pre_market" | "bias" | "technical" | "risk" | "emotional";
   weight: number;
+  tipo: "KILL" | "PONTO";
+  ajuda?: string;
+  origem?: "MEDIDO" | "ESTIMADO";
+  category?: "pre_market" | "bias" | "technical" | "risk" | "emotional";
 }
 
 export interface LiveChecklist {
@@ -192,6 +196,7 @@ export async function saveTrade(trade: Partial<TradingTrade>): Promise<TradingTr
 
 export async function fetchTodayChecklist(): Promise<LiveChecklist> {
   const today = new Date().toISOString().split("T")[0];
+  const defaultChecklist = getDefaultChecklist(today);
   try {
     const { data, error } = await supabase
       .from("trading_live_checklist")
@@ -202,12 +207,28 @@ export async function fetchTodayChecklist(): Promise<LiveChecklist> {
       .maybeSingle();
 
     if (error || !data) {
-      return getDefaultChecklist(today);
+      return defaultChecklist;
     }
-    return data as LiveChecklist;
+
+    const loaded = data as LiveChecklist;
+    const defaultIds = new Set(defaultChecklist.items.map((i) => i.id));
+    const loadedItems = loaded.items || [];
+    const isOutdated =
+      loadedItems.length !== defaultChecklist.items.length ||
+      loadedItems.some((i) => !i.tipo || !defaultIds.has(i.id));
+
+    if (isOutdated) {
+      return {
+        ...defaultChecklist,
+        bias: loaded.bias || defaultChecklist.bias,
+        notes: loaded.notes || defaultChecklist.notes,
+      };
+    }
+
+    return loaded;
   } catch (err) {
     console.error("Erro ao buscar checklist:", err);
-    return getDefaultChecklist(today);
+    return defaultChecklist;
   }
 }
 
@@ -344,20 +365,22 @@ function getSampleTrades(): TradingTrade[] {
 }
 
 function getDefaultChecklist(date: string): LiveChecklist {
+  const items: ChecklistItem[] = PLAYBOOK_ANDERSON.checklist.map((item) => ({
+    id: item.id,
+    label: item.label,
+    checked: false,
+    weight: item.peso,
+    tipo: item.tipo as "KILL" | "PONTO",
+    ajuda: item.ajuda,
+    origem: (item as any).origem || "ESTIMADO",
+  }));
+
   return {
     session_date: date,
     session_name: "Sessão Pregão Ao Vivo",
     market: "B3 WIN",
     bias: "NEUTRO",
-    items: [
-      { id: "c1", label: "Calendário Econômico verificado (sem notícias de 3 touros nos próx. 30min)", checked: false, category: "pre_market", weight: 15 },
-      { id: "c2", label: "Viés Diário Top-Down definido (HTF Bias alinhado)", checked: false, category: "bias", weight: 15 },
-      { id: "c3", label: "Varredura de Liquidez confirmada (BSL ou SSL swept)", checked: false, category: "technical", weight: 20 },
-      { id: "c4", label: "Displacement nítido com quebra de estrutura (MSS)", checked: false, category: "technical", weight: 20 },
-      { id: "c5", label: "Fair Value Gap (FVG) respeitado para ponto de entrada", checked: false, category: "technical", weight: 15 },
-      { id: "c6", label: "Risco calculado: R:R mínimo de 1:2 e perda máx. de 1% da conta", checked: false, category: "risk", weight: 10 },
-      { id: "c7", label: "Estado Emocional: Calmo, descansado e sem sentimento de vingança", checked: false, category: "emotional", weight: 5 },
-    ],
+    items,
     score: 0,
     risk_approved: false,
     notes: "",
