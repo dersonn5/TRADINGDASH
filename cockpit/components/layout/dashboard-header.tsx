@@ -20,10 +20,11 @@ import {
 
 const TITLES: Record<string, string> = {
   "/": "Visão Geral",
-  "/trades": "Trades",
+  "/trades": "Banco de Trades",
+  "/checklist": "Checklist Pregão",
   "/estrategias": "Estratégias",
   "/backtests": "Backtests",
-  "/cerebro": "Cérebro ICT",
+  "/cerebro": "Segundo Cérebro",
   "/pesquisa": "Pesquisa",
   "/config": "Configurações",
 };

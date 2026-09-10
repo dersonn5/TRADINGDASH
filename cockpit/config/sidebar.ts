@@ -13,6 +13,7 @@ import {
   Calendar,
   SlidersHorizontal,
   History,
+  ShieldCheck,
 } from "lucide-react";
 
 export interface NavItem {
@@ -50,7 +51,8 @@ export const sidebarData: { navGroups: NavGroup[] } = {
     {
       title: "Trading",
       items: [
-        { title: "Trades", url: "/trades", icon: CandlestickChart },
+        { title: "Banco de Trades", url: "/trades", icon: CandlestickChart },
+        { title: "Checklist Pregão", url: "/checklist", icon: ShieldCheck },
         { title: "Estratégias", url: "/estrategias", icon: Activity },
         { title: "Backtests", url: "/backtests", icon: FlaskConical },
       ],
@@ -58,7 +60,7 @@ export const sidebarData: { navGroups: NavGroup[] } = {
     {
       title: "Inteligência",
       items: [
-        { title: "Cérebro ICT", url: "/cerebro", icon: Brain },
+        { title: "Segundo Cérebro", url: "/cerebro", icon: Brain },
         { title: "Pesquisa", url: "/pesquisa", icon: BookOpen },
       ],
     },
