@@ -27,7 +27,7 @@
 -- 1. ESTRATÉGIA VERSIONADA
 -- =============================================================================
 
-CREATE TABLE IF NOT EXISTS strategies (
+CREATE TABLE IF NOT EXISTS copa_strategies (
     id              TEXT PRIMARY KEY,              -- 'playbook_anderson'
     nome            TEXT NOT NULL,
     descricao       TEXT NOT NULL DEFAULT '',
@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS strategies (
 
 -- Cada recalibração cria uma versão nova. Versão antiga nunca é editada:
 -- é o que permite comparar trades de antes e depois da calibração.
-CREATE TABLE IF NOT EXISTS strategy_versions (
+CREATE TABLE IF NOT EXISTS copa_strategy_versions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    strategy_id     TEXT NOT NULL REFERENCES strategies(id) ON DELETE CASCADE,
+    strategy_id     TEXT NOT NULL REFERENCES copa_strategies(id) ON DELETE CASCADE,
     versao          INTEGER NOT NULL,
     score_minimo    NUMERIC NOT NULL,
     -- NAO_CALIBRADO | EM_CALIBRACAO | CALIBRADO
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS strategy_versions (
     UNIQUE (strategy_id, versao)
 );
 
-CREATE TABLE IF NOT EXISTS strategy_items (
+CREATE TABLE IF NOT EXISTS copa_strategy_items (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    version_id      UUID NOT NULL REFERENCES strategy_versions(id) ON DELETE CASCADE,
+    version_id      UUID NOT NULL REFERENCES copa_strategy_versions(id) ON DELETE CASCADE,
     item_id         TEXT NOT NULL,                 -- 'k1', 'p3'
     tipo            TEXT NOT NULL CHECK (tipo IN ('KILL', 'PONTO')),
     peso            NUMERIC NOT NULL DEFAULT 0,
@@ -74,7 +74,7 @@ CREATE OR REPLACE FUNCTION check_pesos_somam_100() RETURNS TRIGGER AS $$
 DECLARE soma NUMERIC;
 BEGIN
     SELECT COALESCE(SUM(peso), 0) INTO soma
-      FROM strategy_items
+      FROM copa_strategy_items
      WHERE version_id = COALESCE(NEW.version_id, OLD.version_id)
        AND tipo = 'PONTO';
     IF soma <> 0 AND soma <> 100 THEN
@@ -85,9 +85,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_pesos_100 ON strategy_items;
+DROP TRIGGER IF EXISTS trg_pesos_100 ON copa_strategy_items;
 CREATE CONSTRAINT TRIGGER trg_pesos_100
-    AFTER INSERT OR UPDATE OR DELETE ON strategy_items
+    AFTER INSERT OR UPDATE OR DELETE ON copa_strategy_items
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE FUNCTION check_pesos_somam_100();
 
@@ -119,7 +119,7 @@ ON CONFLICT (id) DO NOTHING;
 -- 3. SESSÃO DO DIA (pré-sessão)
 -- =============================================================================
 
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE IF NOT EXISTS copa_sessions (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id           UUID NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
     data              DATE NOT NULL,
@@ -154,12 +154,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 -- 4. TRADES
 -- =============================================================================
 
-CREATE TABLE IF NOT EXISTS trades (
+CREATE TABLE IF NOT EXISTS copa_trades (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id           UUID NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
-    session_id        UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    session_id        UUID NOT NULL REFERENCES copa_sessions(id) ON DELETE CASCADE,
     -- Versão da estratégia VIGENTE NA ENTRADA. Recalibrar não reescreve o passado.
-    version_id        UUID NOT NULL REFERENCES strategy_versions(id),
+    version_id        UUID NOT NULL REFERENCES copa_strategy_versions(id),
 
     mercado           TEXT NOT NULL CHECK (mercado IN ('WIN','WDO')),
     direcao           TEXT NOT NULL CHECK (direcao IN ('COMPRA','VENDA')),
@@ -210,9 +210,9 @@ CREATE TABLE IF NOT EXISTS trades (
     )
 );
 
-CREATE INDEX IF NOT EXISTS idx_trades_session ON trades(session_id);
-CREATE INDEX IF NOT EXISTS idx_trades_status  ON trades(status);
-CREATE INDEX IF NOT EXISTS idx_trades_hora    ON trades(hora_entrada DESC);
+CREATE INDEX IF NOT EXISTS idx_trades_session ON copa_trades(session_id);
+CREATE INDEX IF NOT EXISTS idx_trades_status  ON copa_trades(status);
+CREATE INDEX IF NOT EXISTS idx_trades_hora    ON copa_trades(hora_entrada DESC);
 
 
 -- =============================================================================
@@ -224,8 +224,8 @@ CREATE INDEX IF NOT EXISTS idx_trades_hora    ON trades(hora_entrada DESC);
 -- É isto que faz "esse item paga?" ser um GROUP BY.
 -- =============================================================================
 
-CREATE TABLE IF NOT EXISTS trade_items (
-    trade_id        UUID NOT NULL REFERENCES trades(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS copa_trade_items (
+    trade_id        UUID NOT NULL REFERENCES copa_trades(id) ON DELETE CASCADE,
     item_id         TEXT NOT NULL,
     tipo            TEXT NOT NULL CHECK (tipo IN ('KILL','PONTO')),
     checked         BOOLEAN NOT NULL,
@@ -233,26 +233,7 @@ CREATE TABLE IF NOT EXISTS trade_items (
     PRIMARY KEY (trade_id, item_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_trade_items_item ON trade_items(item_id, checked);
-
-
--- =============================================================================
--- 6. SEGUNDO CÉREBRO
--- =============================================================================
-
-CREATE TABLE IF NOT EXISTS trading_notes (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id       UUID NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
-    title         TEXT NOT NULL,
-    content       TEXT NOT NULL,
-    camada        INTEGER NOT NULL CHECK (camada BETWEEN 1 AND 5),
-    categoria     TEXT NOT NULL DEFAULT 'ICT',
-    status        TEXT NOT NULL DEFAULT 'validado',
-    tags          TEXT[] DEFAULT '{}',
-    linked_notes  TEXT[] DEFAULT '{}',
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+CREATE INDEX IF NOT EXISTS idx_trade_items_item ON copa_trade_items(item_id, checked);
 
 
 -- =============================================================================
@@ -262,11 +243,11 @@ CREATE TABLE IF NOT EXISTS trading_notes (
 -- 7.1 Desempenho por item: com marcado vs sem marcado.
 -- Responde a pergunta que a Copa não dá amostra para responder ao vivo,
 -- e que o backtest da Fase 3 vai alimentar.
-CREATE OR REPLACE VIEW v_item_performance AS
+CREATE OR REPLACE VIEW v_copa_item_performance AS
 WITH base AS (
     SELECT ti.item_id, ti.tipo, ti.checked, t.pnl_real, t.user_id
-      FROM trade_items ti
-      JOIN trades t ON t.id = ti.trade_id
+      FROM copa_trade_items ti
+      JOIN copa_trades t ON t.id = ti.trade_id
      WHERE t.status = 'FECHADO' AND t.pnl_real IS NOT NULL
 )
 SELECT
@@ -289,21 +270,22 @@ SELECT
 -- 7.2 O score prevê alguma coisa?
 -- Se as faixas altas não performarem melhor que as baixas, o score é decorativo
 -- e os pesos precisam mudar. É o teste de honestidade do sistema inteiro.
-CREATE OR REPLACE VIEW v_score_buckets AS
+CREATE OR REPLACE VIEW v_copa_score_buckets AS
 SELECT
     user_id,
-    width_bucket(score, 0, 100, 5) * 20 - 20                          AS faixa_min,
+    -- least(...,5): score 100 cairia no bucket 6 e criaria uma faixa fantasma
+    least(width_bucket(score, 0, 100, 5), 5) * 20 - 20                AS faixa_min,
     count(*)                                                          AS n,
     round(100.0 * count(*) FILTER (WHERE pnl_real > 0) / count(*), 1)  AS winrate,
     round(avg(pnl_real), 2)                                           AS expectancia,
     round(sum(pnl_real), 2)                                           AS pnl
-  FROM trades
+  FROM copa_trades
  WHERE status = 'FECHADO' AND pnl_real IS NOT NULL
  GROUP BY user_id, 2
  ORDER BY 2;
 
 -- 7.3 A janela nobre é mesmo o filé?
-CREATE OR REPLACE VIEW v_janela_performance AS
+CREATE OR REPLACE VIEW v_copa_janela_performance AS
 SELECT
     user_id,
     janela,
@@ -312,12 +294,12 @@ SELECT
     round(avg(pnl_real), 2)                                           AS expectancia,
     round(sum(pnl_real), 2)                                           AS pnl,
     round(avg(rr_planejado), 2)                                       AS rr_medio
-  FROM trades
+  FROM copa_trades
  WHERE status = 'FECHADO' AND pnl_real IS NOT NULL
  GROUP BY user_id, janela;
 
 -- 7.4 Custo da indisciplina, em reais.
-CREATE OR REPLACE VIEW v_disciplina AS
+CREATE OR REPLACE VIEW v_copa_disciplina AS
 SELECT
     user_id,
     count(*) FILTER (WHERE NOT COALESCE(respeitou_plano, true)
@@ -332,14 +314,14 @@ SELECT
     count(*) FILTER (WHERE COALESCE(antecipou_stop, false))           AS n_antecipou_stop,
     count(*) FILTER (WHERE COALESCE(parcial_emocional, false))        AS n_parcial_emocional,
     count(*) FILTER (WHERE COALESCE(mudou_alvo, false))               AS n_mudou_alvo
-  FROM trades
+  FROM copa_trades
  WHERE status = 'FECHADO' AND pnl_real IS NOT NULL
  GROUP BY user_id;
 
 -- 7.5 Resultado por dia, com marcação do pior dia de cada fase.
 -- O regulamento descarta o pior dia. Depois que ele é consumido, todo dia
 -- negativo seguinte entra direto no placar.
-CREATE OR REPLACE VIEW v_dia_resultado AS
+CREATE OR REPLACE VIEW v_copa_dia_resultado AS
 SELECT
     s.user_id,
     s.data,
@@ -349,15 +331,15 @@ SELECT
     sum(t.contratos)                                                  AS contratos_dia,
     (sum(t.pnl_real) = min(sum(t.pnl_real)) OVER (
         PARTITION BY s.user_id, s.phase_id))                          AS eh_pior_dia
-  FROM sessions s
-  JOIN trades t ON t.session_id = s.id
+  FROM copa_sessions s
+  JOIN copa_trades t ON t.session_id = s.id
  WHERE t.status = 'FECHADO' AND t.pnl_real IS NOT NULL
  GROUP BY s.user_id, s.data, s.phase_id;
 
 -- 7.6 Placar da fase: bruto, efetivo (com descarte) e eficiência.
 -- reais_por_contrato importa porque o desempate oficial da Copa é
 -- "vencerá aquele que operar o menor número de contratos".
-CREATE OR REPLACE VIEW v_fase_placar AS
+CREATE OR REPLACE VIEW v_copa_fase_placar AS
 SELECT
     d.user_id,
     d.phase_id,
@@ -370,7 +352,7 @@ SELECT
     (min(d.pnl_dia) < 0)                                              AS mulligan_consumido,
     sum(d.contratos_dia)                                              AS contratos_total,
     round(sum(d.pnl_dia) / NULLIF(sum(d.contratos_dia), 0), 2)        AS reais_por_contrato
-  FROM v_dia_resultado d
+  FROM v_copa_dia_resultado d
   JOIN copa_phases p ON p.id = d.phase_id
  GROUP BY d.user_id, d.phase_id, p.nome, p.tem_descarte;
 
@@ -379,46 +361,42 @@ SELECT
 -- 8. RLS — cada usuário enxerga só o que é dele
 -- =============================================================================
 
-ALTER TABLE sessions      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trades        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trade_items   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trading_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copa_sessions      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copa_trades        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copa_trade_items   ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS sessions_own ON sessions;
-CREATE POLICY sessions_own ON sessions
+DROP POLICY IF EXISTS sessions_own ON copa_sessions;
+CREATE POLICY sessions_own ON copa_sessions
     FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS trades_own ON trades;
-CREATE POLICY trades_own ON trades
+DROP POLICY IF EXISTS trades_own ON copa_trades;
+CREATE POLICY trades_own ON copa_trades
     FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS notes_own ON trading_notes;
-CREATE POLICY notes_own ON trading_notes
-    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
--- trade_items não tem user_id: herda o dono pelo trade.
-DROP POLICY IF EXISTS trade_items_own ON trade_items;
-CREATE POLICY trade_items_own ON trade_items
+-- copa_trade_items não tem user_id: herda o dono pelo trade.
+DROP POLICY IF EXISTS trade_items_own ON copa_trade_items;
+CREATE POLICY trade_items_own ON copa_trade_items
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM trades t WHERE t.id = trade_id AND t.user_id = auth.uid())
+        EXISTS (SELECT 1 FROM copa_trades t WHERE t.id = trade_id AND t.user_id = auth.uid())
     ) WITH CHECK (
-        EXISTS (SELECT 1 FROM trades t WHERE t.id = trade_id AND t.user_id = auth.uid())
+        EXISTS (SELECT 1 FROM copa_trades t WHERE t.id = trade_id AND t.user_id = auth.uid())
     );
 
 -- Catálogo é leitura pública para usuário autenticado, escrita só por service_role.
-ALTER TABLE strategies        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE strategy_versions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE strategy_items    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copa_strategies        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copa_strategy_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copa_strategy_items    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copa_phases       ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS strategies_read ON strategies;
-CREATE POLICY strategies_read ON strategies
+DROP POLICY IF EXISTS strategies_read ON copa_strategies;
+CREATE POLICY strategies_read ON copa_strategies
     FOR SELECT TO authenticated USING (true);
-DROP POLICY IF EXISTS versions_read ON strategy_versions;
-CREATE POLICY versions_read ON strategy_versions
+DROP POLICY IF EXISTS versions_read ON copa_strategy_versions;
+CREATE POLICY versions_read ON copa_strategy_versions
     FOR SELECT TO authenticated USING (true);
-DROP POLICY IF EXISTS items_read ON strategy_items;
-CREATE POLICY items_read ON strategy_items
+DROP POLICY IF EXISTS items_read ON copa_strategy_items;
+CREATE POLICY items_read ON copa_strategy_items
     FOR SELECT TO authenticated USING (true);
 DROP POLICY IF EXISTS phases_read ON copa_phases;
 CREATE POLICY phases_read ON copa_phases
