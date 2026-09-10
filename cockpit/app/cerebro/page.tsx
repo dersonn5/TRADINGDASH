@@ -169,7 +169,8 @@ export default function CerebroPage() {
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground uppercase">Camada Cognitiva</label>
                   <select
-                    className="w-full h-9 mt-1 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    className="w-full h-9 mt-1 rounded-md border border-input bg-card text-foreground px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&_option]:bg-[#18181b] [&_option]:text-[#f4f4f5]"
+                    style={{ colorScheme: "dark" }}
                     value={newCamada}
                     onChange={(e) => setNewCamada(Number(e.target.value))}
                   >

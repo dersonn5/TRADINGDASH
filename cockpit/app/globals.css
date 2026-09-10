@@ -130,4 +130,13 @@
   html {
     @apply font-sans;
   }
+  
+  /* Legibilidade de Dropdowns / Selects no modo escuro */
+  select {
+    color-scheme: dark;
+  }
+  select option {
+    background-color: #18181b !important;
+    color: #f4f4f5 !important;
+  }
 }
