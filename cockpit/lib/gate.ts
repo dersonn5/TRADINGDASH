@@ -121,3 +121,81 @@ export function avaliarGate(
     avisos,
   };
 }
+
+/**
+ * Quantos KILL consecutivos, a partir do primeiro, estão marcados.
+ * É o número de passos cumpridos da trilha.
+ */
+export function passosCumpridos(itens: ItemAvaliado[]): number {
+  const kills = itens.filter((i) => i.tipo === "KILL");
+  let count = 0;
+  for (const k of kills) {
+    if (k.checked) {
+      count++;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
+/**
+ * Estado de cada KILL, na ordem do array:
+ * "CUMPRIDO" — já marcado
+ * "AGORA"    — o próximo, único clicável
+ * "TRAVADO"  — ainda não liberado
+ */
+export function estadoDosPassos(itens: ItemAvaliado[]): Array<"CUMPRIDO" | "AGORA" | "TRAVADO"> {
+  const kills = itens.filter((i) => i.tipo === "KILL");
+  const cumpridos = passosCumpridos(itens);
+  return kills.map((_, i) => {
+    const n = i + 1;
+    if (n <= cumpridos) return "CUMPRIDO";
+    if (n === cumpridos + 1) return "AGORA";
+    return "TRAVADO";
+  });
+}
+
+/**
+ * Aplica um clique num KILL e devolve a lista nova.
+ * - clicar no passo AGORA: marca ele
+ * - clicar num passo CUMPRIDO de índice n: desmarca ele E TODOS OS SEGUINTES
+ * - clicar num passo TRAVADO: não faz nada (devolve a lista inalterada)
+ */
+export function alternarPasso(itens: ItemAvaliado[], id: string): ItemAvaliado[] {
+  const kills = itens.filter((i) => i.tipo === "KILL");
+  const killIndex = kills.findIndex((k) => k.id === id);
+  if (killIndex === -1) {
+    return itens;
+  }
+
+  const estados = estadoDosPassos(itens);
+  const estado = estados[killIndex];
+
+  if (estado === "TRAVADO") {
+    return itens;
+  }
+
+  if (estado === "AGORA") {
+    return itens.map((item) => {
+      if (item.id === id) {
+        return { ...item, checked: true };
+      }
+      return item;
+    });
+  }
+
+  if (estado === "CUMPRIDO") {
+    // Desmarca este KILL e todos os KILLs seguintes
+    const idsToUncheck = new Set(kills.slice(killIndex).map((k) => k.id));
+    return itens.map((item) => {
+      if (idsToUncheck.has(item.id)) {
+        return { ...item, checked: false };
+      }
+      return item;
+    });
+  }
+
+  return itens;
+}
+

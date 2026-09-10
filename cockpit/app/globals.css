@@ -140,3 +140,37 @@
     color: #f4f4f5 !important;
   }
 }
+
+/* Tokens do instrumento. Cor aqui NUNCA é decoração: cada uma significa
+   um estado. Ver design/Main.dc.html. */
+:root {
+  --inst-bg:        #0C0E10;
+  --inst-panel:     #0F1215;
+  --inst-panel-2:   #101416;
+  --inst-line:      #1E2327;
+  --inst-line-2:    #262B30;
+
+  --inst-text:      #E8ECEF;
+  --inst-text-2:    #A8B2B9;
+  --inst-dim:       #8A949C;
+  --inst-faint:     #5A646C;
+  --inst-ghost:     #4A535A;
+
+  --inst-ok:        #3FB27F;  /* cumprido, liberado */
+  --inst-now:       #E0B44E;  /* agora, atenção */
+  --inst-block:     #E0574A;  /* bloqueado, desvio */
+  --inst-lock:      #394148;  /* travado */
+
+  --inst-ok-bg:     #101614;
+  --inst-now-bg:    #15140E;
+  --inst-block-bg:  #150F0E;
+  --inst-ok-line:   #1E3A2E;
+  --inst-now-line:  #3A3020;
+  --inst-block-line:#3A1F1C;
+}
+
+.tabular { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.step { transition: background 140ms ease, border-color 140ms ease; }
+.step-live { cursor: pointer; }
+.step-live:hover { background: #1B2024 !important; }

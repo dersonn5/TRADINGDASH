@@ -4,6 +4,9 @@ import {
   classificarJanela,
   scoreMinimoEfetivo,
   avaliarGate,
+  passosCumpridos,
+  estadoDosPassos,
+  alternarPasso,
   ItemAvaliado,
   Janela,
 } from "../lib/gate";
@@ -180,6 +183,98 @@ if (!jsonPath) {
     report("Sincronia: leitura e parsing do JSON", false, err?.message);
   }
 }
+
+// -------------------------------------------------------------
+// 4. CASOS DE SEQUÊNCIA E TRILHA TRAVADA (7 KILL)
+// -------------------------------------------------------------
+const make7Kills = (checkedIndices: number[] = []): ItemAvaliado[] => {
+  const set = new Set(checkedIndices);
+  return Array.from({ length: 7 }, (_, i) => ({
+    id: `k${i + 1}`,
+    tipo: "KILL",
+    label: `Passo ${i + 1}`,
+    checked: set.has(i + 1),
+    peso: 0,
+  }));
+};
+
+// Caso 1: Nenhum marcado -> passosCumpridos = 0; estados = ["AGORA", "TRAVADO" x 6]
+const seq1Itens = make7Kills([]);
+const seq1Cumpridos = passosCumpridos(seq1Itens);
+const seq1Estados = estadoDosPassos(seq1Itens);
+const seq1Esperado = ["AGORA", "TRAVADO", "TRAVADO", "TRAVADO", "TRAVADO", "TRAVADO", "TRAVADO"];
+const seq1Ok =
+  seq1Cumpridos === 0 &&
+  seq1Estados.length === 7 &&
+  seq1Estados.every((e, idx) => e === seq1Esperado[idx]);
+report(
+  "Sequência Caso 1: Nenhum marcado -> cumpridos=0, estados=['AGORA', 'TRAVADO' x 6]",
+  seq1Ok,
+  `cumpridos=${seq1Cumpridos}, estados=${JSON.stringify(seq1Estados)}`
+);
+
+// Caso 2: k1-k3 marcados -> passosCumpridos = 3; estado do k4 = AGORA, k5 = TRAVADO
+const seq2Itens = make7Kills([1, 2, 3]);
+const seq2Cumpridos = passosCumpridos(seq2Itens);
+const seq2Estados = estadoDosPassos(seq2Itens);
+const seq2Ok =
+  seq2Cumpridos === 3 &&
+  seq2Estados[3] === "AGORA" &&
+  seq2Estados[4] === "TRAVADO";
+report(
+  "Sequência Caso 2: k1-k3 marcados -> cumpridos=3, k4=AGORA, k5=TRAVADO",
+  seq2Ok,
+  `cumpridos=${seq2Cumpridos}, k4=${seq2Estados[3]}, k5=${seq2Estados[4]}`
+);
+
+// Caso 3: alternarPasso no k4 quando k1-k3 estão marcados -> k4 marcado, cumpridos = 4
+const seq3Itens = alternarPasso(seq2Itens, "k4");
+const seq3K4Marcado = seq3Itens.find((i) => i.id === "k4")?.checked === true;
+const seq3Cumpridos = passosCumpridos(seq3Itens);
+const seq3Ok = seq3K4Marcado && seq3Cumpridos === 4;
+report(
+  "Sequência Caso 3: alternarPasso no k4 com k1-k3 marcados -> k4 marcado, cumpridos=4",
+  seq3Ok,
+  `k4=${seq3K4Marcado}, cumpridos=${seq3Cumpridos}`
+);
+
+// Caso 4: alternarPasso no k6 quando só k1-k3 estão marcados -> lista inalterada (travado não responde)
+const seq4Itens = alternarPasso(seq2Itens, "k6");
+const seq4Inalterada =
+  seq4Itens.length === seq2Itens.length &&
+  seq4Itens.every((item, idx) => item.checked === seq2Itens[idx].checked && item.id === seq2Itens[idx].id);
+report(
+  "Sequência Caso 4: alternarPasso no k6 com k1-k3 marcados -> lista inalterada (travado não responde)",
+  seq4Inalterada,
+  `inalterada=${seq4Inalterada}`
+);
+
+// Caso 5: k1-k7 todos marcados, alternarPasso no k3 -> k3, k4, k5, k6, k7 desmarcados, k1 e k2 intactos, cumpridos = 2
+const seq5Todos = make7Kills([1, 2, 3, 4, 5, 6, 7]);
+const seq5DepoisK3 = alternarPasso(seq5Todos, "k3");
+const seq5K1K2Intactos =
+  seq5DepoisK3.find((i) => i.id === "k1")?.checked === true &&
+  seq5DepoisK3.find((i) => i.id === "k2")?.checked === true;
+const seq5K3aK7Desmarcados = [3, 4, 5, 6, 7].every(
+  (n) => seq5DepoisK3.find((i) => i.id === `k${n}`)?.checked === false
+);
+const seq5Cumpridos = passosCumpridos(seq5DepoisK3);
+const seq5Ok = seq5K1K2Intactos && seq5K3aK7Desmarcados && seq5Cumpridos === 2;
+report(
+  "Sequência Caso 5: k1-k7 marcados, alternarPasso no k3 -> k3-k7 desmarcados, k1-k2 intactos, cumpridos=2",
+  seq5Ok,
+  `k1,k2=${seq5K1K2Intactos}, k3-k7 desmarcados=${seq5K3aK7Desmarcados}, cumpridos=${seq5Cumpridos}`
+);
+
+// Caso 6: Marcar KILL fora de ordem direto no array (k1 e k5 marcados, k2-k4 não) -> passosCumpridos = 1 (conta só os consecutivos do começo)
+const seq6Itens = make7Kills([1, 5]);
+const seq6Cumpridos = passosCumpridos(seq6Itens);
+const seq6Ok = seq6Cumpridos === 1;
+report(
+  "Sequência Caso 6: KILL fora de ordem (k1 e k5 marcados) -> cumpridos=1 (só consecutivos)",
+  seq6Ok,
+  `cumpridos=${seq6Cumpridos}`
+);
 
 if (hasErrors) {
   console.error("\n❌ Verificação finalizou com ERROS.");
