@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { copaApi, Strategy, StatsPorEstrategia } from "@/lib/copa-api";
+import { DEFAULT_STRATEGIES } from "@/data/strategies";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,24 +20,25 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function EstrategiasCopaPage() {
-  const [strategies, setStrategies] = React.useState<Strategy[]>([]);
+  const [strategies, setStrategies] = React.useState<Strategy[]>(DEFAULT_STRATEGIES);
   const [statsStrat, setStatsStrat] = React.useState<StatsPorEstrategia[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     async function load() {
-      setLoading(true);
       try {
         const [strats, st] = await Promise.all([
-          copaApi.getStrategies(),
-          copaApi.getStats(),
+          copaApi.getStrategies().catch(() => DEFAULT_STRATEGIES),
+          copaApi.getStats().catch(() => ({ por_estrategia: [] } as any)),
         ]);
-        setStrategies(strats);
-        setStatsStrat(st.por_estrategia || []);
+        if (strats && strats.length > 0) {
+          setStrategies(strats);
+        }
+        if (st && st.por_estrategia) {
+          setStatsStrat(st.por_estrategia);
+        }
       } catch (err) {
         console.error("Erro ao carregar estratégias:", err);
-      } finally {
-        setLoading(false);
       }
     }
     load();

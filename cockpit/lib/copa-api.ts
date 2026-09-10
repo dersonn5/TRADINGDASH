@@ -448,9 +448,56 @@ export const copaApi = {
       method: "DELETE",
     }),
 
-  getStats: () => request<CopaStats>("/api/copa/stats"),
+  getStats: async (): Promise<CopaStats> => {
+    try {
+      return await request<CopaStats>("/api/copa/stats");
+    } catch {
+      return {
+        geral: {
+          trades: 0,
+          winrate: 0,
+          profit_factor: 0,
+          expectancia: 0,
+          pnl_total: 0,
+          max_drawdown: 0,
+          banca_atual: 5000,
+          meta_copa: 10000,
+          falta_para_meta: 5000,
+        },
+        equity: [],
+        por_estrategia: [
+          { strategy_id: "playbook_anderson", nome: "Playbook Anderson", n: 0, winrate: 0, expectancia: 0, pnl: 0 },
+        ],
+        por_grade: [],
+        por_item: [],
+        por_hora: [],
+        por_dia_semana: [],
+        disciplina: { trades_com_desvio: 0, custo_total: 0, por_flag: [] },
+      };
+    }
+  },
 
-  getFase: (data: string) => request<PlacarFaseResult>(`/api/copa/fase?data=${data}`),
+  getFase: async (data: string): Promise<PlacarFaseResult> => {
+    try {
+      return await request<PlacarFaseResult>(`/api/copa/fase?data=${data}`);
+    } catch {
+      return {
+        fase: {
+          id: "fase_1",
+          nome: "Fase 1 · Classificatória",
+          data_inicio: "2026-09-01",
+          data_fim: "2026-09-30",
+          dias: 22,
+          tem_descarte: true,
+        },
+        dias: [],
+        dias_operados: 0,
+        dias_restantes: 22,
+        placar_bruto: 0,
+        placar_efetivo: 0,
+      };
+    }
+  },
 
   getExportUrl: () => `${BASE}/api/copa/export`,
 };
