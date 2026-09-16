@@ -1,203 +1,284 @@
-# SPEC — Unificar o front na estética instrumento
+# SPEC — Ritual de pré-sessão: decisão fria trava o pregão
 
 ## Objetivo
 
-A tela `/checklist` foi redesenhada na direção **instrumento de precisão**:
-escuro, denso, tipografia técnica, números tabulares, e cor só onde significa
-estado. Todas as outras 10 páginas continuam com a aparência antiga do shadcn.
+Três lacunas de controle são o mesmo buraco com nomes diferentes: **decisão
+tomada durante o pregão que deveria ter sido tomada antes dele.**
 
-O operador: *"o front do menu Checklist Pregão está diferente de todos os
-outros, precisamos deixar todos com a mesma cara."*
+| Hoje | Depois |
+|---|---|
+| dá para operar sem ter mapeado nada | sem pré-sessão fechada, o gate não libera |
+| o setup é escolhido no calor | é escolhido frio e **trava** |
+| `contratos` é digitado na hora | é declarado frio e **trava** |
+| nenhuma evidência do que foi visto | print do gráfico HTF obrigatório |
 
-Esta task faz isso. Mas **não restilizando página por página** — isso é o que
-produziu a divergência atual e a produziria de novo em duas semanas.
+O banco já foi migrado (`migration_presessao.sql`, aplicado). As colunas
+`setup_do_dia`, `contratos_declarados`, `screenshot_path` e `fechada_em` existem
+em `copa_sessions`, com um `CHECK` que **recusa fechar pré-sessão incompleta** —
+a regra não depende da tela.
 
-**Primeiro extrai os primitivos visuais do `/checklist` em componentes. Depois
-as páginas consomem os componentes.** A partir daí, mudar a estética é mudar um
-arquivo, não onze.
+Falta o app.
 
-**Leia `cockpit/app/checklist/page.tsx` antes de escrever qualquer linha.** Ela é
-a referência viva: os valores saem de lá, não de invenção.
+**Leia antes:** `Cerebro_Obsidian/Trading AI/B05 Trade System/Controle_e_Processo.md`
+(os 12 controles e as lacunas) e `cockpit/app/checklist/page.tsx` (a estética e
+o padrão da trilha travada).
 
 ---
 
 ## Arquivos (só estes)
 
-**Fase 1 — primitivos**
-1. `cockpit/components/inst/index.tsx` — **novo**, os componentes
-2. `cockpit/app/globals.css` — classes utilitárias que faltarem
+1. `cockpit/lib/storage.ts` — **novo**, upload e URL assinada
+2. `cockpit/lib/copa-db.ts` — sessão completa
+3. `cockpit/components/copa/print-upload.tsx` — **novo**
+4. `cockpit/app/pre-sessao/page.tsx` — **novo**
+5. `cockpit/app/checklist/page.tsx` — gate de pré-sessão, setup e tamanho travados, print obrigatório
+6. `cockpit/lib/gate.ts` — motivo de bloqueio novo
+7. `cockpit/config/sidebar.ts` — entrada no menu
+8. `cockpit/scripts/verify.ts` — casos novos
 
-**Fase 2 — páginas, nesta ordem**
-3. `cockpit/app/page.tsx` (113 linhas)
-4. `cockpit/app/copa/fase/page.tsx` (64)
-5. `cockpit/app/copa/page.tsx` (312)
-6. `cockpit/app/copa/trades/page.tsx` (353)
-7. `cockpit/app/copa/stats/page.tsx` (429)
-8. `cockpit/app/copa/estrategias/page.tsx` (226)
-9. `cockpit/app/copa/config/page.tsx` (380)
-10. `cockpit/app/estrategias/page.tsx` (230)
-11. `cockpit/app/trades/page.tsx` (506)
-12. `cockpit/app/cerebro/page.tsx` (357)
-
-**Fase 3 — menu**
-13. `cockpit/config/sidebar.ts`
-
-`git diff --stat` tem que listar exatamente estes treze.
-
-> A ordem importa. Se faltar tempo, **pare no fim de uma página inteira** e
-> reporte onde parou. Página pela metade é pior que página não tocada.
+`git diff --stat` tem que listar exatamente estes oito.
 
 ## NÃO MEXER
 
-Ver `.claude/skills/dupla/SKILL.md`. Nesta task, em especial:
-`cockpit/app/checklist/page.tsx` (**é a referência, leitura apenas**),
-`cockpit/app/login/page.tsx` (já está na estética),
-`cockpit/lib/**`, `cockpit/data/**`, `cockpit/supabase/**`, `copa/**`, `core/**`.
+Ver `.claude/skills/dupla/SKILL.md`. Em especial: `cockpit/supabase/**` (SQL já
+aplicado, **não alterar**), `copa/**`, `core/**`, `cockpit/components/inst/**`
+(os primitivos são para usar, não para editar), `cockpit/app/copa/**`.
 
-**Esta task é só apresentação.** Nenhuma chamada de dados muda, nenhuma lógica
-muda, nenhum contrato muda. Se você precisou editar algo em `lib/`, leu errado.
+**Não instalar dependência.** `MediaRecorder` e `FileReader` são do navegador;
+o Supabase Storage vem no client que já existe.
 
-**Não instalar dependência.**
+**Regra de conformidade:** o sistema **armazena e exibe** a imagem. Nunca lê,
+nunca analisa, nunca extrai preço dela. Parsing de gráfico seria detecção de
+setup — proibido.
 
 ---
 
-## 1. `cockpit/components/inst/index.tsx` — os primitivos
-
-Componentes client-safe, sem estado, sem fetch. Estilo inline com os tokens
-`--inst-*` que já existem em `globals.css`.
-
-Tom compartilhado por todos:
+## 1. `cockpit/lib/storage.ts` (novo)
 
 ```ts
-export type Tom = "ok" | "now" | "block" | "lock" | "neutro";
+const BUCKET = "copa-prints";
+
+/** Sobe um print. Caminho: <uid>/<YYYY-MM-DD>/<nome>. Devolve o path. */
+export async function subirPrint(file: File, data: string, nome: string): Promise<string>;
+
+/** URL assinada para exibir. O bucket é privado; URL pública não funciona. */
+export async function urlDoPrint(path: string, segundos?: number): Promise<string | null>;
 ```
 
-Mapa de cores — **usar exatamente estes tokens**, sem inventar cor:
+Regras:
 
-| Tom | Texto | Fundo | Borda |
-|---|---|---|---|
-| `ok` | `--inst-ok` | `--inst-ok-bg` | `--inst-ok-line` |
-| `now` | `--inst-now` | `--inst-now-bg` | `--inst-now-line` |
-| `block` | `--inst-block` | `--inst-block-bg` | `--inst-block-line` |
-| `lock` | `--inst-lock` | transparente | `--inst-line` |
-| `neutro` | `--inst-text` | `--inst-panel` | `--inst-line` |
+- `uid` vem de `supabase.auth.getUser()`. Sem sessão, lança erro — **não** grava
+  em pasta anônima.
+- Aceita só `image/png`, `image/jpeg`, `image/webp`. Outro tipo, erro claro.
+- Máximo 10 MB. Acima, erro dizendo o tamanho do arquivo.
+- `upsert: true` — refazer o print do dia substitui, não acumula lixo.
+- `urlDoPrint` com validade padrão de 3600 s. Erro devolve `null`; a tela mostra
+  um estado de imagem indisponível, **não quebra**.
 
-### Componentes
+## 2. `cockpit/lib/copa-db.ts`
 
-**`<InstLabel>`** — o rótulo mono que aparece 35 vezes no checklist.
-Fonte mono, `10px`, `letterSpacing: "0.16em"`, `textTransform: "uppercase"`,
-cor `--inst-faint`.
+Acrescentar, sem alterar o que já existe:
 
-**`<InstPage eyebrow title right?>`** — casca da página.
-Cabeçalho com `InstLabel` no eyebrow, título 23px peso 600
-`letterSpacing: "-0.015em"`, slot `right` opcional, `borderBottom: 1px solid
-var(--inst-line-2)` e `paddingBottom: 18px`. Conteúdo abaixo com `gap: 20px`.
+```ts
+export interface PreSessao {
+  id: string | null;
+  data: string;
+  phase_id: string | null;
+  bias_d1: "COMPRA" | "VENDA" | "INDEFINIDO";
+  bias_h1: "COMPRA" | "VENDA" | "INDEFINIDO";
+  contexto: "TENDENCIA" | "RANGE" | "INDEFINIDO";
+  niveis: Array<{ label: string; preco: string }>;
+  agenda: Array<{ evento: string; horario: string; impacto: "ALTO" | "MEDIO" | "BAIXO" }>;
+  sono: number; tilt: number; pressao: number;
+  setup_do_dia: "reversao_htf" | "continuidade_tendencia" | "NENHUM" | null;
+  contratos_declarados: number | null;
+  screenshot_path: string | null;
+  fechada_em: string | null;
+  notas: string;
+}
 
-**`<InstBar>`** e **`<InstBarCell label value tom? sub?>`** — a barra de estado
-do topo. Células separadas por `borderRight: 1px solid var(--inst-line-2)`,
-padding `14px 24px`, label em `InstLabel` e valor em mono tabular 15px.
+export async function getPreSessaoDeHoje(): Promise<PreSessao>;
+export async function salvarPreSessao(p: Partial<PreSessao>): Promise<string>;
+export async function fecharPreSessao(): Promise<void>;
+export async function reabrirPreSessao(motivo: string): Promise<void>;
 
-**`<InstCard label? children>`** — painel.
-`border: 1px solid var(--inst-line)`, `background: var(--inst-panel)`,
-`borderRadius: 3px`, padding `20px 22px`.
-
-**`<InstNum value tom? size?>`** — número.
-Sempre `className="tabular"`. `size`: `sm` 13px · `md` 16px · `lg` 25px ·
-`xl` 34px, peso 600 nos dois maiores.
-
-**`<InstBadge tom children>`** — pílula.
-Mono `9px`, `letterSpacing: "0.1em"`, uppercase, `padding: "3px 9px"`,
-`borderRadius: 2px`, borda e cor do tom.
-
-**`<InstBand tom titulo linhas? acao?>`** — a faixa de status.
-`borderLeft: "3px solid"` na cor do tom, fundo do tom, `borderRadius: 3px`,
-padding `17px 22px`. Título mono 17px peso 600. `linhas` renderiza cada item
-com um travessão na cor do tom — **todas, sem truncar e sem tooltip**.
-
-**`<InstTable colunas children>`** e **`<InstRow tom? children>`** — tabela densa.
-Cabeçalho com `InstLabel`, fundo `--inst-bg`, `borderBottom: 1px solid
-var(--inst-line)`. Linhas com `borderBottom: 1px solid #14181B` e padding
-`12px 16px`. `InstRow` com tom desenha `borderLeft: 2px solid` na cor.
-
-**`<InstEmpty children>`** — estado vazio.
-Borda tracejada `1px dashed var(--inst-line-2)`, texto `--inst-faint`, centrado.
-
-**`<InstDivider>`** — `height: 1px`, `background: var(--inst-line)`.
-
-### Regra de cor
-
-Cor **só** significa estado. Nenhum componente aceita cor arbitrária. Se um
-elemento não é `ok`, `now`, `block` ou `lock`, ele é `neutro` e não tem cor.
-
-Sem gradiente, sem cor de marca, sem accent decorativo.
-
----
-
-## 2. `cockpit/app/globals.css`
-
-Só acrescentar o que faltar. `.tabular` já existe. Se `.mono` não existir como
-classe isolada, criar:
-
-```css
-.mono { font-family: var(--font-mono), ui-monospace, monospace; }
+/** O que falta para poder fechar. Vazio = pode. */
+export function pendenciasDaPreSessao(p: PreSessao): string[];
 ```
 
-Não alterar nem remover token existente.
+### `pendenciasDaPreSessao` — espelha o CHECK do banco
 
----
+Devolve uma linha por pendência, em português, na ordem do ritual:
 
-## 3. As dez páginas
-
-Para cada uma, o trabalho é **o mesmo e é mecânico**:
-
-1. Trocar `Card`/`CardHeader`/`CardTitle`/`CardContent` do shadcn por `InstCard`
-2. Trocar `Badge` por `InstBadge`, escolhendo o tom pelo significado
-3. Trocar `Table` do shadcn por `InstTable`/`InstRow`
-4. Envolver o conteúdo em `InstPage` com eyebrow e título
-5. Todo número passa a `InstNum` — nenhum número fora de mono tabular
-6. Todo rótulo de campo vira `InstLabel`
-7. Faixa de status (gate, aviso, alerta) vira `InstBand`
-8. Estado vazio vira `InstEmpty`
-
-**Preservar integralmente:**
-- toda chamada de dados, hook, `useEffect`, fallback e tratamento de erro
-- todo texto de conteúdo, palavra por palavra
-- toda lógica condicional de renderização
-
-Se a página hoje trata um caso de erro ou de lista vazia, ela continua tratando.
-**Restilizar não é reescrever.**
-
-### Escolha de tom por significado
-
-| Significado | Tom |
+| Condição | Texto |
 |---|---|
-| liberado, cumprido, positivo, lucro | `ok` |
-| agora, atenção, aviso, aguardando | `now` |
-| bloqueado, desvio, negativo, prejuízo | `block` |
-| travado, indisponível, futuro | `lock` |
-| tudo o mais | `neutro` |
+| `!screenshot_path` | `"print do grafico HTF nao anexado"` |
+| `bias_h1 === "INDEFINIDO"` | `"bias H1 nao definido"` |
+| `contexto === "INDEFINIDO"` | `"contexto nao definido"` |
+| `niveis.length < 2` | `"marque ao menos 2 niveis de liquidez ou array"` |
+| `!setup_do_dia` | `"setup do dia nao escolhido"` |
+| `setup_do_dia !== "NENHUM" && !contratos_declarados` | `"tamanho nao declarado"` |
 
-Número positivo em `ok`, negativo em `block`. Zero é `neutro`, não verde.
+**O banco tem o mesmo CHECK.** Esta função existe para dar mensagem boa, não
+para substituir a trava. Se `fecharPreSessao` for chamada com pendência, o banco
+recusa e o erro real aparece na tela.
 
-### Nota sobre `/copa/*`
+### `reabrirPreSessao`
 
-Essas páginas consomem o FastAPI local via `cockpit/lib/copa-api.ts` e têm
-fallback quando ele não responde. **O fallback continua exatamente como está** —
-elas precisam renderizar sem o backend no ar. Restilizar o estado de fallback
-também: ele usa `InstEmpty` com o texto que já existe.
+Zera `fechada_em` e **acrescenta ao `notas`** uma linha
+`[REABERTA HH:MM] <motivo>`. Reabrir é permitido — mas fica registrado, porque
+trocar setup no meio do pregão é exatamente o que o ritual existe para
+desencorajar.
 
----
+### `getOuCriarSessaoDoDia`
 
-## 4. `cockpit/config/sidebar.ts`
+Passa a **não criar mais** sessão implicitamente. Se não existe sessão fechada
+do dia, `registrarTrade` falha com
+`"pre-sessao do dia nao foi fechada"`. Criar sessão é ato do ritual, não efeito
+colateral de registrar trade.
 
-Três itens do menu apontam para rotas que **não existem** e dão 404:
-`/backtests`, `/pesquisa`, `/config`.
+## 3. `cockpit/components/copa/print-upload.tsx` (novo)
 
-**Remover esses três itens.** Item de menu que quebra é pior que item ausente.
+```tsx
+<PrintUpload path={string | null} data={string} nome={string}
+             onChange={(path: string) => void} obrigatorio?: boolean />
+```
 
-Isso esvazia o grupo "Sistema" inteiro — remover o grupo também.
+- Área tracejada (`InstEmpty`) quando vazio: *"Cole com Ctrl+V ou clique para escolher"*
+- **Colar da área de transferência** via `onPaste`, lendo `e.clipboardData.files`.
+  É o caminho principal: `Win+Shift+S` e colar são dois segundos.
+- Clique abre seletor de arquivo
+- Com print: miniatura clicável que abre em tamanho cheio
+- Durante o upload, estado de carregando; erro em vermelho com a mensagem real
 
-**Não remover mais nada.** O grupo Copa BTG fica, decisão do operador.
+O container precisa de `tabIndex={0}` para receber o evento de colar.
+
+## 4. `cockpit/app/pre-sessao/page.tsx` (novo)
+
+O ritual, **na ordem**, usando os primitivos de `components/inst`.
+
+### Cabeçalho
+
+`InstPage` com eyebrow = data por extenso e a fase da Copa, título
+*"Pré-sessão"*. À direita, `InstBadge`: `ABERTA` (tom `now`) ou `FECHADA`
+(tom `ok`).
+
+### Os passos
+
+**1 · Print do gráfico HTF** — `PrintUpload`, obrigatório.
+Ajuda: *"60m e 15m com liquidez e arrays marcados, antes das 09:00."*
+
+**2 · Liquidez e arrays** — lista com adicionar/remover linha, cada uma com
+rótulo e preço. Contador visível: *"N marcados — mínimo 2"*.
+
+**3 · Contexto** — três botões: `TENDÊNCIA`, `RANGE`, `INDEFINIDO`.
+`INDEFINIDO` é selecionável mas aparece como pendência.
+
+**4 · Bias** — D1 e H1, cada um com `COMPRA` / `VENDA` / `INDEFINIDO`.
+
+**5 · Setup do dia** — três botões grandes, lado a lado:
+`REVERSÃO HTF` · `CONTINUIDADE DE TENDÊNCIA` · `NENHUM`.
+
+> `NENHUM` tem o mesmo peso visual dos outros dois. Decidir de manhã que hoje
+> não tem setup é decisão válida e é a mais barata que existe.
+
+Ao escolher, mostrar a `descricao` da estratégia abaixo.
+
+**6 · Tamanho declarado** — campo de contratos. Escondido quando o setup é
+`NENHUM`. Ajuda: *"Declarado agora, frio. Trava durante o pregão."*
+
+**7 · Agenda** — lista de eventos: evento, horário, impacto.
+
+**8 · Estado** — sono, tilt, pressão, 0 a 5 em botões (não slider).
+
+### Rodapé — fechar
+
+`InstBand` com o que falta:
+
+- pendências > 0 → tom `block`, título `PRÉ-SESSÃO INCOMPLETA`, todas as
+  pendências listadas, botão **FECHAR PRÉ-SESSÃO** visível e travado
+- pendências vazias → tom `ok`, título `PRONTA PARA FECHAR`, botão ativo
+
+Depois de fechada: campos **somente leitura**, e um botão discreto
+`REABRIR` que pede o motivo num prompt e chama `reabrirPreSessao`.
+
+Salvar é automático (debounce ~800 ms) a cada mudança. Indicador discreto de
+*salvo / salvando*. Perder a pré-sessão por não ter clicado em salvar às 08:55
+seria o pior bug possível aqui.
+
+## 5. `cockpit/app/checklist/page.tsx`
+
+### 5a. Sem pré-sessão fechada, a tela não opera
+
+Se `fechada_em` é nulo: renderizar **apenas** um `InstBand` tom `block` —
+*"Pré-sessão do dia não foi fechada"* — com as pendências e um botão grande
+para `/pre-sessao`. Nada de checklist, nada de formulário.
+
+### 5b. Setup travado
+
+O seletor de estratégia some. No lugar, uma linha:
+
+> `SETUP DO DIA` · **Reversão HTF** · *declarado às 08:42*
+
+Se `setup_do_dia === "NENHUM"`: `InstBand` tom `lock`, *"Hoje é dia de não
+operar. Decidido na pré-sessão."* e o checklist não aparece.
+
+### 5c. Tamanho travado
+
+`contratos` vem preenchido com `contratos_declarados` e fica **desabilitado**.
+Abaixo: *"Declarado na pré-sessão. Alterar exige reabrir."*
+
+### 5d. Print obrigatório no trade
+
+`PrintUpload` no formulário, acima do botão. Sem print, o gate não libera,
+com o motivo `"print do trade nao anexado"`.
+
+> No registro, não no fechamento: o print tem que ser do que você viu **antes**
+> do resultado. Depois, já está contaminado pelo desfecho.
+
+Caminho: `<uid>/<data>/trade-<timestamp>.png`, gravado em
+`copa_trades.screenshot_path`.
+
+## 6. `cockpit/lib/gate.ts`
+
+`avaliarGate` ganha dois parâmetros opcionais ao final:
+`preSessaoFechada?: boolean` e `temPrint?: boolean`.
+
+Motivos novos, acumulados como os outros:
+
+| Condição | Motivo |
+|---|---|
+| `preSessaoFechada === false` | `"pre-sessao do dia nao foi fechada"` |
+| `temPrint === false` | `"print do trade nao anexado"` |
+
+**Chamadas existentes sem esses parâmetros continuam funcionando.** Os 31 casos
+atuais não podem mudar de resultado.
+
+## 7. `cockpit/config/sidebar.ts`
+
+No grupo **Trading**, acrescentar `Pré-Sessão` em `/pre-sessao`, **antes** de
+`Checklist Pregão`. A ordem no menu é a ordem do dia.
+
+Não mexer em mais nada.
+
+## 8. `cockpit/scripts/verify.ts`
+
+Manter os 31 casos. Acrescentar, para `pendenciasDaPreSessao`:
+
+1. objeto vazio → 6 pendências, começando pelo print
+2. tudo preenchido, setup `reversao_htf`, 2 contratos → **0 pendências**
+3. tudo preenchido menos o print → 1 pendência, cita o print
+4. tudo menos o tamanho, setup `reversao_htf` → 1 pendência, cita tamanho
+5. tudo menos o tamanho, setup `NENHUM` → **0 pendências** (NENHUM dispensa tamanho)
+6. 1 nível marcado → pendência cita o mínimo de 2
+
+E para o gate:
+
+7. tudo certo, `preSessaoFechada: false` → bloqueado citando a pré-sessão
+8. tudo certo, `temPrint: false` → bloqueado citando o print
+9. tudo certo, ambos verdadeiros → liberado
+
+Total: **31 + 9 = 40 casos**.
 
 ---
 
@@ -211,39 +292,46 @@ cd .. && git diff --stat
 ```
 
 1. `tsc` limpo
-2. `verify.ts` 31 casos OK, exit 0 — **esta task não toca em lógica, então
-   nenhum caso pode mudar de resultado**
-3. build compila, todas as rotas geradas
-4. `git diff --stat` lista exatamente os 13 arquivos
+2. `verify.ts` 40 casos OK, exit 0
+3. build compila, rota `/pre-sessao` gerada
+4. `git diff --stat` lista exatamente os 8 arquivos
 
-**Conferências mecânicas:**
+**Teste manual, obrigatório:**
 
-```bash
-grep -rc "from \"@/components/ui/card\"" cockpit/app/copa cockpit/app/trades cockpit/app/estrategias cockpit/app/cerebro cockpit/app/page.tsx
-grep -rn "backtests\|pesquisa\|\"/config\"" cockpit/config/sidebar.ts
-```
+1. `/checklist` sem pré-sessão → só o bloqueio, sem formulário
+2. `/pre-sessao` → colar um print com Ctrl+V, preencher tudo, fechar
+3. No SQL Editor:
+   ```sql
+   select data, setup_do_dia, contratos_declarados,
+          screenshot_path is not null as tem_print, fechada_em
+     from copa_sessions order by data desc limit 1;
+   ```
+   → `fechada_em` preenchido, `tem_print` true
+4. Voltar ao `/checklist` → setup travado no declarado, contratos travado
+5. Tentar registrar sem print → botão travado citando o print
+6. Com print → registra, e `select screenshot_path from copa_trades order by
+   created_at desc limit 1;` devolve um caminho
+7. Escolher `NENHUM` na pré-sessão → `/checklist` mostra o dia de não operar
 
-- O primeiro deve dar 0 em todas — nenhuma página ainda importando o Card antigo
-- O segundo deve voltar vazio
-
-**`tsc` e build limpos não provam tela.** O aceite inclui `npm run dev` e abrir
-cada uma das dez, conferindo que renderiza, que os dados aparecem e que nenhuma
-quebrou. Reportar qual você abriu.
+Colar a saída dos passos 3 e 6.
 
 ---
 
 ## Armadilhas desta task
 
-**Reescrever em vez de restilizar.** O modo de falhar aqui é apagar tratamento de
-erro, fallback ou caso de lista vazia junto com o estilo. `git diff` de cada
-página deve mostrar mudança de apresentação, não de comportamento.
+**Criar sessão implicitamente.** `registrarTrade` não pode mais criar a sessão
+do dia. Se puder, a pré-sessão deixa de ser obrigatória na prática e a task
+inteira não serviu para nada.
 
-**Apagar comentário.** `git diff -U0 | grep "^-.*//"` faz parte da revisão.
+**Perder a pré-sessão por falta de salvar.** Salvamento automático com debounce.
+Às 08:55 ninguém lembra de clicar em salvar.
 
-**Inventar cor.** Se o tom não é um dos cinco, o elemento é `neutro`. Verde e
-vermelho significam resultado, não decoração.
+**URL pública do print.** O bucket é privado. `getPublicUrl` devolve uma URL que
+não funciona, e silenciosamente — a imagem só aparece quebrada. Usar
+`createSignedUrl`.
 
-**Número fora de tabular.** Coluna de preço que dança quando o dígito muda é
-exatamente o que a estética existe para evitar. Todo número passa por `InstNum`.
+**Colar sem foco.** O `onPaste` só dispara se o elemento puder receber foco.
+Sem `tabIndex`, colar não funciona e não dá erro nenhum.
 
-**Mexer em `lib/`.** Esta task é presentação. Zero mudança de dados.
+**Data pelo navegador.** `America/Sao_Paulo`, sempre. Já existe
+`getDataSaoPaulo` em `copa-db.ts` — usar essa, não criar outra.

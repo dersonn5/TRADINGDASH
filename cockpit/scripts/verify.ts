@@ -12,7 +12,7 @@ import {
   avaliarLimitesDia,
 } from "../lib/gate";
 import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA } from "../data/strategies";
-import { gradeFor } from "../lib/copa-db";
+import { gradeFor, pendenciasDaPreSessao, PreSessao } from "../lib/copa-db";
 
 let hasErrors = false;
 
@@ -434,6 +434,159 @@ report(
   "Regua de grade: TS identica a core/entry_quality.py",
   reguaBate,
   `python=${JSON.stringify(pyCortes)} ts=${JSON.stringify(tsCortes)}`
+);
+
+// -------------------------------------------------------------
+// 7. CASOS DE PRÉ-SESSÃO (6 casos)
+// -------------------------------------------------------------
+const preSessaoCompleta: PreSessao = {
+  id: "session-1",
+  data: "2026-09-16",
+  phase_id: "phase-1",
+  bias_d1: "COMPRA",
+  bias_h1: "COMPRA",
+  contexto: "TENDENCIA",
+  niveis: [
+    { label: "BSL 15m", preco: "135200" },
+    { label: "FVG 60m", preco: "134800" },
+  ],
+  agenda: [{ evento: "Payroll", horario: "09:30", impacto: "ALTO" }],
+  sono: 4,
+  tilt: 0,
+  pressao: 1,
+  setup_do_dia: "reversao_htf",
+  contratos_declarados: 2,
+  screenshot_path: "uid/2026-09-16/htf-123.png",
+  fechada_em: null,
+  notas: "",
+};
+
+// 1. Objeto vazio -> 6 pendências, começando pelo print
+const pVazio = pendenciasDaPreSessao({} as PreSessao);
+const caso1Ok = pVazio.length === 6 && pVazio[0] === "print do grafico HTF nao anexado";
+report(
+  "Pré-sessão Caso 1: Objeto vazio -> 6 pendências, começando pelo print",
+  caso1Ok,
+  `pendências (${pVazio.length}): ${JSON.stringify(pVazio)}`
+);
+
+// 2. Tudo preenchido, setup reversao_htf, 2 contratos -> 0 pendências
+const pCompleto = pendenciasDaPreSessao(preSessaoCompleta);
+const caso2Ok = pCompleto.length === 0;
+report(
+  "Pré-sessão Caso 2: Tudo preenchido, setup reversao_htf, 2 contratos -> 0 pendências",
+  caso2Ok,
+  `pendências: ${JSON.stringify(pCompleto)}`
+);
+
+// 3. Tudo preenchido menos o print -> 1 pendência, cita o print
+const pSemPrint = pendenciasDaPreSessao({
+  ...preSessaoCompleta,
+  screenshot_path: null,
+});
+const caso3Ok = pSemPrint.length === 1 && pSemPrint[0].includes("print");
+report(
+  "Pré-sessão Caso 3: Tudo preenchido menos o print -> 1 pendência, cita o print",
+  caso3Ok,
+  `pendências: ${JSON.stringify(pSemPrint)}`
+);
+
+// 4. Tudo menos o tamanho, setup reversao_htf -> 1 pendência, cita tamanho
+const pSemTamanho = pendenciasDaPreSessao({
+  ...preSessaoCompleta,
+  contratos_declarados: null,
+});
+const caso4Ok = pSemTamanho.length === 1 && pSemTamanho[0].includes("tamanho");
+report(
+  "Pré-sessão Caso 4: Tudo menos o tamanho, setup reversao_htf -> 1 pendência, cita tamanho",
+  caso4Ok,
+  `pendências: ${JSON.stringify(pSemTamanho)}`
+);
+
+// 5. Tudo menos o tamanho, setup NENHUM -> 0 pendências (NENHUM dispensa tamanho)
+const pNenhumSemTamanho = pendenciasDaPreSessao({
+  ...preSessaoCompleta,
+  setup_do_dia: "NENHUM",
+  contratos_declarados: null,
+});
+const caso5Ok = pNenhumSemTamanho.length === 0;
+report(
+  "Pré-sessão Caso 5: Tudo menos o tamanho, setup NENHUM -> 0 pendências",
+  caso5Ok,
+  `pendências: ${JSON.stringify(pNenhumSemTamanho)}`
+);
+
+// 6. 1 nível marcado -> pendência cita o mínimo de 2
+const pUmNivel = pendenciasDaPreSessao({
+  ...preSessaoCompleta,
+  niveis: [{ label: "BSL 15m", preco: "135200" }],
+});
+const caso6Ok = pUmNivel.length === 1 && pUmNivel[0].includes("2");
+report(
+  "Pré-sessão Caso 6: 1 nível marcado -> pendência cita o mínimo de 2",
+  caso6Ok,
+  `pendências: ${JSON.stringify(pUmNivel)}`
+);
+
+// -------------------------------------------------------------
+// 8. CASOS DE GATE COM PRÉ-SESSÃO E PRINT (3 casos)
+// -------------------------------------------------------------
+// 7. Tudo certo, preSessaoFechada: false -> bloqueado citando a pré-sessão
+const gatePreSessaoAberta = avaliarGate(
+  itens80,
+  "BULLISH",
+  baseTime,
+  65,
+  limLiberado,
+  null,
+  false,
+  true
+);
+const caso7Ok =
+  gatePreSessaoAberta.liberado === false &&
+  gatePreSessaoAberta.motivos.some((m) => m.includes("pre-sessao do dia nao foi fechada"));
+report(
+  "Gate Pré-sessão/Print Caso 7: preSessaoFechada false -> bloqueado citando pré-sessão",
+  caso7Ok,
+  JSON.stringify(gatePreSessaoAberta.motivos)
+);
+
+// 8. Tudo certo, temPrint: false -> bloqueado citando o print
+const gateSemPrint = avaliarGate(
+  itens80,
+  "BULLISH",
+  baseTime,
+  65,
+  limLiberado,
+  null,
+  true,
+  false
+);
+const caso8Ok =
+  gateSemPrint.liberado === false &&
+  gateSemPrint.motivos.some((m) => m.includes("print do trade nao anexado"));
+report(
+  "Gate Pré-sessão/Print Caso 8: temPrint false -> bloqueado citando o print",
+  caso8Ok,
+  JSON.stringify(gateSemPrint.motivos)
+);
+
+// 9. Tudo certo, ambos verdadeiros -> liberado
+const gateAmbosTrue = avaliarGate(
+  itens80,
+  "BULLISH",
+  baseTime,
+  65,
+  limLiberado,
+  null,
+  true,
+  true
+);
+const caso9Ok = gateAmbosTrue.liberado === true && gateAmbosTrue.motivos.length === 0;
+report(
+  "Gate Pré-sessão/Print Caso 9: preSessaoFechada true e temPrint true -> liberado",
+  caso9Ok,
+  JSON.stringify(gateAmbosTrue.motivos)
 );
 
 if (hasErrors) {

@@ -125,7 +125,9 @@ export function avaliarGate(
   agora: Date,
   scoreMinimoBase: number = SCORE_MINIMO_PRIME,
   limites?: LimitesDia,
-  tradeAbertoId?: string | null
+  tradeAbertoId?: string | null,
+  preSessaoFechada?: boolean,
+  temPrint?: boolean
 ): GateResult {
   const janela = classificarJanela(agora);
   const scoreMinimo = scoreMinimoEfetivo(janela, scoreMinimoBase);
@@ -165,6 +167,14 @@ export function avaliarGate(
 
   if (tradeAbertoId) {
     motivos.push("ja existe trade aberto");
+  }
+
+  if (preSessaoFechada === false) {
+    motivos.push("pre-sessao do dia nao foi fechada");
+  }
+
+  if (temPrint === false) {
+    motivos.push("print do trade nao anexado");
   }
 
   const liberado = motivos.length === 0;

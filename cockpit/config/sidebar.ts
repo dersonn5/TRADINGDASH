@@ -50,6 +50,7 @@ export const sidebarData: { navGroups: NavGroup[] } = {
       title: "Trading",
       items: [
         { title: "Banco de Trades", url: "/trades", icon: CandlestickChart },
+        { title: "Pré-Sessão", url: "/pre-sessao", icon: FileText },
         { title: "Checklist Pregão", url: "/checklist", icon: ShieldCheck },
         { title: "Estratégias", url: "/estrategias", icon: Activity },
       ],

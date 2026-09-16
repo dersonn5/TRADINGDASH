@@ -15,6 +15,7 @@ export interface TradeInput {
   rr_planejado: number;
   itens: Array<{ item_id: string; tipo: "KILL" | "PONTO"; checked: boolean; peso_no_momento: number }>;
   notas?: string;
+  screenshot_path?: string | null;
 }
 
 export interface ResumoDoDia {
@@ -86,15 +87,22 @@ export async function getVersaoVigente(strategyId: string): Promise<string | nul
 }
 
 /**
- * Localiza ou cria a sessão do dia para o usuário autenticado em America/Sao_Paulo.
- * Não envia user_id (usa DEFAULT auth.uid()).
+ * Localiza a sessão do dia para o usuário autenticado em America/Sao_Paulo.
+ * Não cria mais sessão implicitamente: exige que a pré-sessão esteja fechada.
  */
-export async function getOuCriarSessaoDoDia(): Promise<string> {
+/**
+ * Devolve o id da sessao de hoje, e SO se ela estiver fechada.
+ *
+ * Nao cria sessao. Criar sessao e ato do ritual de pre-sessao, nunca efeito
+ * colateral de registrar trade — se criasse, a pre-sessao deixaria de ser
+ * obrigatoria na pratica.
+ */
+export async function getSessaoFechadaDoDia(): Promise<string> {
   const hoje = getDataSaoPaulo();
 
-  const { data: existing, error: errSelect } = await supabase
+  const { data: session, error: errSelect } = await supabase
     .from("copa_sessions")
-    .select("id")
+    .select("id, fechada_em")
     .eq("data", hoje)
     .maybeSingle();
 
@@ -102,38 +110,11 @@ export async function getOuCriarSessaoDoDia(): Promise<string> {
     throw new Error(`Erro ao buscar sessão do dia: ${errSelect.message}`);
   }
 
-  if (existing?.id) {
-    return existing.id;
+  if (!session || !session.fechada_em) {
+    throw new Error("pre-sessao do dia nao foi fechada");
   }
 
-  // Resolve phase_id em copa_phases cujo intervalo contenha a data de hoje
-  const { data: phases, error: errPhase } = await supabase
-    .from("copa_phases")
-    .select("id, data_inicio, data_fim")
-    .lte("data_inicio", hoje)
-    .gte("data_fim", hoje)
-    .maybeSingle();
-
-  if (errPhase) {
-    throw new Error(`Erro ao resolver fase da Copa: ${errPhase.message}`);
-  }
-
-  const phaseId = phases?.id ?? null;
-
-  const { data: inserted, error: errInsert } = await supabase
-    .from("copa_sessions")
-    .insert({
-      data: hoje,
-      phase_id: phaseId,
-    })
-    .select("id")
-    .single();
-
-  if (errInsert) {
-    throw new Error(`Erro ao criar sessão do dia: ${errInsert.message}`);
-  }
-
-  return inserted.id;
+  return session.id;
 }
 
 /**
@@ -241,7 +222,7 @@ export async function getTrade(id: string) {
  * Se o passo 2 falhar, apaga o trade do passo 1 e propaga o erro.
  */
 export async function registrarTrade(input: TradeInput): Promise<string> {
-  const sessionId = await getOuCriarSessaoDoDia();
+  const sessionId = await getSessaoFechadaDoDia();
   const versionId = await getVersaoVigente(input.strategy_id);
 
   if (!versionId) {
@@ -267,6 +248,7 @@ export async function registrarTrade(input: TradeInput): Promise<string> {
       rr_planejado: input.rr_planejado,
       status: "ABERTO",
       notas: input.notas || "",
+      screenshot_path: input.screenshot_path || null,
     })
     .select("id")
     .single();
@@ -357,5 +339,252 @@ export async function fecharTrade(id: string, f: FechamentoInput): Promise<void>
 
   if (errUpdate) {
     throw new Error(errUpdate.message);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// RITUAL DE PRÉ-SESSÃO
+// -----------------------------------------------------------------------------
+
+export interface PreSessao {
+  id: string | null;
+  data: string;
+  phase_id: string | null;
+  bias_d1: "COMPRA" | "VENDA" | "INDEFINIDO";
+  bias_h1: "COMPRA" | "VENDA" | "INDEFINIDO";
+  contexto: "TENDENCIA" | "RANGE" | "INDEFINIDO";
+  niveis: Array<{ label: string; preco: string }>;
+  agenda: Array<{ evento: string; horario: string; impacto: "ALTO" | "MEDIO" | "BAIXO" }>;
+  sono: number;
+  tilt: number;
+  pressao: number;
+  setup_do_dia: "reversao_htf" | "continuidade_tendencia" | "NENHUM" | null;
+  contratos_declarados: number | null;
+  screenshot_path: string | null;
+  fechada_em: string | null;
+  notas: string;
+}
+
+/**
+ * O que falta para poder fechar. Vazio = pode fechar.
+ * Espelha o CHECK chk_presessao_completa do banco.
+ */
+export function pendenciasDaPreSessao(p: PreSessao): string[] {
+  const pendencias: string[] = [];
+
+  if (!p?.screenshot_path) {
+    pendencias.push("print do grafico HTF nao anexado");
+  }
+
+  if (!p?.bias_h1 || p.bias_h1 === "INDEFINIDO") {
+    pendencias.push("bias H1 nao definido");
+  }
+
+  if (!p?.contexto || p.contexto === "INDEFINIDO") {
+    pendencias.push("contexto nao definido");
+  }
+
+  if (!p?.niveis || p.niveis.length < 2) {
+    pendencias.push("marque ao menos 2 niveis de liquidez ou array");
+  }
+
+  if (!p?.setup_do_dia) {
+    pendencias.push("setup do dia nao escolhido");
+  }
+
+  if (p?.setup_do_dia !== "NENHUM" && (!p?.contratos_declarados || p.contratos_declarados <= 0)) {
+    pendencias.push("tamanho nao declarado");
+  }
+
+  return pendencias;
+}
+
+/**
+ * Retorna a pré-sessão de hoje do usuário em America/Sao_Paulo.
+ * Se ainda não existir registro no banco, devolve os valores padrão abertos.
+ */
+export async function getPreSessaoDeHoje(): Promise<PreSessao> {
+  const hoje = getDataSaoPaulo();
+  const { data, error } = await supabase
+    .from("copa_sessions")
+    .select("*")
+    .eq("data", hoje)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Erro ao buscar pré-sessão de hoje: ${error.message}`);
+  }
+
+  if (!data) {
+    return {
+      id: null,
+      data: hoje,
+      phase_id: null,
+      bias_d1: "INDEFINIDO",
+      bias_h1: "INDEFINIDO",
+      contexto: "INDEFINIDO",
+      niveis: [],
+      agenda: [],
+      sono: 3,
+      tilt: 0,
+      pressao: 0,
+      setup_do_dia: null,
+      contratos_declarados: null,
+      screenshot_path: null,
+      fechada_em: null,
+      notas: "",
+    };
+  }
+
+  return {
+    id: data.id,
+    data: data.data || hoje,
+    phase_id: data.phase_id || null,
+    bias_d1: data.bias_d1 || "INDEFINIDO",
+    bias_h1: data.bias_h1 || "INDEFINIDO",
+    contexto: data.contexto || "INDEFINIDO",
+    niveis: Array.isArray(data.niveis) ? data.niveis : [],
+    agenda: Array.isArray(data.agenda) ? data.agenda : [],
+    sono: data.sono ?? 3,
+    tilt: data.tilt ?? 0,
+    pressao: data.pressao ?? 0,
+    setup_do_dia: data.setup_do_dia || null,
+    contratos_declarados: data.contratos_declarados || null,
+    screenshot_path: data.screenshot_path || null,
+    fechada_em: data.fechada_em || null,
+    notas: data.notas || "",
+  };
+}
+
+/**
+ * Salva (cria ou atualiza) os campos da pré-sessão no banco de dados.
+ */
+export async function salvarPreSessao(p: Partial<PreSessao>): Promise<string> {
+  const hoje = getDataSaoPaulo();
+
+  const { data: existing, error: errSelect } = await supabase
+    .from("copa_sessions")
+    .select("id, phase_id")
+    .eq("data", hoje)
+    .maybeSingle();
+
+  if (errSelect) {
+    throw new Error(`Erro ao verificar sessão: ${errSelect.message}`);
+  }
+
+  const payload: any = {};
+  if (p.bias_d1 !== undefined) payload.bias_d1 = p.bias_d1;
+  if (p.bias_h1 !== undefined) payload.bias_h1 = p.bias_h1;
+  if (p.contexto !== undefined) payload.contexto = p.contexto;
+  if (p.niveis !== undefined) payload.niveis = p.niveis;
+  if (p.agenda !== undefined) payload.agenda = p.agenda;
+  if (p.sono !== undefined) payload.sono = p.sono;
+  if (p.tilt !== undefined) payload.tilt = p.tilt;
+  if (p.pressao !== undefined) payload.pressao = p.pressao;
+  if (p.setup_do_dia !== undefined) payload.setup_do_dia = p.setup_do_dia;
+  if (p.contratos_declarados !== undefined) payload.contratos_declarados = p.contratos_declarados;
+  if (p.screenshot_path !== undefined) payload.screenshot_path = p.screenshot_path;
+  if (p.notas !== undefined) payload.notas = p.notas;
+
+  if (existing?.id) {
+    const { error: errUpdate } = await supabase
+      .from("copa_sessions")
+      .update(payload)
+      .eq("id", existing.id);
+
+    if (errUpdate) {
+      throw new Error(`Erro ao atualizar pré-sessão: ${errUpdate.message}`);
+    }
+    return existing.id;
+  }
+
+  let phaseId = p.phase_id;
+  if (!phaseId) {
+    const { data: phases } = await supabase
+      .from("copa_phases")
+      .select("id")
+      .lte("data_inicio", hoje)
+      .gte("data_fim", hoje)
+      .maybeSingle();
+    phaseId = phases?.id || null;
+  }
+
+  const { data: inserted, error: errInsert } = await supabase
+    .from("copa_sessions")
+    .insert({
+      data: hoje,
+      phase_id: phaseId,
+      ...payload,
+    })
+    .select("id")
+    .single();
+
+  if (errInsert) {
+    throw new Error(`Erro ao criar pré-sessão: ${errInsert.message}`);
+  }
+
+  return inserted.id;
+}
+
+/**
+ * Fecha a pré-sessão do dia se não houver pendências.
+ */
+export async function fecharPreSessao(): Promise<void> {
+  const sess = await getPreSessaoDeHoje();
+  const pendencias = pendenciasDaPreSessao(sess);
+  if (pendencias.length > 0) {
+    throw new Error(`Pré-sessão incompleta: ${pendencias.join(", ")}`);
+  }
+
+  const agoraIso = new Date().toISOString();
+  const hoje = getDataSaoPaulo();
+
+  const { error } = await supabase
+    .from("copa_sessions")
+    .update({ fechada_em: agoraIso })
+    .eq("data", hoje);
+
+  if (error) {
+    throw new Error(`Erro ao fechar pré-sessão: ${error.message}`);
+  }
+}
+
+/**
+ * Zera fechada_em e registra a reabertura no notas da sessão.
+ */
+export async function reabrirPreSessao(motivo: string): Promise<void> {
+  const hoje = getDataSaoPaulo();
+  const { data: session, error: errFetch } = await supabase
+    .from("copa_sessions")
+    .select("notas")
+    .eq("data", hoje)
+    .maybeSingle();
+
+  if (errFetch || !session) {
+    throw new Error(`Sessão de hoje não encontrada: ${errFetch?.message || ""}`);
+  }
+
+  const formatter = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const hhmm = formatter.format(new Date());
+
+  const linhaReabertura = `[REABERTA ${hhmm}] ${motivo.trim()}`;
+  const notasAtuais = session.notas ? session.notas.trim() : "";
+  const novasNotas = notasAtuais ? `${notasAtuais}\n${linhaReabertura}` : linhaReabertura;
+
+  const { error: errUpdate } = await supabase
+    .from("copa_sessions")
+    .update({
+      fechada_em: null,
+      notas: novasNotas,
+    })
+    .eq("data", hoje);
+
+  if (errUpdate) {
+    throw new Error(`Erro ao reabrir pré-sessão: ${errUpdate.message}`);
   }
 }

@@ -17,6 +17,7 @@ import {
   ItemAvaliado,
   LimitesDia,
 } from "@/lib/gate";
+import Link from "next/link";
 import {
   DEFAULT_STRATEGIES,
   REVERSAO_HTF,
@@ -30,8 +31,13 @@ import {
   getTrade,
   gradeFor,
   getDataSaoPaulo,
+  getPreSessaoDeHoje,
+  pendenciasDaPreSessao,
+  PreSessao,
   ResumoDoDia,
 } from "@/lib/copa-db";
+import { PrintUpload } from "@/components/copa/print-upload";
+import { InstBand } from "@/components/inst";
 
 export default function ChecklistPage() {
   // Estratégia selecionada (padrão: REVERSAO_HTF)
@@ -41,6 +47,11 @@ export default function ChecklistPage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [now, setNow] = useState<Date>(() => new Date());
+
+  // Pré-sessão do dia
+  const [preSessao, setPreSessao] = useState<PreSessao | null>(null);
+  const [preSessaoLoading, setPreSessaoLoading] = useState(true);
+  const [tradePrintPath, setTradePrintPath] = useState<string | null>(null);
 
   // Resumo do dia e trade aberto
   const [resumo, setResumo] = useState<ResumoDoDia | null>(null);
@@ -120,6 +131,33 @@ export default function ChecklistPage() {
     }
   }, []);
 
+  // Carrega a pré-sessão de hoje e sincroniza setup e tamanho
+  const loadPreSessao = useCallback(async () => {
+    setPreSessaoLoading(true);
+    try {
+      const ps = await getPreSessaoDeHoje();
+      setPreSessao(ps);
+      if (ps.fechada_em) {
+        if (ps.setup_do_dia === "reversao_htf") {
+          setSelectedStrategy(REVERSAO_HTF);
+        } else if (ps.setup_do_dia === "continuidade_tendencia") {
+          setSelectedStrategy(CONTINUIDADE_TENDENCIA);
+        }
+        if (ps.contratos_declarados) {
+          setContratos(String(ps.contratos_declarados));
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao carregar pré-sessão:", err);
+    } finally {
+      setPreSessaoLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPreSessao();
+  }, [loadPreSessao]);
+
   useEffect(() => {
     loadChecklist(selectedStrategy);
     loadResumo();
@@ -190,9 +228,11 @@ export default function ChecklistPage() {
       now,
       selectedStrategy.score_minimo || 65,
       limites,
-      resumo?.trade_aberto_id
+      resumo?.trade_aberto_id,
+      Boolean(preSessao?.fechada_em),
+      Boolean(tradePrintPath)
     );
-  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id]);
+  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath]);
 
   const itensAvaliados: ItemAvaliado[] = useMemo(() => {
     if (!checklist) return [];
@@ -243,7 +283,9 @@ export default function ChecklistPage() {
       now,
       selectedStrategy.score_minimo || 65,
       limites,
-      resumo?.trade_aberto_id
+      resumo?.trade_aberto_id,
+      Boolean(preSessao?.fechada_em),
+      Boolean(tradePrintPath)
     );
 
     setChecklist({
@@ -272,7 +314,9 @@ export default function ChecklistPage() {
       now,
       selectedStrategy.score_minimo || 65,
       limites,
-      resumo?.trade_aberto_id
+      resumo?.trade_aberto_id,
+      Boolean(preSessao?.fechada_em),
+      Boolean(tradePrintPath)
     );
 
     setChecklist({
@@ -291,7 +335,9 @@ export default function ChecklistPage() {
       now,
       selectedStrategy.score_minimo || 65,
       limites,
-      resumo?.trade_aberto_id
+      resumo?.trade_aberto_id,
+      Boolean(preSessao?.fechada_em),
+      Boolean(tradePrintPath)
     );
     setChecklist({
       ...checklist,
@@ -315,7 +361,9 @@ export default function ChecklistPage() {
       now,
       selectedStrategy.score_minimo || 65,
       limites,
-      resumo?.trade_aberto_id
+      resumo?.trade_aberto_id,
+      Boolean(preSessao?.fechada_em),
+      Boolean(tradePrintPath)
     );
     setChecklist({
       ...checklist,
@@ -454,6 +502,7 @@ export default function ChecklistPage() {
         rr_planejado: Number(metricasTrade.rr.toFixed(2)),
         itens: itemsSnapshot,
         notas: checklist.notes || "",
+        screenshot_path: tradePrintPath,
       });
 
       // Sucesso: limpa o checklist e formulário, recarrega o resumo e confirma
@@ -461,6 +510,7 @@ export default function ChecklistPage() {
       setEntrada("");
       setStop("");
       setAlvo("");
+      setTradePrintPath(null);
       setOrdemSuccess("Ordem aberta e registrada com sucesso!");
       await loadResumo();
       setTimeout(() => setOrdemSuccess(null), 5000);
@@ -538,7 +588,7 @@ export default function ChecklistPage() {
     }
   }
 
-  if (loading || !checklist) {
+  if (loading || !checklist || preSessaoLoading) {
     return (
       <div
         className="-m-4 md:-m-6 flex flex-1 items-center justify-center min-h-[calc(100vh-4rem)]"
@@ -547,6 +597,99 @@ export default function ChecklistPage() {
         <div className="mono tabular" style={{ fontSize: "12px", letterSpacing: "0.1em" }}>
           CARREGANDO INSTRUMENTO...
         </div>
+      </div>
+    );
+  }
+
+  // 5a. Sem pré-sessão fechada, a tela não opera
+  if (!preSessao?.fechada_em) {
+    const pendencias = preSessao ? pendenciasDaPreSessao(preSessao) : ["pre-sessao nao iniciada"];
+    return (
+      <div
+        className="-m-4 md:-m-6 flex flex-1 flex-col min-h-[calc(100vh-4rem)] p-6"
+        style={{ background: "var(--inst-bg)", color: "var(--inst-text)", gap: "20px" }}
+      >
+        <div style={{ borderBottom: "1px solid var(--inst-line-2)", paddingBottom: "18px" }}>
+          <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
+            CHECKLIST OPERACIONAL
+          </span>
+          <h1 style={{ fontSize: "23px", fontWeight: 600, letterSpacing: "-0.015em", marginTop: "4px" }}>
+            Checklist Pregão
+          </h1>
+        </div>
+
+        <InstBand
+          tom="block"
+          titulo="PRÉ-SESSÃO DO DIA NÃO FOI FECHADA"
+          linhas={[
+            "O gate operacional exige que o ritual de pré-sessão seja concluído e fechado antes de liberar qualquer operação.",
+            ...pendencias,
+          ]}
+          acao={
+            <Link href="/pre-sessao">
+              <button
+                type="button"
+                className="mono tabular"
+                style={{
+                  background: "var(--inst-ok)",
+                  border: "1px solid var(--inst-ok)",
+                  color: "#08150F",
+                  borderRadius: "3px",
+                  padding: "10px 20px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Ir para a Pré-Sessão
+              </button>
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
+  // 5b. Se setup_do_dia for NENHUM, hoje é dia de não operar
+  if (preSessao.setup_do_dia === "NENHUM") {
+    return (
+      <div
+        className="-m-4 md:-m-6 flex flex-1 flex-col min-h-[calc(100vh-4rem)] p-6"
+        style={{ background: "var(--inst-bg)", color: "var(--inst-text)", gap: "20px" }}
+      >
+        <div style={{ borderBottom: "1px solid var(--inst-line-2)", paddingBottom: "18px" }}>
+          <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
+            CHECKLIST OPERACIONAL
+          </span>
+          <h1 style={{ fontSize: "23px", fontWeight: 600, letterSpacing: "-0.015em", marginTop: "4px" }}>
+            Checklist Pregão
+          </h1>
+        </div>
+
+        <InstBand
+          tom="lock"
+          titulo="HOJE É DIA DE NÃO OPERAR"
+          linhas={["Decidido na pré-sessão do dia. Preservação de capital ativa."]}
+          acao={
+            <Link href="/pre-sessao">
+              <button
+                type="button"
+                className="mono tabular"
+                style={{
+                  background: "var(--inst-panel-2)",
+                  border: "1px solid var(--inst-line)",
+                  color: "var(--inst-text)",
+                  borderRadius: "3px",
+                  padding: "8px 16px",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                }}
+              >
+                Ver Pré-Sessão
+              </button>
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -562,66 +705,34 @@ export default function ChecklistPage() {
       className="-m-4 md:-m-6 flex flex-1 flex-col min-h-[calc(100vh-4rem)]"
       style={{ background: "var(--inst-bg)", color: "var(--inst-text)" }}
     >
-      {/* ============ 6a. SELETOR DE ESTRATÉGIA NO TOPO ============ */}
+      {/* ============ 6a. SETUP DO DIA TRAVADO ============ */}
       <div
         style={{
-          padding: "16px 24px 12px 24px",
+          padding: "14px 24px",
           background: "#0A0D10",
           borderBottom: "1px solid var(--inst-line-2)",
           display: "flex",
-          flexDirection: "column",
-          gap: "10px",
+          alignItems: "center",
+          gap: "12px",
+          flexWrap: "wrap",
         }}
       >
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          {DEFAULT_STRATEGIES.map((strat) => {
-            const active = selectedStrategy.id === strat.id;
-            return (
-              <button
-                key={strat.id}
-                type="button"
-                onClick={() => handleSelectStrategy(strat)}
-                className="mono tabular transition-all"
-                style={{
-                  flex: "1 1 240px",
-                  padding: "12px 18px",
-                  borderRadius: "3px",
-                  border: active
-                    ? "1px solid var(--inst-ok)"
-                    : "1px solid var(--inst-line-2)",
-                  background: active ? "var(--inst-ok-bg)" : "var(--inst-panel)",
-                  color: active ? "var(--inst-ok)" : "var(--inst-faint)",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  textAlign: "left",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: 700, letterSpacing: "0.08em" }}>
-                    {strat.nome.toUpperCase()}
-                  </div>
-                  <div style={{ fontSize: "10px", opacity: 0.8, letterSpacing: "0.04em", marginTop: "2px" }}>
-                    {strat.id === "reversao_htf" ? "7 KILL · 6 PONTO" : "6 KILL · 6 PONTO"}
-                  </div>
-                </div>
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: active ? "var(--inst-ok)" : "transparent",
-                    border: `1px solid ${active ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
-                  }}
-                />
-              </button>
-            );
-          })}
-        </div>
-        <div style={{ fontSize: "12px", color: "var(--inst-dim)", lineHeight: 1.4 }}>
-          {selectedStrategy.descricao}
-        </div>
+        <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.14em", color: "var(--inst-faint)", textTransform: "uppercase" }}>
+          SETUP DO DIA
+        </span>
+        <span style={{ color: "var(--inst-line-2)" }}>·</span>
+        <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
+          {selectedStrategy.nome}
+        </span>
+        <span style={{ color: "var(--inst-line-2)" }}>·</span>
+        <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-dim)", fontStyle: "italic" }}>
+          declarado às {preSessao?.fechada_em ? new Date(preSessao.fechada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}
+        </span>
+        <Link href="/pre-sessao" style={{ marginLeft: "auto" }}>
+          <span className="mono tabular" style={{ fontSize: "10.5px", color: "var(--inst-faint)", textDecoration: "underline", cursor: "pointer" }}>
+            Ver Pré-Sessão
+          </span>
+        </Link>
       </div>
 
       {/* ============ 6b. BARRA DE ESTADO COM DADO REAL ============ */}
@@ -1460,7 +1571,7 @@ export default function ChecklistPage() {
                   min="1"
                   step="1"
                   value={contratos}
-                  onChange={(e) => setContratos(e.target.value)}
+                  disabled={true}
                   className="mono tabular"
                   style={{
                     width: "100%",
@@ -1471,8 +1582,13 @@ export default function ChecklistPage() {
                     color: "var(--inst-text)",
                     fontSize: "12px",
                     outline: "none",
+                    opacity: 0.8,
+                    cursor: "not-allowed",
                   }}
                 />
+                <span className="mono" style={{ fontSize: "9px", color: "var(--inst-dim)", marginTop: "2px", display: "block" }}>
+                  Declarado na pré-sessão. Alterar exige reabrir.
+                </span>
               </div>
             </div>
 
@@ -1621,6 +1737,18 @@ export default function ChecklistPage() {
                 ))}
               </div>
             )}
+
+            {/* Print do Trade (Obrigatório antes de abrir ordem) */}
+            <div style={{ marginBottom: "6px" }}>
+              <PrintUpload
+                path={tradePrintPath}
+                data={getDataSaoPaulo()}
+                nome={`trade-${Date.now()}`}
+                onChange={(p) => setTradePrintPath(p)}
+                obrigatorio={true}
+                label="Print do Trade (Setup Antes do Desfecho)"
+              />
+            </div>
 
             {/* BOTÃO ABRIR ORDEM: sempre visível, travado quando bloqueado ou formulário inválido */}
             {(() => {
