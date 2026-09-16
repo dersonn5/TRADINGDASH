@@ -9,8 +9,10 @@ import {
   alternarPasso,
   ItemAvaliado,
   Janela,
+  avaliarLimitesDia,
 } from "../lib/gate";
-import { PLAYBOOK_ANDERSON } from "../data/strategies";
+import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA } from "../data/strategies";
+import { gradeFor } from "../lib/copa-db";
 
 let hasErrors = false;
 
@@ -33,7 +35,7 @@ function makeSPDate(hour: number, minute: number): Date {
 console.log("=== VERIFICAÇÃO DE GATE, JANELAS E SINCRONIA ===\n");
 
 // -------------------------------------------------------------
-// 1. CASOS DE JANELA
+// 1. CASOS DE JANELA (8 casos)
 // -------------------------------------------------------------
 const casosJanela: Array<{
   horaSP: string;
@@ -66,9 +68,9 @@ for (const caso of casosJanela) {
 }
 
 // -------------------------------------------------------------
-// 2. CASOS DE GATE
+// 2. CASOS DE GATE (4 casos)
 // -------------------------------------------------------------
-const killsBase: ItemAvaliado[] = PLAYBOOK_ANDERSON.checklist
+const killsBase: ItemAvaliado[] = REVERSAO_HTF.checklist
   .filter((i) => i.tipo === "KILL")
   .map((i) => ({
     id: i.id,
@@ -131,61 +133,79 @@ report(
 );
 
 // -------------------------------------------------------------
-// 3. CASO DE SINCRONIA: playbook_anderson.json vs strategies.ts
+// 3. CASO DE SINCRONIA E PESOS: JSONs vs strategies.ts (1 caso)
 // -------------------------------------------------------------
-const possibleJsonPaths = [
-  path.resolve(process.cwd(), "copa/strategies/playbook_anderson.json"),
-  path.resolve(__dirname, "../../copa/strategies/playbook_anderson.json"),
-];
-const jsonPath = possibleJsonPaths.find((p) => fs.existsSync(p));
-
-if (!jsonPath) {
-  report("Sincronia: encontrar playbook_anderson.json", false, "Arquivo JSON não encontrado");
-} else {
-  try {
-    const rawJson = fs.readFileSync(jsonPath, "utf-8");
-    const jsonPlaybook = JSON.parse(rawJson);
-    const jsonChecklist: Array<{ id: string; tipo: string; peso: number }> = jsonPlaybook.checklist || [];
-    const tsChecklist = PLAYBOOK_ANDERSON.checklist;
-
-    const jsonIds = jsonChecklist.map((i) => i.id).sort();
-    const tsIds = tsChecklist.map((i) => i.id).sort();
-
-    const idsIguais =
-      jsonIds.length === tsIds.length &&
-      jsonIds.every((id, idx) => id === tsIds[idx]);
-
-    let tiposPesosIguais = true;
-    let detalheErro = "";
-
-    if (idsIguais) {
-      for (const jItem of jsonChecklist) {
-        const tItem = tsChecklist.find((t) => t.id === jItem.id);
-        if (!tItem) {
-          tiposPesosIguais = false;
-          detalheErro = `Item ${jItem.id} ausente no TS`;
-          break;
-        }
-        if (tItem.tipo !== jItem.tipo || tItem.peso !== jItem.peso) {
-          tiposPesosIguais = false;
-          detalheErro = `Item ${jItem.id} diverge: JSON(tipo=${jItem.tipo}, peso=${jItem.peso}) vs TS(tipo=${tItem.tipo}, peso=${tItem.peso})`;
-          break;
-        }
-      }
-    }
-
-    report(
-      "Sincronia: mesmo conjunto de IDs, mesmo tipo e mesmo peso entre JSON e TS",
-      idsIguais && tiposPesosIguais,
-      detalheErro
-    );
-  } catch (err: any) {
-    report("Sincronia: leitura e parsing do JSON", false, err?.message);
+function checarEstrategia(
+  filename: string,
+  tsStrat: typeof REVERSAO_HTF,
+  killsEsperados: number,
+  pontosEsperados: number,
+  somaPontosEsperada: number
+): { ok: boolean; detalhe: string } {
+  const possiblePaths = [
+    path.resolve(process.cwd(), `copa/strategies/${filename}`),
+    path.resolve(__dirname, `../../copa/strategies/${filename}`),
+  ];
+  const foundPath = possiblePaths.find((p) => fs.existsSync(p));
+  if (!foundPath) {
+    return { ok: false, detalhe: `Arquivo ${filename} não encontrado` };
   }
+
+  const rawJson = fs.readFileSync(foundPath, "utf-8");
+  const jsonStrat = JSON.parse(rawJson);
+  const jsonChecklist: Array<{ id: string; tipo: string; peso: number; label: string }> =
+    jsonStrat.checklist || [];
+  const tsChecklist = tsStrat.checklist;
+
+  const jsonIds = jsonChecklist.map((i) => i.id).sort();
+  const tsIds = tsChecklist.map((i) => i.id).sort();
+
+  if (jsonIds.length !== tsIds.length || !jsonIds.every((id, idx) => id === tsIds[idx])) {
+    return { ok: false, detalhe: `${filename}: IDs divergem entre JSON e TS` };
+  }
+
+  for (const jItem of jsonChecklist) {
+    const tItem = tsChecklist.find((t) => t.id === jItem.id);
+    if (!tItem) {
+      return { ok: false, detalhe: `${filename}: Item ${jItem.id} ausente no TS` };
+    }
+    if (tItem.tipo !== jItem.tipo || tItem.peso !== jItem.peso || tItem.label !== jItem.label) {
+      return {
+        ok: false,
+        detalhe: `${filename}: Item ${jItem.id} diverge em tipo, peso ou label`,
+      };
+    }
+  }
+
+  const numKills = tsChecklist.filter((i) => i.tipo === "KILL").length;
+  const numPontos = tsChecklist.filter((i) => i.tipo === "PONTO").length;
+  const somaPontos = tsChecklist
+    .filter((i) => i.tipo === "PONTO")
+    .reduce((acc, i) => acc + i.peso, 0);
+
+  if (numKills !== killsEsperados || numPontos !== pontosEsperados || somaPontos !== somaPontosEsperada) {
+    return {
+      ok: false,
+      detalhe: `${filename}: contagem ou pesos incorretos (KILL=${numKills}/${killsEsperados}, PONTO=${numPontos}/${pontosEsperados}, soma=${somaPontos}/${somaPontosEsperada})`,
+    };
+  }
+
+  return { ok: true, detalhe: "" };
 }
 
+const resRev = checarEstrategia("reversao_htf.json", REVERSAO_HTF, 7, 6, 100);
+const resCont = checarEstrategia("continuidade_tendencia.json", CONTINUIDADE_TENDENCIA, 6, 6, 100);
+const sincroniaOk = resRev.ok && resCont.ok;
+const detalheSincronia = [resRev.detalhe, resCont.detalhe].filter(Boolean).join(" | ");
+
+report(
+  "Sincronia: duas estratégias idênticas aos JSONs e pesos somando 100",
+  sincroniaOk,
+  detalheSincronia
+);
+
 // -------------------------------------------------------------
-// 4. CASOS DE SEQUÊNCIA E TRILHA TRAVADA (7 KILL)
+// 4. CASOS DE SEQUÊNCIA E TRILHA TRAVADA (7 KILL) (6 casos)
 // -------------------------------------------------------------
 const make7Kills = (checkedIndices: number[] = []): ItemAvaliado[] => {
   const set = new Set(checkedIndices);
@@ -276,6 +296,146 @@ report(
   `cumpridos=${seq6Cumpridos}`
 );
 
+// -------------------------------------------------------------
+// 5. CASOS DE AVALIAR LIMITES DIA (8 casos)
+// -------------------------------------------------------------
+const baseTime = makeSPDate(10, 30);
+
+// Caso 1: 0 perdas, 0 operações, sem loss -> liberado
+const lim1 = avaliarLimitesDia(0, 0, null, baseTime);
+report(
+  "Limites Caso 1: 0 perdas, 0 operacoes, sem loss -> liberado",
+  !lim1.bloqueado && lim1.motivos.length === 0,
+  JSON.stringify(lim1.motivos)
+);
+
+// Caso 2: 2 perdas, 3 operações, loss há 40 min -> liberado
+const loss40 = new Date(baseTime.getTime() - 40 * 60 * 1000);
+const lim2 = avaliarLimitesDia(2, 3, loss40, baseTime);
+report(
+  "Limites Caso 2: 2 perdas, 3 operacoes, loss ha 40 min -> liberado",
+  !lim2.bloqueado && lim2.motivos.length === 0,
+  JSON.stringify(lim2.motivos)
+);
+
+// Caso 3: 3 perdas -> bloqueado, motivo cita pregão encerrado
+const lim3 = avaliarLimitesDia(3, 3, null, baseTime);
+report(
+  "Limites Caso 3: 3 perdas -> bloqueado, motivo cita pregao encerrado",
+  lim3.bloqueado && lim3.motivos.some((m) => m.includes("pregao encerrado")),
+  JSON.stringify(lim3.motivos)
+);
+
+// Caso 4: 5 operações -> bloqueado, motivo cita limite de operações
+const lim4 = avaliarLimitesDia(0, 5, null, baseTime);
+report(
+  "Limites Caso 4: 5 operacoes -> bloqueado, motivo cita limite de operacoes",
+  lim4.bloqueado && lim4.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operacoes")),
+  JSON.stringify(lim4.motivos)
+);
+
+// Caso 5: 1 perda, loss há 10 min -> bloqueado, motivo cita 20 min restantes
+const loss10 = new Date(baseTime.getTime() - 10 * 60 * 1000);
+const lim5 = avaliarLimitesDia(1, 1, loss10, baseTime);
+report(
+  "Limites Caso 5: 1 perda, loss ha 10 min -> bloqueado, motivo cita 20 min restantes",
+  lim5.bloqueado && lim5.motivos.some((m) => m.includes("faltam 20 min")),
+  JSON.stringify(lim5.motivos)
+);
+
+// Caso 6: 1 perda, loss há 31 min -> liberado
+const loss31 = new Date(baseTime.getTime() - 31 * 60 * 1000);
+const lim6 = avaliarLimitesDia(1, 1, loss31, baseTime);
+report(
+  "Limites Caso 6: 1 perda, loss ha 31 min -> liberado",
+  !lim6.bloqueado && lim6.motivos.length === 0,
+  JSON.stringify(lim6.motivos)
+);
+
+// Caso 7: loss há exatamente 30 min -> liberado (fronteira inclusiva)
+const loss30 = new Date(baseTime.getTime() - 30 * 60 * 1000);
+const lim7 = avaliarLimitesDia(1, 1, loss30, baseTime);
+report(
+  "Limites Caso 7: loss ha exatamente 30 min -> liberado (fronteira inclusiva)",
+  !lim7.bloqueado && lim7.motivos.length === 0,
+  JSON.stringify(lim7.motivos)
+);
+
+// Caso 8: 3 perdas e 5 operações -> bloqueado com os dois motivos
+const lim8 = avaliarLimitesDia(3, 5, null, baseTime);
+const citaPregao = lim8.motivos.some((m) => m.includes("pregao encerrado"));
+const citaOps = lim8.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operacoes"));
+report(
+  "Limites Caso 8: 3 perdas e 5 operacoes -> bloqueado com os dois motivos",
+  lim8.bloqueado && citaPregao && citaOps,
+  JSON.stringify(lim8.motivos)
+);
+
+// -------------------------------------------------------------
+// 6. CASOS DE AVALIAR GATE INTEGRADO (3 casos)
+// -------------------------------------------------------------
+const itens80: ItemAvaliado[] = [
+  ...killsBase,
+  { id: "p_test_80", tipo: "PONTO", label: "Confluências 80", checked: true, peso: 80 },
+];
+const limLiberado = { bloqueado: false, motivos: [] };
+
+// Caso 9: 7 KILL, 80 pontos, 10:30, limites liberados -> liberado
+const gate9 = avaliarGate(itens80, "BULLISH", baseTime, 65, limLiberado, null);
+report(
+  "Gate Integrado Caso 9: 7 KILL, 80 pts, 10:30, limites liberados -> liberado",
+  gate9.liberado === true,
+  JSON.stringify(gate9.motivos)
+);
+
+// Caso 10: Mesmo caso com tradeAbertoId não nulo -> bloqueado
+const gate10 = avaliarGate(itens80, "BULLISH", baseTime, 65, limLiberado, "trade-uuid-123");
+report(
+  "Gate Integrado Caso 10: Mesmo caso com tradeAbertoId nao nulo -> bloqueado",
+  gate10.liberado === false && gate10.motivos.includes("ja existe trade aberto"),
+  JSON.stringify(gate10.motivos)
+);
+
+// Caso 11: Mesmo caso com 3 perdas -> bloqueado citando o pregão encerrado
+const lim3Loss = { bloqueado: true, motivos: ["3 perdas no dia: pregao encerrado"] };
+const gate11 = avaliarGate(itens80, "BULLISH", baseTime, 65, lim3Loss, null);
+report(
+  "Gate Integrado Caso 11: Mesmo caso com 3 perdas -> bloqueado citando o pregao encerrado",
+  gate11.liberado === false && gate11.motivos.some((m) => m.includes("pregao encerrado")),
+  JSON.stringify(gate11.motivos)
+);
+
+
+// ---------------------------------------------------------------------------
+// 6. REGUA DE GRADE: TS vs core/entry_quality.py
+// ---------------------------------------------------------------------------
+// A regua A+/A/B/C/D existe em duas linguagens. A fonte e o Python; o TS e
+// copia, porque o app serverless nao importa modulo Python. Sem esta checagem
+// as duas divergem em silencio e toda nota historica muda de significado.
+const pySrc = fs.readFileSync(
+  path.resolve(__dirname, "../../core/entry_quality.py"),
+  "utf8"
+);
+const pyCortes = [...pySrc.matchAll(/score\s*>=\s*(\d+):\s*return\s*"([^"]+)"/g)].map(
+  (m) => ({ corte: Number(m[1]), grade: m[2] })
+);
+const tsCortes = [
+  { corte: 80, grade: "A+" },
+  { corte: 65, grade: "A" },
+  { corte: 50, grade: "B" },
+  { corte: 35, grade: "C" },
+];
+const reguaBate =
+  pyCortes.length === tsCortes.length &&
+  tsCortes.every((c, i) => pyCortes[i].corte === c.corte && pyCortes[i].grade === c.grade) &&
+  tsCortes.every((c) => gradeFor(c.corte) === c.grade) &&
+  gradeFor(34) === "D";
+report(
+  "Regua de grade: TS identica a core/entry_quality.py",
+  reguaBate,
+  `python=${JSON.stringify(pyCortes)} ts=${JSON.stringify(tsCortes)}`
+);
+
 if (hasErrors) {
   console.error("\n❌ Verificação finalizou com ERROS.");
   process.exit(1);
@@ -283,3 +443,4 @@ if (hasErrors) {
   console.log("\n✅ Todos os testes passaram com sucesso!");
   process.exit(0);
 }
+

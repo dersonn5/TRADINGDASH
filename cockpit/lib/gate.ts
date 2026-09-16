@@ -21,6 +21,54 @@ export interface GateResult {
 export const SCORE_MINIMO_PRIME = 65;
 export const BONUS_FORA_DA_PRIME = 15; // VALIDA exige 65 + 15 = 80
 
+/** Limites espelhados do Profit Chart, que trava nestes números. */
+export const MAX_PERDAS_DIA = 3;
+export const MAX_OPERACOES_DIA = 5;
+export const COOLDOWN_APOS_LOSS_MIN = 30;
+
+export interface LimitesDia {
+  bloqueado: boolean;
+  motivos: string[];
+}
+
+/** Minutos que faltam do cooldown, ou 0. */
+export function cooldownRestante(ultimoLossEm: Date | null, agora: Date): number {
+  if (!ultimoLossEm) return 0;
+  const diffMs = agora.getTime() - ultimoLossEm.getTime();
+  if (diffMs < 0) return COOLDOWN_APOS_LOSS_MIN;
+  const passedMinutes = diffMs / (1000 * 60);
+  // Fronteira inclusiva: se passou exatamente 30 min (ou mais), o cooldown acabou
+  if (passedMinutes >= COOLDOWN_APOS_LOSS_MIN) return 0;
+  return Math.ceil(COOLDOWN_APOS_LOSS_MIN - passedMinutes);
+}
+
+export function avaliarLimitesDia(
+  perdasHoje: number,
+  operacoesHoje: number,
+  ultimoLossEm: Date | null,
+  agora: Date
+): LimitesDia {
+  const motivos: string[] = [];
+
+  if (perdasHoje >= MAX_PERDAS_DIA) {
+    motivos.push("3 perdas no dia: pregao encerrado");
+  }
+
+  if (operacoesHoje >= MAX_OPERACOES_DIA) {
+    motivos.push("5 operacoes no dia: limite atingido");
+  }
+
+  const rest = cooldownRestante(ultimoLossEm, agora);
+  if (rest > 0) {
+    motivos.push(`cooldown apos loss: faltam ${rest} min`);
+  }
+
+  return {
+    bloqueado: motivos.length > 0,
+    motivos,
+  };
+}
+
 /**
  * Converte agora para America/Sao_Paulo e classifica a janela de operação:
  * - PRIME: de 10:00 (inclusive) a 11:00 (exclusive)
@@ -75,7 +123,9 @@ export function avaliarGate(
   itens: ItemAvaliado[],
   bias: string,
   agora: Date,
-  scoreMinimoBase: number = SCORE_MINIMO_PRIME
+  scoreMinimoBase: number = SCORE_MINIMO_PRIME,
+  limites?: LimitesDia,
+  tradeAbertoId?: string | null
 ): GateResult {
   const janela = classificarJanela(agora);
   const scoreMinimo = scoreMinimoEfetivo(janela, scoreMinimoBase);
@@ -107,6 +157,14 @@ export function avaliarGate(
 
   if (janela === "VALIDA") {
     avisos.push("fora da janela nobre 10:00–11:00 — exige score 80");
+  }
+
+  if (limites && limites.bloqueado) {
+    motivos.push(...limites.motivos);
+  }
+
+  if (tradeAbertoId) {
+    motivos.push("ja existe trade aberto");
   }
 
   const liberado = motivos.length === 0;
@@ -198,4 +256,3 @@ export function alternarPasso(itens: ItemAvaliado[], id: string): ItemAvaliado[]
 
   return itens;
 }
-

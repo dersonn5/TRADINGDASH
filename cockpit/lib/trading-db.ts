@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { PLAYBOOK_ANDERSON } from "@/data/strategies";
+import { Strategy } from "@/lib/copa-api";
 
 export interface TradingNote {
   id: string;
@@ -49,6 +49,7 @@ export interface ChecklistItem {
 
 export interface LiveChecklist {
   id?: string;
+  strategy_id?: string;
   session_date: string;
   session_name: string;
   market: string;
@@ -194,9 +195,9 @@ export async function saveTrade(trade: Partial<TradingTrade>): Promise<TradingTr
 // CHECKLIST AO VIVO NO PREGÃO
 // -------------------------------------------------------------
 
-export async function fetchTodayChecklist(): Promise<LiveChecklist> {
+export async function fetchTodayChecklist(strategy: Strategy): Promise<LiveChecklist> {
   const today = new Date().toISOString().split("T")[0];
-  const defaultChecklist = getDefaultChecklist(today);
+  const defaultChecklist = getDefaultChecklist(today, strategy);
   try {
     const { data, error } = await supabase
       .from("trading_live_checklist")
@@ -214,6 +215,7 @@ export async function fetchTodayChecklist(): Promise<LiveChecklist> {
     const defaultIds = new Set(defaultChecklist.items.map((i) => i.id));
     const loadedItems = loaded.items || [];
     const isOutdated =
+      (loaded.strategy_id && loaded.strategy_id !== strategy.id) ||
       loadedItems.length !== defaultChecklist.items.length ||
       loadedItems.some((i) => !i.tipo || !defaultIds.has(i.id));
 
@@ -245,6 +247,7 @@ export async function saveChecklist(checklist: LiveChecklist): Promise<boolean> 
         score: checklist.score,
         risk_approved: checklist.risk_approved,
         notes: checklist.notes,
+        strategy_id: checklist.strategy_id,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "session_date" }
@@ -364,8 +367,12 @@ function getSampleTrades(): TradingTrade[] {
   ];
 }
 
-function getDefaultChecklist(date: string): LiveChecklist {
-  const items: ChecklistItem[] = PLAYBOOK_ANDERSON.checklist.map((item) => ({
+export function getDefaultChecklist(date: string, strategy: Strategy): LiveChecklist {
+  const sortedChecklist = [
+    ...strategy.checklist.filter((i) => i.tipo === "KILL"),
+    ...strategy.checklist.filter((i) => i.tipo === "PONTO"),
+  ];
+  const items: ChecklistItem[] = sortedChecklist.map((item) => ({
     id: item.id,
     label: item.label,
     checked: false,
@@ -376,6 +383,7 @@ function getDefaultChecklist(date: string): LiveChecklist {
   }));
 
   return {
+    strategy_id: strategy.id,
     session_date: date,
     session_name: "Sessão Pregão Ao Vivo",
     market: "B3 WIN",

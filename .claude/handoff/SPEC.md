@@ -392,7 +392,14 @@ cd .. && python -c "from copa.strategies_config import load_all; [print(s['id'],
 2. Entrar
 3. Escolher REVERSÃO HTF, marcar os 7 KILL e PONTO suficientes, preencher o
    trade, ABRIR ORDEM
-4. `select id, strategy_id, score, janela from copa_trades order by created_at desc limit 1;` → 1 linha com `reversao_htf`
+4. Conferir o trade gravado. **copa_trades nao tem coluna strategy_id** — tem
+   `version_id`, e o `strategy_id` vive em `copa_strategy_versions`:
+   ```sql
+   select t.id, v.strategy_id, v.versao, t.score, t.janela, t.status
+     from copa_trades t join copa_strategy_versions v on v.id = t.version_id
+    order by t.created_at desc limit 1;
+   ```
+   → 1 linha com `reversao_htf` e `versao = 1`
 5. `select count(*) from copa_trade_items where trade_id = '<id>';` → **13**
 6. Trocar para CONTINUIDADE e conferir que o checklist mudou para 6 KILL
 7. Fechar o trade com MANUAL / BATEU_ALVO / execução C → conferir que `pnl_plano`

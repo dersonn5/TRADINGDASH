@@ -10,5 +10,5 @@ const anonKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppcmdzcWhobmZxZ2x4YWRxZWFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MjUzMDUsImV4cCI6MjA4NTIwMTMwNX0.SMoPod2HY5eyqXsQCZlHX9-z86aVZoBl062fMP-Uapw";
 
 export const supabase = createClient(supabaseUrl, anonKey, {
-  auth: { persistSession: true },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
 });

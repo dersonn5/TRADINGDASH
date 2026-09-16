@@ -10,7 +10,10 @@
       "PowerShell(Stop-Process -Force -ErrorAction SilentlyContinue)",
       "PowerShell(Get-ChildItem \"e:\\\\AUTOMAÇÃO IA\\\\TRADING AI\\\\data\\\\cached\" | Select-Object Name, @{N='MB';E={[math]::Round\\($_.Length/1MB,1\\)}} | Sort-Object Name)",
       "Bash(node \"C:/Users/Pc/AppData/Local/Temp/claude/e--AUTOMA--O-IA-TRADING-AI/10a319a5-2519-4cae-91ea-cc3a0bca98e4/scratchpad/uaz3.mjs\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(echo \"=== VERIFY EXIT: $? ===\")",
+      "Bash(echo \"=== BUILD EXIT: $? ===\")",
+      "Bash(echo \"=== EXIT: $? ===\")"
     ],
     "additionalDirectories": [
       "e:\\AUTOMA��O IA\\TRADING AI"
