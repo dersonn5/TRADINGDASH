@@ -299,24 +299,40 @@ SELECT
  GROUP BY user_id, janela;
 
 -- 7.4 Custo da indisciplina, em reais.
-CREATE OR REPLACE VIEW v_copa_disciplina AS
+-- DROP antes do CREATE: o Postgres so deixa CREATE OR REPLACE VIEW acrescentar
+-- coluna no fim, nunca renomear nem reordenar. Como desvios_nao_reconhecidos
+-- entrou no meio, replace falha com 42P16. View nao guarda dado.
+DROP VIEW IF EXISTS v_copa_disciplina;
+
+CREATE VIEW v_copa_disciplina AS
+WITH base AS (
+    SELECT *,
+           -- Desvio OBJETIVO: saiu manual e o plano teria dado outro resultado.
+           -- Nao depende do auto-relato, que e justamente o que falha sob emocao.
+           -- Sem isto, um trade com respeitou_plano=true marcado por engano some
+           -- do custo, e o numero que existe para medir indisciplina zera.
+           (motivo_saida = 'MANUAL' AND pnl_plano IS DISTINCT FROM pnl_real) AS desvio_objetivo,
+           (NOT COALESCE(respeitou_plano, true)
+             OR COALESCE(antecipou_stop, false)
+             OR COALESCE(parcial_emocional, false)
+             OR COALESCE(mudou_alvo, false))                                 AS desvio_relatado
+      FROM copa_trades
+     WHERE status = 'FECHADO' AND pnl_real IS NOT NULL
+)
 SELECT
     user_id,
-    count(*) FILTER (WHERE NOT COALESCE(respeitou_plano, true)
-                        OR COALESCE(antecipou_stop, false)
-                        OR COALESCE(parcial_emocional, false)
-                        OR COALESCE(mudou_alvo, false))               AS trades_com_desvio,
+    count(*) FILTER (WHERE desvio_objetivo OR desvio_relatado)              AS trades_com_desvio,
     round(sum(COALESCE(pnl_plano, pnl_real) - pnl_real)
-          FILTER (WHERE NOT COALESCE(respeitou_plano, true)
-                     OR COALESCE(antecipou_stop, false)
-                     OR COALESCE(parcial_emocional, false)
-                     OR COALESCE(mudou_alvo, false)), 2)              AS custo_total,
-    count(*) FILTER (WHERE COALESCE(antecipou_stop, false))           AS n_antecipou_stop,
-    count(*) FILTER (WHERE COALESCE(parcial_emocional, false))        AS n_parcial_emocional,
-    count(*) FILTER (WHERE COALESCE(mudou_alvo, false))               AS n_mudou_alvo
-  FROM copa_trades
- WHERE status = 'FECHADO' AND pnl_real IS NOT NULL
+          FILTER (WHERE desvio_objetivo OR desvio_relatado), 2)             AS custo_total,
+    -- Vezes em que o fato diz desvio e o operador marcou que respeitou o plano.
+    -- E calibracao da propria honestidade no journal.
+    count(*) FILTER (WHERE desvio_objetivo AND NOT desvio_relatado)         AS desvios_nao_reconhecidos,
+    count(*) FILTER (WHERE COALESCE(antecipou_stop, false))                 AS n_antecipou_stop,
+    count(*) FILTER (WHERE COALESCE(parcial_emocional, false))              AS n_parcial_emocional,
+    count(*) FILTER (WHERE COALESCE(mudou_alvo, false))                     AS n_mudou_alvo
+  FROM base
  GROUP BY user_id;
+
 
 -- 7.5 Resultado por dia, com marcação do pior dia de cada fase.
 -- O regulamento descarta o pior dia. Depois que ele é consumido, todo dia
