@@ -14,7 +14,11 @@
       "Bash(echo \"=== VERIFY EXIT: $? ===\")",
       "Bash(echo \"=== BUILD EXIT: $? ===\")",
       "Bash(echo \"=== EXIT: $? ===\")",
-      "Bash(grep \"^-.*//\")"
+      "Bash(grep \"^-.*//\")",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --index-filter 'git rm --cached --ignore-unmatch conversa_ronaldo_15_setembro_2026.md' --prune-empty 6cca72a~1..HEAD)",
+      "Bash(cp \"C:/Users/Pc/AppData/Local/Temp/claude/e--AUTOMA--O-IA-TRADING-AI/10a319a5-2519-4cae-91ea-cc3a0bca98e4/scratchpad/conversa_ronaldo_BACKUP.md\" conversa_ronaldo_15_setembro_2026.md)",
+      "Bash(wc -l)",
+      "Bash(echo \"git ignora? $\\(git check-ignore -q conversa_ronaldo_15_setembro_2026.md && echo SIM || echo NAO\\)\")"
     ],
     "additionalDirectories": [
       "e:\\AUTOMA��O IA\\TRADING AI"
