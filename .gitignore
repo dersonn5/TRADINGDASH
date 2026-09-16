@@ -67,3 +67,6 @@ research/plots_html/
 frontend/
 
 *.html.gz
+
+# Conversa privada de terceiro — nao versionar
+conversa_ronaldo_*.md
