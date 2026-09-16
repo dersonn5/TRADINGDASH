@@ -4,22 +4,18 @@ import * as React from "react";
 import Link from "next/link";
 import { copaApi, Trade } from "@/lib/copa-api";
 import { FecharTradeDialog } from "@/components/copa/fechar-trade-dialog";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import {
-  PlusCircle,
-  CheckCircle,
-  AlertOctagon,
-  Trash2,
-  Lock,
-  ArrowUpRight,
-  ArrowDownRight,
-  ShieldAlert,
-  HelpCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  InstPage,
+  InstCard,
+  InstLabel,
+  InstNum,
+  InstBadge,
+  InstEmpty,
+  InstTable,
+  InstRow,
+  InstCell,
+} from "@/components/inst";
+import { PlusCircle, CheckCircle, Trash2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 export default function TradesJournalPage() {
   const [trades, setTrades] = React.useState<Trade[]>([]);
@@ -66,279 +62,303 @@ export default function TradesJournalPage() {
   };
 
   return (
-    <div className="container py-6 space-y-8">
-      {/* Topo */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Journal & Histórico de Trades</h1>
-          <p className="text-sm text-muted-foreground">
-            Registro auditado de execuções e compliance disciplinar na Copa BTG.
-          </p>
-        </div>
+    <InstPage
+      eyebrow="COPA BTG · JOURNAL"
+      title="Journal & Histórico de Trades"
+      right={
         <Link href="/copa/novo">
-          <Button className="gap-2 font-bold bg-primary text-primary-foreground">
-            <PlusCircle className="h-4 w-4" /> Novo Trade (Checklist)
-          </Button>
+          <button
+            type="button"
+            className="mono tabular"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "var(--inst-ok)",
+              border: "1px solid var(--inst-ok)",
+              color: "var(--inst-on-ok)",
+              borderRadius: "3px",
+              padding: "6px 14px",
+              fontSize: "11px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <PlusCircle className="h-3.5 w-3.5" /> Novo Trade (Checklist)
+          </button>
         </Link>
+      }
+    >
+      <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "4px" }}>
+        Registro auditado de execuções e compliance disciplinar na Copa BTG.
       </div>
 
       {/* 1. SEÇÃO DE TRADES ABERTOS */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold tracking-tight">Posições Abertas</h2>
-          <Badge variant={tradesAbertos.length > 0 ? "default" : "outline"} className="text-xs">
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "14px", fontWeight: 700, letterSpacing: "-0.01em" }}>
+            Posições Abertas
+          </span>
+          <InstBadge tom={tradesAbertos.length > 0 ? "now" : "neutro"}>
             {tradesAbertos.length} em andamento
-          </Badge>
+          </InstBadge>
         </div>
 
         {tradesAbertos.length === 0 ? (
-          <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground bg-muted/10">
+          <InstEmpty>
             Nenhum trade em andamento. O gate físico está liberado para nova oportunidade.
-          </div>
+          </InstEmpty>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {tradesAbertos.map((trade) => (
-              <Card key={trade.id} className="border-primary/40 bg-card shadow-sm">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-lg">#{trade.id}</span>
-                      <Badge variant="outline" className="font-mono font-bold">
-                        {trade.mercado}
-                      </Badge>
-                      <Badge
-                        className={cn(
-                          "font-bold gap-1",
-                          trade.direcao === "COMPRA"
-                            ? "bg-emerald-600 text-white"
-                            : "bg-rose-600 text-white"
-                        )}
-                      >
-                        {trade.direcao === "COMPRA" ? (
-                          <ArrowUpRight className="h-3 w-3" />
-                        ) : (
-                          <ArrowDownRight className="h-3 w-3" />
-                        )}
+              <InstCard
+                key={trade.id}
+                label={
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span className="mono tabular" style={{ fontSize: "14px", fontWeight: 700 }}>
+                      #{trade.id}
+                    </span>
+                    <InstBadge tom="neutro">{trade.mercado}</InstBadge>
+                    <InstBadge tom={trade.direcao === "COMPRA" ? "ok" : "block"}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
+                        {trade.direcao === "COMPRA" ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                         {trade.direcao}
-                      </Badge>
-                    </div>
-
-                    <Badge className="bg-primary/20 text-primary font-mono font-bold">
-                      Grade {trade.grade} ({trade.score} pts)
-                    </Badge>
+                      </span>
+                    </InstBadge>
                   </div>
-                  <CardDescription className="text-xs mt-1">
-                    Estratégia: <span className="font-semibold text-foreground">{trade.strategy_id}</span> • Aberto em: {trade.criado_em.split("T")[1]?.slice(0, 5) || trade.criado_em}
-                  </CardDescription>
-                </CardHeader>
+                }
+                right={
+                  <InstBadge tom="now">
+                    Grade {trade.grade} ({trade.score} pts)
+                  </InstBadge>
+                }
+              >
+                <div style={{ fontSize: "11px", color: "var(--inst-dim)" }}>
+                  Estratégia: <strong style={{ color: "var(--inst-text)" }}>{trade.strategy_id}</strong> • Aberto em: {trade.criado_em.split("T")[1]?.slice(0, 5) || trade.criado_em}
+                </div>
 
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-4 gap-2 rounded-lg bg-muted/30 p-3 text-center">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
-                        Entrada
-                      </span>
-                      <span className="font-mono font-bold text-sm">{trade.entrada}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
-                        Stop Loss
-                      </span>
-                      <span className="font-mono font-bold text-sm text-destructive">{trade.stop}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
-                        Alvo
-                      </span>
-                      <span className="font-mono font-bold text-sm text-emerald-400">{trade.alvo}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
-                        RR Plan
-                      </span>
-                      <span className="font-mono font-bold text-sm text-primary">
-                        1:{trade.rr_planejado}
-                      </span>
-                    </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr 1fr",
+                    gap: "6px",
+                    background: "var(--inst-bg-deep)",
+                    padding: "10px",
+                    borderRadius: "3px",
+                    border: "1px solid var(--inst-line-2)",
+                    textAlign: "center",
+                  }}
+                >
+                  <div>
+                    <span className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block" }}>
+                      ENTRADA
+                    </span>
+                    <InstNum value={trade.entrada} size="sm" />
                   </div>
-
-                  {trade.notas && (
-                    <p className="text-xs text-muted-foreground italic bg-muted/20 p-2 rounded">
-                      "{trade.notas}"
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-2 pt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteTrade(trade.id)}
-                      className="text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" /> Cancelar
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="flex-1 font-bold bg-primary text-primary-foreground gap-1.5"
-                      onClick={() => handleOpenCloseDialog(trade)}
-                    >
-                      <CheckCircle className="h-4 w-4" /> Fechar & Auditar Trade
-                    </Button>
+                  <div>
+                    <span className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block" }}>
+                      STOP LOSS
+                    </span>
+                    <InstNum value={trade.stop} tom="block" size="sm" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <span className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block" }}>
+                      ALVO
+                    </span>
+                    <InstNum value={trade.alvo} tom="ok" size="sm" />
+                  </div>
+                  <div>
+                    <span className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block" }}>
+                      RR PLAN
+                    </span>
+                    <InstNum value={`1:${trade.rr_planejado}`} tom="now" size="sm" />
+                  </div>
+                </div>
+
+                {trade.notas && (
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--inst-dim)",
+                      fontStyle: "italic",
+                      background: "var(--inst-bg-deep)",
+                      padding: "8px",
+                      borderRadius: "2px",
+                      border: "1px solid var(--inst-line-2)",
+                    }}
+                  >
+                    "{trade.notas}"
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "8px", paddingTop: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTrade(trade.id)}
+                    className="mono tabular"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      background: "transparent",
+                      border: "1px solid var(--inst-block-line)",
+                      color: "var(--inst-block)",
+                      borderRadius: "3px",
+                      padding: "6px 12px",
+                      fontSize: "11px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenCloseDialog(trade)}
+                    className="mono tabular"
+                    style={{
+                      flex: 1,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      background: "var(--inst-ok)",
+                      border: "1px solid var(--inst-ok)",
+                      color: "var(--inst-on-ok)",
+                      borderRadius: "3px",
+                      padding: "6px 14px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" /> Fechar & Auditar Trade
+                  </button>
+                </div>
+              </InstCard>
             ))}
           </div>
         )}
       </div>
 
       {/* 2. SEÇÃO DE HISTÓRICO DE TRADES FECHADOS */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold tracking-tight">Histórico de Operações</h2>
-            <Badge variant="outline" className="text-xs font-mono">
-              {tradesFechados.length} trades encerrados
-            </Badge>
-          </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "14px", fontWeight: 700, letterSpacing: "-0.01em" }}>
+            Histórico de Operações
+          </span>
+          <InstBadge tom="neutro">
+            {tradesFechados.length} trades encerrados
+          </InstBadge>
         </div>
 
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12 text-center">#</TableHead>
-                  <TableHead>Data / Hora</TableHead>
-                  <TableHead>Ativo / Lado</TableHead>
-                  <TableHead>Estratégia</TableHead>
-                  <TableHead className="text-center">Grade</TableHead>
-                  <TableHead className="text-right">Entrada / Stop / Alvo</TableHead>
-                  <TableHead className="text-center">Saída / Motivo</TableHead>
-                  <TableHead className="text-right">Pontos</TableHead>
-                  <TableHead className="text-right">PnL Real</TableHead>
-                  <TableHead className="text-right">PnL Plano</TableHead>
-                  <TableHead className="text-center">Disciplina</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tradesFechados.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
-                      Nenhum trade encerrado registrado no banco ainda.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  tradesFechados.map((t) => {
-                    const teveDesvio =
-                      t.respeitou_plano === 0 ||
-                      t.antecipou_stop === 1 ||
-                      t.parcial_emocional === 1 ||
-                      t.mudou_alvo === 1;
+        {tradesFechados.length === 0 ? (
+          <InstEmpty>Nenhum trade encerrado registrado no banco ainda.</InstEmpty>
+        ) : (
+          <InstTable
+            colunas={[
+              "#",
+              "Data / Hora",
+              "Ativo / Lado",
+              "Estratégia",
+              { label: "Grade", align: "center" },
+              { label: "Entrada / Stop / Alvo", align: "right" },
+              { label: "Saída / Motivo", align: "center" },
+              { label: "Pontos", align: "right" },
+              { label: "PnL Real", align: "right" },
+              { label: "PnL Plano", align: "right" },
+              { label: "Disciplina", align: "center" },
+            ]}
+          >
+            {tradesFechados.map((t) => {
+              const teveDesvio =
+                t.respeitou_plano === 0 ||
+                t.antecipou_stop === 1 ||
+                t.parcial_emocional === 1 ||
+                t.mudou_alvo === 1;
 
-                    const pnlReal = t.pnl_real ?? 0;
-                    const pnlPlano = t.pnl_plano ?? pnlReal;
-                    const custoDesvio = pnlPlano - pnlReal;
+              const pnlReal = t.pnl_real ?? 0;
+              const pnlPlano = t.pnl_plano ?? pnlReal;
+              const custoDesvio = pnlPlano - pnlReal;
 
-                    return (
-                      <TableRow
-                        key={t.id}
-                        className={cn(
-                          "transition-colors",
-                          teveDesvio && "border-l-4 border-l-destructive bg-destructive/5"
-                        )}
-                      >
-                        <TableCell className="font-mono text-center font-bold text-xs">
-                          {t.id}
-                        </TableCell>
-                        <TableCell className="text-xs whitespace-nowrap">
-                          <span className="font-medium block">{t.data}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">
-                            {t.criado_em.split("T")[1]?.slice(0, 5) || ""} →{" "}
-                            {t.fechado_em?.split("T")[1]?.slice(0, 5) || ""}
+              return (
+                <InstRow
+                  key={t.id}
+                  tom={teveDesvio ? "block" : pnlReal > 0 ? "ok" : pnlReal < 0 ? "block" : "neutro"}
+                >
+                  <InstCell>
+                    <span className="mono tabular" style={{ fontWeight: 700 }}>
+                      #{t.id}
+                    </span>
+                  </InstCell>
+                  <InstCell>
+                    <span className="mono tabular" style={{ fontSize: "12px", display: "block" }}>
+                      {t.data}
+                    </span>
+                    <span className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-faint)" }}>
+                      {t.criado_em.split("T")[1]?.slice(0, 5) || ""} → {t.fechado_em?.split("T")[1]?.slice(0, 5) || ""}
+                    </span>
+                  </InstCell>
+                  <InstCell>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span className="mono tabular" style={{ fontWeight: 700 }}>{t.mercado}</span>
+                      <InstBadge tom={t.direcao === "COMPRA" ? "ok" : "block"}>
+                        {t.direcao}
+                      </InstBadge>
+                    </div>
+                  </InstCell>
+                  <InstCell>
+                    <span style={{ fontSize: "12px" }}>{t.strategy_id}</span>
+                  </InstCell>
+                  <InstCell align="center">
+                    <InstBadge tom="neutro">
+                      {t.grade} ({t.score}p)
+                    </InstBadge>
+                  </InstCell>
+                  <InstCell align="right">
+                    <span className="mono tabular" style={{ fontSize: "11.5px" }}>
+                      {t.entrada} / <span style={{ color: "var(--inst-block)" }}>{t.stop}</span> / <span style={{ color: "var(--inst-ok)" }}>{t.alvo}</span>
+                    </span>
+                  </InstCell>
+                  <InstCell align="center">
+                    <span className="mono tabular" style={{ fontWeight: 700, display: "block" }}>
+                      {t.saida ?? "—"}
+                    </span>
+                    <InstBadge tom="neutro">{t.motivo_saida}</InstBadge>
+                  </InstCell>
+                  <InstCell align="right">
+                    <span className="mono tabular">{t.pontos_real ?? 0} pts</span>
+                  </InstCell>
+                  <InstCell align="right">
+                    <InstNum
+                      value={`R$ ${pnlReal.toFixed(2)}`}
+                      tom={pnlReal > 0 ? "ok" : pnlReal < 0 ? "block" : "neutro"}
+                      size="sm"
+                    />
+                  </InstCell>
+                  <InstCell align="right">
+                    <span className="mono tabular" style={{ color: "var(--inst-faint)" }}>
+                      R$ {pnlPlano.toFixed(2)}
+                    </span>
+                  </InstCell>
+                  <InstCell align="center">
+                    {teveDesvio ? (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+                        <InstBadge tom="block">DESVIO</InstBadge>
+                        {custoDesvio > 0 && (
+                          <span className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-block)", fontWeight: 700 }}>
+                            -R$ {custoDesvio.toFixed(0)}
                           </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-bold text-xs">{t.mercado}</span>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-[10px] py-0 px-1 font-bold",
-                                t.direcao === "COMPRA"
-                                  ? "text-emerald-400 border-emerald-500/30"
-                                  : "text-rose-400 border-rose-500/30"
-                              )}
-                            >
-                              {t.direcao}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs font-medium">
-                          {t.strategy_id}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="outline" className="font-mono text-xs font-bold">
-                            {t.grade} ({t.score}p)
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs whitespace-nowrap">
-                          <span>{t.entrada}</span> /{" "}
-                          <span className="text-destructive">{t.stop}</span> /{" "}
-                          <span className="text-emerald-400">{t.alvo}</span>
-                        </TableCell>
-                        <TableCell className="text-center text-xs">
-                          <div className="font-mono font-bold">{t.saida ?? "—"}</div>
-                          <Badge variant="secondary" className="text-[9px] py-0">
-                            {t.motivo_saida}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs font-semibold">
-                          {t.pontos_real ?? 0} pts
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "text-right font-mono font-bold text-sm whitespace-nowrap",
-                            pnlReal > 0
-                              ? "text-emerald-400"
-                              : pnlReal < 0
-                              ? "text-red-400"
-                              : "text-foreground"
-                          )}
-                        >
-                          R$ {pnlReal.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs text-muted-foreground whitespace-nowrap">
-                          R$ {pnlPlano.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {teveDesvio ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <Badge variant="destructive" className="text-[9px] py-0 font-bold">
-                                DESVIO
-                              </Badge>
-                              {custoDesvio > 0 && (
-                                <span className="text-[9px] font-mono text-destructive font-bold">
-                                  -R$ {custoDesvio.toFixed(0)}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] py-0">
-                              PLANO 100%
-                            </Badge>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
+                        )}
+                      </div>
+                    ) : (
+                      <InstBadge tom="ok">PLANO 100%</InstBadge>
+                    )}
+                  </InstCell>
+                </InstRow>
+              );
+            })}
+          </InstTable>
+        )}
       </div>
 
       {/* Modal de Fechamento */}
@@ -348,6 +368,6 @@ export default function TradesJournalPage() {
         onOpenChange={setDialogOpen}
         onTradeClosed={handleTradeClosed}
       />
-    </div>
+    </InstPage>
   );
 }

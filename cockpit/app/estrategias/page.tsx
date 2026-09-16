@@ -3,21 +3,22 @@
 import * as React from "react";
 import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Activity,
+  InstPage,
+  InstCard,
+  InstLabel,
+  InstBadge,
+  InstNum,
+  InstDivider,
+} from "@/components/inst";
+import {
   CheckCircle2,
   XCircle,
   Clock,
-  Shield,
-  Layers,
   Play,
   Flame,
   Target,
   ArrowRight,
-  BookOpen,
 } from "lucide-react";
 
 export default function EstrategiasTradingPage() {
@@ -30,65 +31,91 @@ export default function EstrategiasTradingPage() {
   const somaPesos = pontos.reduce((acc, p) => acc + p.peso, 0);
 
   return (
-    <div className="space-y-6">
+    <InstPage
+      eyebrow="PLAYBOOKS · COGNITIVO"
+      title="Estratégias & Playbooks Validados"
+      right={
+        <Link href="/checklist">
+          <button
+            type="button"
+            className="mono tabular"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "var(--inst-ok)",
+              border: "1px solid var(--inst-ok)",
+              color: "var(--inst-on-ok)",
+              borderRadius: "3px",
+              padding: "6px 14px",
+              fontSize: "11px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <Play style={{ width: "14px", height: "14px" }} /> Operar no Checklist
+          </button>
+        </Link>
+      }
+    >
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <Activity className="size-6" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Estratégias & Playbooks Validados</h1>
-            <Badge variant="outline" className="text-emerald-400 border-emerald-800/40 bg-emerald-950/20">
-              Operacional Ativo
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Parâmetros mecânicos, condições de ambiente e regras de execução de cada modelo institucional.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link href="/checklist">
-            <Button className="gap-2 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90 text-primary-foreground shadow-lg shadow-primary/20">
-              <Play className="size-4" />
-              Operar no Checklist
-            </Button>
-          </Link>
-        </div>
+      <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "8px" }}>
+        Parâmetros mecânicos, condições de ambiente e regras de execução de cada modelo institucional.
       </div>
 
       {/* Tabs / Seletor de Estratégias */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "12px" }}>
         {strategies.map((strat) => {
           const isSelected = strat.id === selectedId;
           return (
             <div
               key={strat.id}
               onClick={() => setSelectedId(strat.id)}
-              className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                isSelected
-                  ? "bg-card border-primary ring-1 ring-primary/40 shadow-md"
-                  : "bg-card/50 border-border/60 hover:bg-card hover:border-border"
-              }`}
+              style={{
+                borderRadius: "3px",
+                border: isSelected ? "1px solid var(--inst-ok)" : "1px solid var(--inst-line)",
+                background: isSelected ? "var(--inst-panel-2)" : "var(--inst-panel)",
+                padding: "14px 16px",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                transition: "border-color 0.15s ease",
+              }}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-foreground">{strat.nome}</span>
-                <div className="flex gap-1">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--inst-text)" }}>{strat.nome}</span>
+                <div style={{ display: "flex", gap: "4px" }}>
                   {strat.mercado.map((m) => (
-                    <Badge key={m} variant="outline" className="text-[10px] font-mono font-bold">
+                    <InstBadge key={m} tom="neutro">
                       {m}
-                    </Badge>
+                    </InstBadge>
                   ))}
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
+              <div style={{ fontSize: "11px", color: "var(--inst-dim)", lineHeight: 1.4 }}>
                 {strat.descricao}
-              </p>
-              <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/40 text-[11px]">
-                <span className="text-muted-foreground">Score Mín: <b className="text-foreground">{strat.score_minimo} pts</b></span>
-                <span className="text-cyan-400 font-semibold flex items-center gap-1">
-                  {strat.checklist.length} itens <ArrowRight className="size-3" />
+              </div>
+              <div
+                className="mono tabular"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginTop: "auto",
+                  paddingTop: "8px",
+                  borderTop: "1px solid var(--inst-line-2)",
+                  fontSize: "11px",
+                }}
+              >
+                <span style={{ color: "var(--inst-dim)" }}>
+                  Score Mín:{" "}
+                  <b style={{ color: "var(--inst-text)" }}>
+                    <InstNum value={`${strat.score_minimo} pts`} size="sm" />
+                  </b>
+                </span>
+                <span style={{ color: "var(--inst-ok)", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
+                  {strat.checklist.length} itens <ArrowRight style={{ width: "12px", height: "12px" }} />
                 </span>
               </div>
             </div>
@@ -97,65 +124,123 @@ export default function EstrategiasTradingPage() {
       </div>
 
       {/* Detalhes da Estratégia Selecionada */}
-      <Card className="border-border/80 shadow-md overflow-hidden bg-card/70">
-        <CardHeader className="bg-muted/20 pb-5 border-b border-border/40">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <InstCard>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
             <div>
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-xl font-bold">{currentStrategy.nome}</CardTitle>
-                <Badge variant="outline" className="font-mono text-xs text-primary border-primary">
-                  {currentStrategy.id}
-                </Badge>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "-0.015em", color: "var(--inst-text)" }}>
+                  {currentStrategy.nome}
+                </span>
+                <InstBadge tom="neutro">{currentStrategy.id}</InstBadge>
               </div>
-              <CardDescription className="text-sm text-foreground/90 mt-1 max-w-3xl leading-relaxed">
+              <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "6px", maxWidth: "800px", lineHeight: 1.5 }}>
                 {currentStrategy.descricao}
-              </CardDescription>
+              </div>
             </div>
 
             <Link href={`/copa/novo?strategy=${currentStrategy.id}`}>
-              <Button className="gap-2 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
-                <Play className="size-4" /> Iniciar com este Playbook
-              </Button>
+              <button
+                type="button"
+                className="mono tabular"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "var(--inst-ok)",
+                  border: "1px solid var(--inst-ok)",
+                  color: "var(--inst-on-ok)",
+                  borderRadius: "3px",
+                  padding: "6px 14px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                <Play style={{ width: "14px", height: "14px" }} /> Iniciar com este Playbook
+              </button>
             </Link>
           </div>
 
           {/* Parâmetros e Horários */}
-          <div className="flex flex-wrap gap-4 pt-3 text-xs text-muted-foreground font-mono">
-            <div className="flex items-center gap-1">
-              <Clock className="size-3.5 text-primary" />
+          <div
+            className="mono tabular"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              flexWrap: "wrap",
+              fontSize: "11px",
+              color: "var(--inst-dim)",
+              paddingTop: "4px",
+              borderTop: "1px solid var(--inst-line-2)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <Clock style={{ width: "13px", height: "13px", color: "var(--inst-dim)" }} />
               <span>Janela de Operação:</span>{" "}
-              <b className="text-foreground">
+              <b style={{ color: "var(--inst-text)" }}>
                 {currentStrategy.horarios_validos.map((h) => `${h.inicio} às ${h.fim}`).join(", ")}
               </b>
             </div>
-            <div>•</div>
-            <div className="flex items-center gap-1">
-              <Target className="size-3.5 text-cyan-400" />
-              <span>Score Mínimo:</span> <b className="text-foreground">{currentStrategy.score_minimo} pontos</b>
+            <div style={{ color: "var(--inst-lock)" }}>•</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <Target style={{ width: "13px", height: "13px", color: "var(--inst-ok)" }} />
+              <span>Score Mínimo:</span>{" "}
+              <b style={{ color: "var(--inst-text)" }}>
+                <InstNum value={`${currentStrategy.score_minimo} pontos`} size="sm" />
+              </b>
             </div>
           </div>
-        </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+          <InstDivider />
+
           {/* Ambientes Favoráveis e Desfavoráveis */}
           {currentStrategy.ambiente_favoravel && currentStrategy.ambiente_favoravel.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/10 p-4 space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="size-4" /> Ambiente Ideal (Edge Institucional Alto)
-                </span>
-                <ul className="space-y-1.5 text-xs text-foreground/80 pl-4 list-disc">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
+              <div
+                style={{
+                  border: "1px solid var(--inst-ok-line)",
+                  background: "var(--inst-ok-bg)",
+                  borderRadius: "3px",
+                  padding: "14px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <CheckCircle2 style={{ width: "14px", height: "14px", color: "var(--inst-ok)" }} />
+                  <span className="mono" style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--inst-ok)" }}>
+                    Ambiente Ideal (Edge Institucional Alto)
+                  </span>
+                </div>
+                <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "12px", color: "var(--inst-text)", lineHeight: 1.6, display: "flex", flexDirection: "column", gap: "4px" }}>
                   {currentStrategy.ambiente_favoravel.map((cond, i) => (
                     <li key={i}>{cond}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="rounded-xl border border-red-500/30 bg-red-950/10 p-4 space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-red-400 flex items-center gap-1.5">
-                  <XCircle className="size-4" /> Ambiente Tóxico (Evitar / Abortar Ordem)
-                </span>
-                <ul className="space-y-1.5 text-xs text-foreground/80 pl-4 list-disc">
+              <div
+                style={{
+                  border: "1px solid var(--inst-block-line)",
+                  background: "var(--inst-block-bg)",
+                  borderRadius: "3px",
+                  padding: "14px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <XCircle style={{ width: "14px", height: "14px", color: "var(--inst-block)" }} />
+                  <span className="mono" style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--inst-block)" }}>
+                    Ambiente Tóxico (Evitar / Abortar Ordem)
+                  </span>
+                </div>
+                <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "12px", color: "var(--inst-text)", lineHeight: 1.6, display: "flex", flexDirection: "column", gap: "4px" }}>
                   {currentStrategy.ambiente_desfavoravel.map((cond, i) => (
                     <li key={i}>{cond}</li>
                   ))}
@@ -165,66 +250,88 @@ export default function EstrategiasTradingPage() {
           )}
 
           {/* Checklist Detalhado */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-              <Flame className="size-4 text-primary" />
-              Critérios de Validação & Pontuação (Total de Confluências: {somaPesos} pts)
-            </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "4px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <Flame style={{ width: "14px", height: "14px", color: "var(--inst-ok)" }} />
+              <InstLabel>Critérios de Validação & Pontuação (Total de Confluências: {somaPesos} pts)</InstLabel>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
               {/* Itens KILL */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between pb-1 border-b border-border/40">
-                  <span className="text-xs font-bold text-red-400 uppercase">
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "6px", borderBottom: "1px solid var(--inst-line-2)" }}>
+                  <span className="mono" style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--inst-block)" }}>
                     Itens Mandatórios (KILL)
                   </span>
-                  <span className="text-xs font-mono font-bold text-red-400">
+                  <span className="mono tabular" style={{ fontSize: "10px", fontWeight: 700, color: "var(--inst-block)" }}>
                     {kills.length} obrigatórios
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {kills.map((k) => (
-                    <div key={k.id} className="rounded-lg border border-red-900/30 bg-red-950/10 p-3 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-foreground">{k.label}</span>
-                        <Badge variant="destructive" className="text-[9px] py-0 font-bold">
-                          KILL
-                        </Badge>
+                    <div
+                      key={k.id}
+                      style={{
+                        borderRadius: "3px",
+                        border: "1px solid var(--inst-line-2)",
+                        background: "var(--inst-panel-2)",
+                        padding: "10px 12px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "4px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--inst-text)" }}>{k.label}</span>
+                        <InstBadge tom="block">KILL</InstBadge>
                       </div>
-                      {k.ajuda && <p className="text-[11px] text-muted-foreground">{k.ajuda}</p>}
+                      {k.ajuda && (
+                        <div style={{ fontSize: "11px", color: "var(--inst-dim)", lineHeight: 1.4 }}>{k.ajuda}</div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Itens PONTO */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between pb-1 border-b border-border/40">
-                  <span className="text-xs font-bold text-primary uppercase">
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "6px", borderBottom: "1px solid var(--inst-line-2)" }}>
+                  <span className="mono" style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--inst-ok)" }}>
                     Itens de Confluência (PONTOS)
                   </span>
-                  <span className="text-xs font-mono font-bold text-primary">
+                  <span className="mono tabular" style={{ fontSize: "10px", fontWeight: 700, color: "var(--inst-ok)" }}>
                     {pontos.length} itens ({somaPesos} pts)
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {pontos.map((p) => (
-                    <div key={p.id} className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-foreground">{p.label}</span>
-                        <Badge variant="outline" className="text-[10px] font-mono font-bold py-0 text-primary border-primary/50">
-                          +{p.peso} pts
-                        </Badge>
+                    <div
+                      key={p.id}
+                      style={{
+                        borderRadius: "3px",
+                        border: "1px solid var(--inst-line-2)",
+                        background: "var(--inst-panel-2)",
+                        padding: "10px 12px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "4px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--inst-text)" }}>{p.label}</span>
+                        <InstBadge tom="ok">+{p.peso} pts</InstBadge>
                       </div>
-                      {p.ajuda && <p className="text-[11px] text-muted-foreground">{p.ajuda}</p>}
+                      {p.ajuda && (
+                        <div style={{ fontSize: "11px", color: "var(--inst-dim)", lineHeight: 1.4 }}>{p.ajuda}</div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </InstCard>
+    </InstPage>
   );
 }

@@ -191,10 +191,17 @@
   --inst-ok-line:   #1E3A2E;
   --inst-now-line:  #3A3020;
   --inst-block-line:#3A1F1C;
+
+  /* Superficies e cores derivadas. Existiam como literal espalhado pelas
+     paginas, o que refaz a divergencia que os tokens existem para impedir. */
+  --inst-bg-deep:   #080A0C;  /* fundo rebaixado, dentro de card */
+  --inst-hover:     #15191D;  /* realce de linha sob o cursor */
+  --inst-line-soft: #14181B;  /* divisoria interna de tabela */
+  --inst-on-ok:     #08150F;  /* texto sobre fundo --inst-ok */
 }
 
 .tabular { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-.mono { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono), ui-monospace, monospace; }
 .step { transition: background 140ms ease, border-color 140ms ease; }
 .step-live { cursor: pointer !important; }
 .step-live:hover { background: #1B2024 !important; }

@@ -1,11 +1,9 @@
 import {
   LayoutDashboard,
   CandlestickChart,
-  FlaskConical,
   Brain,
   Activity,
   BookOpen,
-  Settings,
   Trophy,
   FileText,
   PlusCircle,
@@ -54,19 +52,14 @@ export const sidebarData: { navGroups: NavGroup[] } = {
         { title: "Banco de Trades", url: "/trades", icon: CandlestickChart },
         { title: "Checklist Pregão", url: "/checklist", icon: ShieldCheck },
         { title: "Estratégias", url: "/estrategias", icon: Activity },
-        { title: "Backtests", url: "/backtests", icon: FlaskConical },
       ],
     },
     {
       title: "Inteligência",
       items: [
         { title: "Segundo Cérebro", url: "/cerebro", icon: Brain },
-        { title: "Pesquisa", url: "/pesquisa", icon: BookOpen },
       ],
-    },
-    {
-      title: "Sistema",
-      items: [{ title: "Configurações", url: "/config", icon: Settings }],
     },
   ],
 };
+

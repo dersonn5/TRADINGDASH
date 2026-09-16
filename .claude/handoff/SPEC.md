@@ -1,372 +1,203 @@
-# SPEC — Duas estratégias, persistência e o gate que impede operar demais
+# SPEC — Unificar o front na estética instrumento
 
 ## Objetivo
 
-O operador definiu o trade system dele por escrito pela primeira vez. A fonte
-canônica é `Cerebro_Obsidian/Trading AI/B05 Trade System/Trade_System_Anderson.md`.
-**Leia esse arquivo antes de escrever qualquer linha.**
+A tela `/checklist` foi redesenhada na direção **instrumento de precisão**:
+escuro, denso, tipografia técnica, números tabulares, e cor só onde significa
+estado. Todas as outras 10 páginas continuam com a aparência antiga do shadcn.
 
-Três mudanças decorrem disso:
+O operador: *"o front do menu Checklist Pregão está diferente de todos os
+outros, precisamos deixar todos com a mesma cara."*
 
-**1. São duas estratégias, não uma.** Reversão HTF e Continuidade de Tendência
-têm gatilhos diferentes e checklists diferentes. Os JSONs já estão escritos em
-`copa/strategies/`. O app só conhece uma.
+Esta task faz isso. Mas **não restilizando página por página** — isso é o que
+produziu a divergência atual e a produziria de novo em duas semanas.
 
-**2. A persistência nunca subiu.** O app não sabe quantos trades foram feitos
-hoje — o campo `TRADES` renderiza `—`. Por isso nenhum limite bloqueia nada, e o
-operador vem operando solto no meio da Copa. Este é o problema central.
+**Primeiro extrai os primitivos visuais do `/checklist` em componentes. Depois
+as páginas consomem os componentes.** A partir daí, mudar a estética é mudar um
+arquivo, não onze.
 
-**3. Os limites são os do Profit Chart.** A plataforma trava em **3 perdas** ou
-**5 operações**. O sistema usa exatamente esses números. Regra que contradiz a
-plataforma vira regra ignorada.
+**Leia `cockpit/app/checklist/page.tsx` antes de escrever qualquer linha.** Ela é
+a referência viva: os valores saem de lá, não de invenção.
 
 ---
 
 ## Arquivos (só estes)
 
-1. `cockpit/lib/supabase.ts` — persistir sessão de auth
-2. `cockpit/app/login/page.tsx` — **novo**
-3. `cockpit/components/auth-gate.tsx` — **novo**
-4. `cockpit/app/layout.tsx` — envolver com o auth gate
-5. `cockpit/data/strategies.ts` — as duas estratégias
-6. `cockpit/lib/copa-db.ts` — **novo**, camada de dados `copa_*`
-7. `cockpit/lib/gate.ts` — limites reais no gate
-8. `cockpit/app/checklist/page.tsx` — seleção de estratégia, formulário, ligação
-9. `cockpit/lib/trading-db.ts` — derivar itens da estratégia escolhida
-10. `cockpit/scripts/verify.ts` — casos novos
+**Fase 1 — primitivos**
+1. `cockpit/components/inst/index.tsx` — **novo**, os componentes
+2. `cockpit/app/globals.css` — classes utilitárias que faltarem
 
-`git diff --stat` tem que listar exatamente estes dez.
+**Fase 2 — páginas, nesta ordem**
+3. `cockpit/app/page.tsx` (113 linhas)
+4. `cockpit/app/copa/fase/page.tsx` (64)
+5. `cockpit/app/copa/page.tsx` (312)
+6. `cockpit/app/copa/trades/page.tsx` (353)
+7. `cockpit/app/copa/stats/page.tsx` (429)
+8. `cockpit/app/copa/estrategias/page.tsx` (226)
+9. `cockpit/app/copa/config/page.tsx` (380)
+10. `cockpit/app/estrategias/page.tsx` (230)
+11. `cockpit/app/trades/page.tsx` (506)
+12. `cockpit/app/cerebro/page.tsx` (357)
+
+**Fase 3 — menu**
+13. `cockpit/config/sidebar.ts`
+
+`git diff --stat` tem que listar exatamente estes treze.
+
+> A ordem importa. Se faltar tempo, **pare no fim de uma página inteira** e
+> reporte onde parou. Página pela metade é pior que página não tocada.
 
 ## NÃO MEXER
 
-Ver `.claude/skills/dupla/SKILL.md`. Nesta task, em especial: `copa/**` (os JSONs
-das estratégias são **fonte, leitura apenas** — não editar), `core/**`,
-`strategies/**`, `cockpit/supabase/**` (SQL já aplicado), `cockpit/app/copa/**`.
+Ver `.claude/skills/dupla/SKILL.md`. Nesta task, em especial:
+`cockpit/app/checklist/page.tsx` (**é a referência, leitura apenas**),
+`cockpit/app/login/page.tsx` (já está na estética),
+`cockpit/lib/**`, `cockpit/data/**`, `cockpit/supabase/**`, `copa/**`, `core/**`.
 
-**Não instalar dependência.** `@supabase/supabase-js` já está no projeto.
+**Esta task é só apresentação.** Nenhuma chamada de dados muda, nenhuma lógica
+muda, nenhum contrato muda. Se você precisou editar algo em `lib/`, leu errado.
 
-**Regra de conformidade da Copa vale integralmente** — sem cotação, sem dado de
-mercado, sem detecção de setup.
-
----
-
-## 1. Autenticação
-
-### 1a. `cockpit/lib/supabase.ts`
-
-```ts
-createClient(url, anonKey, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
-})
-```
-
-### 1b. `cockpit/app/login/page.tsx`
-
-Tela mínima, estética instrumento (tokens `--inst-*`): e-mail, senha, botão
-ENTRAR. `supabase.auth.signInWithPassword`. Erro em vermelho com a mensagem real
-do Supabase, **não** texto genérico. Sem cadastro, sem recuperação, sem OAuth.
-
-### 1c. `cockpit/components/auth-gate.tsx`
-
-Client component. `getSession()` + `onAuthStateChange`. Três estados: carregando
-(fundo `--inst-bg`, sem flash), sem sessão (redireciona para `/login`), com
-sessão (renderiza children). `/login` não passa pelo gate.
-
-### 1d. `cockpit/app/layout.tsx`
-
-Envolver com `<AuthGate>`. Não mexer nas fontes nem no `dark`.
+**Não instalar dependência.**
 
 ---
 
-## 2. `cockpit/data/strategies.ts` — as duas estratégias
+## 1. `cockpit/components/inst/index.tsx` — os primitivos
 
-Substituir `PLAYBOOK_ANDERSON` por duas constantes, **transcritas fielmente** de
-`copa/strategies/reversao_htf.json` e `copa/strategies/continuidade_tendencia.json`.
+Componentes client-safe, sem estado, sem fetch. Estilo inline com os tokens
+`--inst-*` que já existem em `globals.css`.
+
+Tom compartilhado por todos:
 
 ```ts
-export const REVERSAO_HTF: Strategy = { /* de reversao_htf.json */ };
-export const CONTINUIDADE_TENDENCIA: Strategy = { /* de continuidade_tendencia.json */ };
-export const DEFAULT_STRATEGIES: Strategy[] = [REVERSAO_HTF, CONTINUIDADE_TENDENCIA];
+export type Tom = "ok" | "now" | "block" | "lock" | "neutro";
 ```
 
-Campo a campo, sem reescrever texto, sem "melhorar" label ou ajuda. O `verify.ts`
-compara os dois lados e falha se divergirem.
+Mapa de cores — **usar exatamente estes tokens**, sem inventar cor:
 
-`REVERSAO_HTF` tem 7 KILL e 6 PONTO. `CONTINUIDADE_TENDENCIA` tem 6 KILL e
-6 PONTO. Os dois somam 100 em PONTO.
+| Tom | Texto | Fundo | Borda |
+|---|---|---|---|
+| `ok` | `--inst-ok` | `--inst-ok-bg` | `--inst-ok-line` |
+| `now` | `--inst-now` | `--inst-now-bg` | `--inst-now-line` |
+| `block` | `--inst-block` | `--inst-block-bg` | `--inst-block-line` |
+| `lock` | `--inst-lock` | transparente | `--inst-line` |
+| `neutro` | `--inst-text` | `--inst-panel` | `--inst-line` |
+
+### Componentes
+
+**`<InstLabel>`** — o rótulo mono que aparece 35 vezes no checklist.
+Fonte mono, `10px`, `letterSpacing: "0.16em"`, `textTransform: "uppercase"`,
+cor `--inst-faint`.
+
+**`<InstPage eyebrow title right?>`** — casca da página.
+Cabeçalho com `InstLabel` no eyebrow, título 23px peso 600
+`letterSpacing: "-0.015em"`, slot `right` opcional, `borderBottom: 1px solid
+var(--inst-line-2)` e `paddingBottom: 18px`. Conteúdo abaixo com `gap: 20px`.
+
+**`<InstBar>`** e **`<InstBarCell label value tom? sub?>`** — a barra de estado
+do topo. Células separadas por `borderRight: 1px solid var(--inst-line-2)`,
+padding `14px 24px`, label em `InstLabel` e valor em mono tabular 15px.
+
+**`<InstCard label? children>`** — painel.
+`border: 1px solid var(--inst-line)`, `background: var(--inst-panel)`,
+`borderRadius: 3px`, padding `20px 22px`.
+
+**`<InstNum value tom? size?>`** — número.
+Sempre `className="tabular"`. `size`: `sm` 13px · `md` 16px · `lg` 25px ·
+`xl` 34px, peso 600 nos dois maiores.
+
+**`<InstBadge tom children>`** — pílula.
+Mono `9px`, `letterSpacing: "0.1em"`, uppercase, `padding: "3px 9px"`,
+`borderRadius: 2px`, borda e cor do tom.
+
+**`<InstBand tom titulo linhas? acao?>`** — a faixa de status.
+`borderLeft: "3px solid"` na cor do tom, fundo do tom, `borderRadius: 3px`,
+padding `17px 22px`. Título mono 17px peso 600. `linhas` renderiza cada item
+com um travessão na cor do tom — **todas, sem truncar e sem tooltip**.
+
+**`<InstTable colunas children>`** e **`<InstRow tom? children>`** — tabela densa.
+Cabeçalho com `InstLabel`, fundo `--inst-bg`, `borderBottom: 1px solid
+var(--inst-line)`. Linhas com `borderBottom: 1px solid #14181B` e padding
+`12px 16px`. `InstRow` com tom desenha `borderLeft: 2px solid` na cor.
+
+**`<InstEmpty children>`** — estado vazio.
+Borda tracejada `1px dashed var(--inst-line-2)`, texto `--inst-faint`, centrado.
+
+**`<InstDivider>`** — `height: 1px`, `background: var(--inst-line)`.
+
+### Regra de cor
+
+Cor **só** significa estado. Nenhum componente aceita cor arbitrária. Se um
+elemento não é `ok`, `now`, `block` ou `lock`, ele é `neutro` e não tem cor.
+
+Sem gradiente, sem cor de marca, sem accent decorativo.
 
 ---
 
-## 3. `cockpit/lib/copa-db.ts` (novo)
+## 2. `cockpit/app/globals.css`
 
-Camada de dados. Só isto, nada de UI.
+Só acrescentar o que faltar. `.tabular` já existe. Se `.mono` não existir como
+classe isolada, criar:
 
-```ts
-export interface TradeInput {
-  strategy_id: string;
-  mercado: "WIN" | "WDO";
-  direcao: "COMPRA" | "VENDA";
-  janela: "PRIME" | "VALIDA" | "FORA";
-  score: number;
-  score_minimo: number;
-  grade: string;
-  entrada: number;
-  stop: number;
-  alvo: number;
-  contratos: number;
-  rr_planejado: number;
-  itens: Array<{ item_id: string; tipo: "KILL" | "PONTO"; checked: boolean; peso_no_momento: number }>;
-  notas?: string;
-}
-
-export interface ResumoDoDia {
-  session_id: string | null;
-  trades_fechados: number;
-  trades_abertos: number;
-  operacoes_hoje: number;        // fechados + abertos
-  perdas_hoje: number;
-  pnl_dia: number;
-  ultimo_loss_em: Date | null;
-  trade_aberto_id: string | null;
-}
-
-export interface FechamentoInput {
-  saida: number;
-  motivo_saida: "ALVO" | "STOP" | "MANUAL";
-  desfecho_plano?: "BATEU_ALVO" | "BATEU_STOP" | "NAO_SEI";
-  execucao: "A" | "B" | "C";
-  respeitou_plano: boolean;
-  antecipou_stop: boolean;
-  parcial_emocional: boolean;
-  mudou_alvo: boolean;
-  notas?: string;
-}
-
-export async function getVersaoVigente(strategyId: string): Promise<string | null>;
-export async function getOuCriarSessaoDoDia(): Promise<string>;
-export async function getResumoDoDia(): Promise<ResumoDoDia>;
-export async function registrarTrade(input: TradeInput): Promise<string>;
-export async function fecharTrade(id: string, f: FechamentoInput): Promise<void>;
+```css
+.mono { font-family: var(--font-mono), ui-monospace, monospace; }
 ```
 
-### Regras
-
-**`getVersaoVigente`** — maior `versao` do `strategy_id` em
-`copa_strategy_versions`. Amarra o trade aos pesos que valiam na entrada.
-
-**`getOuCriarSessaoDoDia`** — data de hoje em **America/Sao_Paulo**, nunca
-`toISOString()` do navegador (depois das 21h dá o dia seguinte). Procura em
-`copa_sessions` por `data`; se não existir, cria com os defaults do schema e
-`phase_id` resolvido por `copa_phases` (a fase cujo intervalo contém a data, ou
-null). `user_id` vem do `DEFAULT auth.uid()` — **não enviar**.
-
-**`registrarTrade`** — duas etapas, sem transação no client:
-1. insere em `copa_trades`, pega o `id`
-2. insere **todos** os itens em `copa_trade_items` numa chamada só
-
-Se o passo 2 falhar, **apagar o trade do passo 1** e propagar o erro. Trade sem
-snapshot mente na estatística para sempre.
-
-**`fecharTrade`** — calcula:
-- `pontos_real` = (saída − entrada) × sinal · sinal = +1 COMPRA, −1 VENDA
-- `pnl_real` = `pontos_real` × contratos × valor_ponto (WIN 0,20 · WDO 10,00)
-- `pnl_plano`: ALVO ou STOP → igual a `pnl_real`. MANUAL com BATEU_ALVO → como se
-  tivesse saído no alvo; BATEU_STOP → como se no stop; NAO_SEI → igual ao real.
-- `notas` gravado com o prefixo `[EXEC:A]`, `[EXEC:B]` ou `[EXEC:C]` seguido das
-  notas livres. **Não alterar o schema** — a coluna já existe.
-- `hora_saida` = agora · `status` = `FECHADO`
-
-**Erros nunca são engolidos.** Toda função propaga a mensagem do Supabase. Trade
-que silenciosamente não gravou é o pior resultado possível desta task.
+Não alterar nem remover token existente.
 
 ---
 
-## 4. `cockpit/lib/gate.ts` — os limites reais
+## 3. As dez páginas
 
-Acrescentar, **sem alterar** `classificarJanela`, `scoreMinimoEfetivo`,
-`avaliarGate`, `passosCumpridos`, `estadoDosPassos` ou `alternarPasso`.
+Para cada uma, o trabalho é **o mesmo e é mecânico**:
 
-```ts
-/** Limites espelhados do Profit Chart, que trava nestes números. */
-export const MAX_PERDAS_DIA = 3;
-export const MAX_OPERACOES_DIA = 5;
-export const COOLDOWN_APOS_LOSS_MIN = 30;
+1. Trocar `Card`/`CardHeader`/`CardTitle`/`CardContent` do shadcn por `InstCard`
+2. Trocar `Badge` por `InstBadge`, escolhendo o tom pelo significado
+3. Trocar `Table` do shadcn por `InstTable`/`InstRow`
+4. Envolver o conteúdo em `InstPage` com eyebrow e título
+5. Todo número passa a `InstNum` — nenhum número fora de mono tabular
+6. Todo rótulo de campo vira `InstLabel`
+7. Faixa de status (gate, aviso, alerta) vira `InstBand`
+8. Estado vazio vira `InstEmpty`
 
-export interface LimitesDia {
-  bloqueado: boolean;
-  motivos: string[];
-}
+**Preservar integralmente:**
+- toda chamada de dados, hook, `useEffect`, fallback e tratamento de erro
+- todo texto de conteúdo, palavra por palavra
+- toda lógica condicional de renderização
 
-export function avaliarLimitesDia(
-  perdasHoje: number,
-  operacoesHoje: number,
-  ultimoLossEm: Date | null,
-  agora: Date
-): LimitesDia;
+Se a página hoje trata um caso de erro ou de lista vazia, ela continua tratando.
+**Restilizar não é reescrever.**
 
-/** Minutos que faltam do cooldown, ou 0. */
-export function cooldownRestante(ultimoLossEm: Date | null, agora: Date): number;
-```
+### Escolha de tom por significado
 
-Regras:
-
-| Condição | Motivo |
+| Significado | Tom |
 |---|---|
-| `perdasHoje >= 3` | `"3 perdas no dia: pregao encerrado"` |
-| `operacoesHoje >= 5` | `"5 operacoes no dia: limite atingido"` |
-| `cooldownRestante > 0` | `"cooldown apos loss: faltam N min"` |
+| liberado, cumprido, positivo, lucro | `ok` |
+| agora, atenção, aviso, aguardando | `now` |
+| bloqueado, desvio, negativo, prejuízo | `block` |
+| travado, indisponível, futuro | `lock` |
+| tudo o mais | `neutro` |
 
-**O cooldown depois de QUALQUER loss** — não só depois de vários. Motivo, nas
-palavras de quem opera: *"a maior parte dos dias eu começo no loss, e quando
-começo no loss é como se minha cabeça voltasse pro passado"* · *"cometi um erro
-que já desencadeou um monte de merda, e é sempre assim"*. O gatilho da cascata é
-o primeiro loss.
+Número positivo em `ok`, negativo em `block`. Zero é `neutro`, não verde.
 
-`avaliarGate` ganha três parâmetros opcionais ao final —
-`limites?: LimitesDia`, `tradeAbertoId?: string | null` — e acrescenta aos
-`motivos`:
+### Nota sobre `/copa/*`
 
-- todos os `motivos` de `limites`, quando bloqueado
-- `"ja existe trade aberto"` quando `tradeAbertoId` não é nulo
-
-**Chamadas existentes sem os parâmetros novos continuam funcionando.** Os 19
-casos atuais do verify não podem quebrar.
+Essas páginas consomem o FastAPI local via `cockpit/lib/copa-api.ts` e têm
+fallback quando ele não responde. **O fallback continua exatamente como está** —
+elas precisam renderizar sem o backend no ar. Restilizar o estado de fallback
+também: ele usa `InstEmpty` com o texto que já existe.
 
 ---
 
-## 5. `cockpit/lib/trading-db.ts`
+## 4. `cockpit/config/sidebar.ts`
 
-`getDefaultChecklist` passa a receber a estratégia:
+Três itens do menu apontam para rotas que **não existem** e dão 404:
+`/backtests`, `/pesquisa`, `/config`.
 
-```ts
-export function getDefaultChecklist(date: string, strategy: Strategy): LiveChecklist;
-```
+**Remover esses três itens.** Item de menu que quebra é pior que item ausente.
 
-Deriva os itens de `strategy.checklist`, preservando a ordem: KILL primeiro,
-PONTO depois. Mapeamento igual ao de hoje, mais o `strategy_id` guardado em
-`LiveChecklist` (campo novo, opcional na interface para não quebrar linhas
-antigas).
+Isso esvazia o grupo "Sistema" inteiro — remover o grupo também.
 
-`fetchTodayChecklist(strategy)` — a regra de descarte de linha antiga continua, e
-ganha um critério: se o `strategy_id` salvo for diferente do escolhido, devolve o
-default novo preservando `bias` e `notes`.
-
----
-
-## 6. `cockpit/app/checklist/page.tsx`
-
-### 6a. Seletor de estratégia — no topo, acima de tudo
-
-Dois botões grandes, lado a lado: **REVERSÃO HTF** e **CONTINUIDADE DE TENDÊNCIA**.
-O escolhido fica destacado; o outro apagado.
-
-Abaixo do seletor, uma linha com a `descricao` da estratégia escolhida.
-
-Trocar de estratégia **reseta o checklist** (os itens são outros). Confirmar
-antes se houver item marcado — perder marcação por clique errado no meio do
-pregão é caro.
-
-> Motivo de existir: são dois setups com gatilhos diferentes, e misturar os dois
-> é o erro. A escolha é feita na pré-sessão, com a cabeça fria, e a tela só
-> registra qual foi.
-
-### 6b. Barra de estado com dado real
-
-| Campo | Fonte |
-|---|---|
-| `PREGÃO` | relógio de São Paulo, atualizado a cada segundo |
-| `JANELA` | `classificarJanela` |
-| `OPERAÇÕES` | `operacoes_hoje / 5` — normal até 3, âmbar em 4, vermelho em 5 |
-| `PERDAS` | `perdas_hoje / 3` — normal em 0, âmbar em 1–2, vermelho em 3 |
-| `PNL DIA` | `pnl_dia` |
-
-Tudo de `getResumoDoDia`, carregado no mount e recarregado após cada registro ou
-fechamento. **Nada de número inventado** — enquanto carrega, `—`.
-
-### 6c. Formulário de trade
-
-Abaixo do painel de confluência: mercado, direção, entrada, stop, alvo,
-contratos. RR e risco em reais ao vivo enquanto digita
-(`risco = |entrada − stop| × contratos × valor_ponto`).
-
-Validação local: COMPRA exige `stop < entrada < alvo`; VENDA exige
-`alvo < entrada < stop`. O banco tem `CHECK` — a validação local existe para dar
-mensagem melhor, não para substituir.
-
-### 6d. ABRIR ORDEM
-
-Registra de verdade, com o snapshot completo — **todos** os itens, marcados e não
-marcados. Item não marcado é o lado "sem" da comparação em
-`v_copa_item_performance`; sem ele a estatística não existe.
-
-Sucesso: limpa o checklist, recarrega o resumo, confirma na tela.
-Falha: vermelho com o erro real do Supabase, **checklist preservado**.
-
-O botão continua visível e travado quando o gate bloqueia, com todos os motivos
-listados abaixo.
-
-### 6e. Trade aberto
-
-Faixa com os dados do trade aberto e botão FECHAR. Registro de novo trade
-bloqueado enquanto houver um aberto.
-
----
-
-## 7. Fechamento
-
-Diálogo: preço de saída, `motivo_saida`. Se MANUAL, `desfecho_plano` obrigatório.
-
-Depois, **a pergunta mais importante da tela**:
-
-> **Como foi a EXECUÇÃO?** (não o resultado)
->
-> - **A** — fiz exatamente o que devia. Sem hesitar, sem perseguir, sem antecipar
-> - **B** — executei, mas com ruído. Hesitei, entrei torto, saí cedo
-> - **C** — forcei. Entortei a regra, antecipei sem confirmação, quis recuperar
-
-Deixar explícito na tela que a pergunta é sobre execução e **não** sobre
-resultado — **um trade vencedor pode ser C**.
-
-> Por quê: *"se esse trade ganhar, ainda foi um trade ruim, porque está
-> reforçando comportamento errado."* Vitória com processo C é o resultado mais
-> perigoso que existe, e um journal que só grava win/loss registra ela como
-> sucesso. A métrica que importa não é winrate — é frequência de C.
-
-Depois, as quatro perguntas de disciplina, obrigatórias, sem default marcado:
-respeitei o plano · antecipei o stop · fiz parcial emocional · mudei o alvo.
-
----
-
-## 8. `cockpit/scripts/verify.ts`
-
-Manter os 19 casos. Acrescentar:
-
-**Sincronia das duas estratégias** (substitui o caso de sincronia atual): para
-cada uma das duas, comparar `copa/strategies/<id>.json` com a constante em
-`cockpit/data/strategies.ts` — mesmo conjunto de ids, mesmo tipo, mesmo peso,
-mesmo label. Divergência falha.
-
-**Soma dos pesos**: `reversao_htf` → 7 KILL, 6 PONTO, soma 100.
-`continuidade_tendencia` → 6 KILL, 6 PONTO, soma 100.
-
-**`avaliarLimitesDia`:**
-
-1. 0 perdas, 0 operações, sem loss → liberado
-2. 2 perdas, 3 operações, loss há 40 min → liberado
-3. **3 perdas** → bloqueado, motivo cita pregão encerrado
-4. **5 operações** → bloqueado, motivo cita limite de operações
-5. 1 perda, loss há 10 min → bloqueado, motivo cita 20 min restantes
-6. 1 perda, loss há 31 min → liberado
-7. loss há exatamente 30 min → liberado (fronteira inclusiva)
-8. 3 perdas **e** 5 operações → bloqueado com **os dois** motivos
-
-**`avaliarGate` integrado:**
-
-9. 7 KILL, 80 pontos, 10:30, limites liberados → liberado
-10. mesmo caso com `tradeAbertoId` não nulo → bloqueado
-11. mesmo caso com 3 perdas → bloqueado citando o pregão encerrado
-
-Total esperado: **19 + 11 = 30 casos**.
+**Não remover mais nada.** O grupo Copa BTG fica, decisão do operador.
 
 ---
 
@@ -377,56 +208,42 @@ cd cockpit && npx tsc --noEmit
 cd .. && npx tsx cockpit/scripts/verify.ts
 cd cockpit && npm run build
 cd .. && git diff --stat
-cd .. && python -c "from copa.strategies_config import load_all; [print(s['id'], len([i for i in s['checklist'] if i['tipo']=='KILL']), sum(i['peso'] for i in s['checklist'] if i['tipo']=='PONTO')) for s in load_all()]"
 ```
 
 1. `tsc` limpo
-2. `verify.ts` 30 casos OK, exit 0
-3. build compila
-4. `git diff --stat` lista exatamente os 10 arquivos
-5. Python imprime `reversao_htf 7 100` e `continuidade_tendencia 6 100`
+2. `verify.ts` 31 casos OK, exit 0 — **esta task não toca em lógica, então
+   nenhum caso pode mudar de resultado**
+3. build compila, todas as rotas geradas
+4. `git diff --stat` lista exatamente os 13 arquivos
 
-**Teste manual, obrigatório — é o único que prova que grava:**
+**Conferências mecânicas:**
 
-1. `npm run dev`, abrir `/checklist` → redireciona para `/login`
-2. Entrar
-3. Escolher REVERSÃO HTF, marcar os 7 KILL e PONTO suficientes, preencher o
-   trade, ABRIR ORDEM
-4. Conferir o trade gravado. **copa_trades nao tem coluna strategy_id** — tem
-   `version_id`, e o `strategy_id` vive em `copa_strategy_versions`:
-   ```sql
-   select t.id, v.strategy_id, v.versao, t.score, t.janela, t.status
-     from copa_trades t join copa_strategy_versions v on v.id = t.version_id
-    order by t.created_at desc limit 1;
-   ```
-   → 1 linha com `reversao_htf` e `versao = 1`
-5. `select count(*) from copa_trade_items where trade_id = '<id>';` → **13**
-6. Trocar para CONTINUIDADE e conferir que o checklist mudou para 6 KILL
-7. Fechar o trade com MANUAL / BATEU_ALVO / execução C → conferir que `pnl_plano`
-   ficou diferente de `pnl_real` e que `notas` começa com `[EXEC:C]`
+```bash
+grep -rc "from \"@/components/ui/card\"" cockpit/app/copa cockpit/app/trades cockpit/app/estrategias cockpit/app/cerebro cockpit/app/page.tsx
+grep -rn "backtests\|pesquisa\|\"/config\"" cockpit/config/sidebar.ts
+```
 
-Colar a saída dos passos 4, 5 e 7.
+- O primeiro deve dar 0 em todas — nenhuma página ainda importando o Card antigo
+- O segundo deve voltar vazio
+
+**`tsc` e build limpos não provam tela.** O aceite inclui `npm run dev` e abrir
+cada uma das dez, conferindo que renderiza, que os dados aparecem e que nenhuma
+quebrou. Reportar qual você abriu.
 
 ---
 
 ## Armadilhas desta task
 
-**Data do dia pelo navegador.** `toISOString().split("T")[0]` devolve o dia
-seguinte depois das 21h no Brasil. A sessão iria para a data errada e o contador
-zeraria no meio da noite. Sempre `America/Sao_Paulo`.
+**Reescrever em vez de restilizar.** O modo de falhar aqui é apagar tratamento de
+erro, fallback ou caso de lista vazia junto com o estilo. `git diff` de cada
+página deve mostrar mudança de apresentação, não de comportamento.
 
-**Trade gravado sem os itens.** Se o insert dos itens falhar e o trade ficar, a
-estatística mente para sempre. Apagar o trade e propagar.
+**Apagar comentário.** `git diff -U0 | grep "^-.*//"` faz parte da revisão.
 
-**Erro engolido.** `catch` que só faz `console.error` e segue faz o operador achar
-que gravou.
+**Inventar cor.** Se o tom não é um dos cinco, o elemento é `neutro`. Verde e
+vermelho significam resultado, não decoração.
 
-**Reescrever os textos das estratégias.** Os labels e ajudas vêm dos JSONs,
-palavra por palavra. São as palavras do operador. "Melhorar" a redação quebra o
-verify e apaga o sentido.
+**Número fora de tabular.** Coluna de preço que dança quando o dígito muda é
+exatamente o que a estética existe para evitar. Todo número passa por `InstNum`.
 
-**Misturar os checklists das duas estratégias.** Cada uma tem os seus ids e
-pesos; o snapshot tem que ser o da estratégia escolhida.
-
-**Quebrar as chamadas existentes de `avaliarGate`.** Parâmetros novos são
-opcionais e vão no fim.
+**Mexer em `lib/`.** Esta task é presentação. Zero mudança de dados.

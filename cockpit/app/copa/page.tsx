@@ -5,22 +5,19 @@ import Link from "next/link";
 import { copaApi, GateResult, StrategyRanking, SessionDay, Trade } from "@/lib/copa-api";
 import { GateBanner } from "@/components/copa/gate-banner";
 import { RankingEstrategias } from "@/components/copa/ranking-estrategias";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  FileText,
-  PlusCircle,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  Shield,
-  Activity,
-  History,
-  AlertCircle,
-  ArrowRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  InstPage,
+  InstCard,
+  InstLabel,
+  InstNum,
+  InstBadge,
+  InstBand,
+  InstEmpty,
+  InstTable,
+  InstRow,
+  InstCell,
+} from "@/components/inst";
+import { FileText, PlusCircle, ArrowRight } from "lucide-react";
 
 export default function CopaHomePage() {
   const hoje = new Date().toISOString().split("T")[0];
@@ -57,72 +54,59 @@ export default function CopaHomePage() {
 
   if (loading) {
     return (
-      <div className="container py-8 space-y-6">
-        <div className="h-28 rounded-xl bg-muted/30 animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-muted/30 animate-pulse" />
-          ))}
-        </div>
-      </div>
+      <InstPage eyebrow="COPA BTG" title="Cockpit Operacional da Copa">
+        <InstEmpty>Carregando dados da sessão e do gate...</InstEmpty>
+      </InstPage>
     );
   }
 
   // ESTADO 1: Sem pré-sessão preenchida hoje
   if (!session) {
     return (
-      <div className="container py-12 max-w-2xl mx-auto text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="h-16 w-16 rounded-2xl bg-destructive/10 border border-destructive/30 flex items-center justify-center text-destructive">
-            <Shield className="h-8 w-8" />
+      <InstPage eyebrow="COPA BTG · GATE" title="Pré-Sessão Não Preenchida">
+        <InstBand
+          tom="block"
+          titulo="GATE FÍSICO TRAVADO"
+          linhas={[
+            "Nenhum trade é liberado sem o diagnóstico pré-mercado, mapeamento de liquidez e checagem de estado emocional.",
+            "A Copa BTG exige respeito rigoroso aos protocolos antes de qualquer clique.",
+          ]}
+        />
+
+        <InstCard label="O QUE VOCÊ VAI PREENCHER EM 60 SEGUNDOS:">
+          <ul style={{ display: "flex", flexDirection: "column", gap: "8px", margin: 0, paddingLeft: "18px", fontSize: "12.5px", color: "var(--inst-text-2)" }}>
+            <li>Viés macro (Bias D1 e H1) e contexto (Tendência / Range)</li>
+            <li>Níveis-chave de liquidez (PDH, PDL, EQH/EQL)</li>
+            <li>Agenda econômica de alto impacto</li>
+            <li>Estado do operador (sono, tilt e pressão)</li>
+          </ul>
+
+          <div style={{ paddingTop: "12px" }}>
+            <Link href="/copa/pre-sessao">
+              <button
+                type="button"
+                className="mono tabular"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  background: "var(--inst-now)",
+                  color: "var(--inst-bg-deep)",
+                  border: "none",
+                  borderRadius: "3px",
+                  padding: "12px 24px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  cursor: "pointer",
+                }}
+              >
+                <FileText className="h-4 w-4" /> PREENCHER PRÉ-SESSÃO AGORA
+              </button>
+            </Link>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Badge variant="destructive" className="font-semibold uppercase tracking-wider">
-            Gate Físico Travado
-          </Badge>
-          <h1 className="text-3xl font-bold tracking-tight">Pré-Sessão Não Preenchida</h1>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            A regra fundamental da Copa BTG é: nenhum trade é liberado sem o diagnóstico pré-mercado,
-            mapeamento de liquidez e checagem de estado emocional.
-          </p>
-        </div>
-
-        <Card className="border-border/60 bg-card/60 backdrop-blur-xs text-left p-6">
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              O que você vai preencher em 60 segundos:
-            </h3>
-            <ul className="text-sm space-y-2 text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Viés macro (Bias D1 e H1) e contexto (Tendência / Range)
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Níveis-chave de liquidez (PDH, PDL, EQH/EQL)
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Agenda econômica de alto impacto
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Estado do operador (sono, tilt e pressão)
-              </li>
-            </ul>
-          </div>
-        </Card>
-
-        <div className="pt-2">
-          <Link href="/copa/pre-sessao">
-            <Button size="lg" className="gap-2 font-bold px-8 h-12 text-base">
-              <FileText className="h-5 w-5" /> Preencher Pré-Sessão Agora
-            </Button>
-          </Link>
-        </div>
-      </div>
+        </InstCard>
+      </InstPage>
     );
   }
 
@@ -135,38 +119,60 @@ export default function CopaHomePage() {
   const distanciaLimitePerda = Math.max(0, limitePerda + pnlDia);
 
   return (
-    <div className="container py-6 space-y-6">
-      {/* Topo / Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">Cockpit Operacional da Copa</h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              {hoje}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Gate de disciplina e controle de risco para WIN / WDO na Copa BTG.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
+    <InstPage
+      eyebrow="COPA BTG · OPERACIONAL"
+      title="Cockpit Operacional da Copa"
+      right={
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
           <Link href="/copa/pre-sessao">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <FileText className="h-4 w-4" /> Editar Pré-Sessão
-            </Button>
+            <button
+              type="button"
+              className="mono tabular"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "transparent",
+                border: "1px solid var(--inst-line-2)",
+                color: "var(--inst-dim)",
+                borderRadius: "3px",
+                padding: "6px 12px",
+                fontSize: "11px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <FileText className="h-3.5 w-3.5" /> Editar Pré-Sessão
+            </button>
           </Link>
 
           <Link href="/copa/novo">
-            <Button
-              size="sm"
+            <button
+              type="button"
               disabled={!gate?.liberado}
-              className="gap-1.5 font-bold bg-primary text-primary-foreground"
+              className="mono tabular"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: gate?.liberado ? "var(--inst-ok)" : "transparent",
+                border: `1px solid ${gate?.liberado ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
+                color: gate?.liberado ? "var(--inst-on-ok)" : "var(--inst-ghost)",
+                borderRadius: "3px",
+                padding: "6px 14px",
+                fontSize: "11px",
+                fontWeight: 700,
+                cursor: gate?.liberado ? "pointer" : "not-allowed",
+              }}
             >
-              <PlusCircle className="h-4 w-4" /> Novo Trade (Checklist)
-            </Button>
+              <PlusCircle className="h-3.5 w-3.5" /> Novo Trade (Checklist)
+            </button>
           </Link>
         </div>
+      }
+    >
+      <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "4px" }}>
+        Gate de disciplina e controle de risco para WIN / WDO na Copa BTG.
       </div>
 
       {/* Banner Principal do Gate */}
@@ -175,76 +181,46 @@ export default function CopaHomePage() {
       {/* KPIs do Dia */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* PnL do Dia */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">PnL Fechado Hoje</CardDescription>
-            <CardTitle
-              className={cn(
-                "text-2xl font-mono font-bold",
-                pnlDia > 0 ? "text-emerald-400" : pnlDia < 0 ? "text-red-400" : "text-foreground"
-              )}
-            >
-              R$ {pnlDia.toFixed(2)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-xs text-muted-foreground">
-              {pnlDia >= 0 ? "Dentro da expectativa" : "Monitorando perda"}
-            </span>
-          </CardContent>
-        </Card>
+        <InstCard label="PNL FECHADO HOJE">
+          <InstNum
+            value={`R$ ${pnlDia.toFixed(2)}`}
+            tom={pnlDia > 0 ? "ok" : pnlDia < 0 ? "block" : "neutro"}
+            size="lg"
+          />
+          <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
+            {pnlDia >= 0 ? "Dentro da expectativa" : "Monitorando perda"}
+          </span>
+        </InstCard>
 
         {/* Trades Usados */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Trades do Dia</CardDescription>
-            <CardTitle className="text-2xl font-mono font-bold">
-              {tradesDia} / {maxTradesDia}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-xs text-muted-foreground">
-              {maxTradesDia - tradesDia} restantes
-            </span>
-          </CardContent>
-        </Card>
+        <InstCard label="TRADES DO DIA">
+          <InstNum value={`${tradesDia} / ${maxTradesDia}`} size="lg" />
+          <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
+            {maxTradesDia - tradesDia} restantes
+          </span>
+        </InstCard>
 
         {/* Distância pro Limite */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Folga para Limite de Perda</CardDescription>
-            <CardTitle className="text-2xl font-mono font-bold text-foreground">
-              R$ {distanciaLimitePerda.toFixed(2)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-xs text-muted-foreground">
-              Limite diário: R$ {limitePerda.toFixed(2)}
-            </span>
-          </CardContent>
-        </Card>
+        <InstCard label="FOLGA PARA LIMITE DE PERDA">
+          <InstNum value={`R$ ${distanciaLimitePerda.toFixed(2)}`} size="lg" />
+          <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
+            Limite diário: R$ {limitePerda.toFixed(2)}
+          </span>
+        </InstCard>
 
         {/* Perdas Seguidas / Cooldown */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Sequência de Losses</CardDescription>
-            <CardTitle
-              className={cn(
-                "text-2xl font-mono font-bold",
-                perdasSeguidas > 0 ? "text-amber-400" : "text-foreground"
-              )}
-            >
-              {perdasSeguidas} de {gate?.breakers.max_perdas_seguidas ?? 2}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-xs text-muted-foreground">
-              {gate?.breakers.cooldown_ate
-                ? `Cooldown até ${gate.breakers.cooldown_ate}`
-                : "Sem cooldown ativo"}
-            </span>
-          </CardContent>
-        </Card>
+        <InstCard label="SEQUÊNCIA DE LOSSES">
+          <InstNum
+            value={`${perdasSeguidas} de ${gate?.breakers.max_perdas_seguidas ?? 2}`}
+            tom={perdasSeguidas > 0 ? "now" : "neutro"}
+            size="lg"
+          />
+          <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
+            {gate?.breakers.cooldown_ate
+              ? `Cooldown até ${gate.breakers.cooldown_ate}`
+              : "Sem cooldown ativo"}
+          </span>
+        </InstCard>
       </div>
 
       {/* Ranking de Estratégias do Dia */}
@@ -252,61 +228,72 @@ export default function CopaHomePage() {
 
       {/* Trades Abertos ou Recentes do Dia */}
       {todayTrades.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <div>
-              <CardTitle className="text-base">Trades de Hoje ({todayTrades.length})</CardTitle>
-              <CardDescription className="text-xs">Operações registradas no pregão atual.</CardDescription>
-            </div>
-            <Link href="/copa/trades">
-              <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                Ver Journal Completo <ArrowRight className="h-3 w-3" />
-              </Button>
+        <InstCard
+          label={`TRADES DE HOJE (${todayTrades.length})`}
+          right={
+            <Link href="/copa/trades" style={{ fontSize: "11px", color: "var(--inst-now)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              Ver Journal Completo <ArrowRight className="h-3 w-3" />
             </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y divide-border/40">
-              {todayTrades.map((t) => (
-                <div key={t.id} className="py-2.5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <Badge variant={t.status === "ABERTO" ? "default" : "outline"} className="text-xs">
-                      {t.status}
-                    </Badge>
-                    <div>
-                      <span className="text-sm font-semibold">
-                        #{t.id} • {t.mercado} {t.direcao}
-                      </span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {t.strategy_id} (Grade {t.grade})
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm font-mono">
-                    <span>
-                      Entrada: {t.entrada} | Stop: {t.stop} | Alvo: {t.alvo}
+          }
+        >
+          <InstTable
+            colunas={[
+              "ID / Operação",
+              "Setup",
+              "Entrada",
+              "Stop",
+              "Alvo",
+              { label: "Status", align: "center" },
+              { label: "Resultado", align: "right" },
+            ]}
+          >
+            {todayTrades.map((t) => {
+              const pnl = t.pnl_real ?? 0;
+              return (
+                <InstRow key={t.id} tom={t.status === "FECHADO" ? (pnl > 0 ? "ok" : pnl < 0 ? "block" : "neutro") : "now"}>
+                  <InstCell>
+                    <span className="mono tabular" style={{ fontWeight: 600 }}>
+                      #{t.id} • {t.mercado} {t.direcao}
                     </span>
-                    {t.status === "FECHADO" && (
-                      <span
-                        className={cn(
-                          "font-bold",
-                          (t.pnl_real ?? 0) > 0
-                            ? "text-emerald-400"
-                            : (t.pnl_real ?? 0) < 0
-                            ? "text-red-400"
-                            : "text-foreground"
-                        )}
-                      >
-                        R$ {(t.pnl_real ?? 0).toFixed(2)}
+                  </InstCell>
+                  <InstCell>
+                    <span style={{ color: "var(--inst-dim)" }}>
+                      {t.strategy_id} (Grade {t.grade})
+                    </span>
+                  </InstCell>
+                  <InstCell>
+                    <span className="mono tabular">{t.entrada}</span>
+                  </InstCell>
+                  <InstCell>
+                    <span className="mono tabular">{t.stop}</span>
+                  </InstCell>
+                  <InstCell>
+                    <span className="mono tabular">{t.alvo}</span>
+                  </InstCell>
+                  <InstCell align="center">
+                    <InstBadge tom={t.status === "ABERTO" ? "now" : "neutro"}>
+                      {t.status}
+                    </InstBadge>
+                  </InstCell>
+                  <InstCell align="right">
+                    {t.status === "FECHADO" ? (
+                      <InstNum
+                        value={`R$ ${pnl.toFixed(2)}`}
+                        tom={pnl > 0 ? "ok" : pnl < 0 ? "block" : "neutro"}
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="mono tabular" style={{ color: "var(--inst-faint)" }}>
+                        EM ABERTO
                       </span>
                     )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                  </InstCell>
+                </InstRow>
+              );
+            })}
+          </InstTable>
+        </InstCard>
       )}
-    </div>
+    </InstPage>
   );
 }

@@ -3,8 +3,7 @@
 import * as React from "react";
 import { copaApi, PlacarFaseResult } from "@/lib/copa-api";
 import { PlacarFaseView } from "@/components/copa/placar-fase";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { InstPage, InstLabel, InstEmpty } from "@/components/inst";
 
 export default function CopaFasePage() {
   const hoje = new Date().toISOString().split("T")[0];
@@ -29,36 +28,42 @@ export default function CopaFasePage() {
   }, [dataConsulta, carregarFase]);
 
   return (
-    <div className="container py-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Placar de Fases da Copa BTG</h1>
-          <p className="text-sm text-muted-foreground">
-            Acompanhe o saldo com e sem o descarte oficial do pior dia e o status do seu Mulligan.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Label htmlFor="data-fase" className="text-xs text-muted-foreground whitespace-nowrap">
-            Consultar Data:
-          </Label>
-          <Input
+    <InstPage
+      eyebrow="COPA BTG"
+      title="Placar de Fases da Copa BTG"
+      right={
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <InstLabel>Consultar Data:</InstLabel>
+          <input
             id="data-fase"
             type="date"
             value={dataConsulta}
             onChange={(e) => setDataConsulta(e.target.value)}
-            className="w-38 font-mono bg-card text-xs"
+            className="mono tabular"
+            style={{
+              background: "var(--inst-bg-deep)",
+              border: "1px solid var(--inst-line-2)",
+              borderRadius: "3px",
+              color: "var(--inst-text)",
+              fontSize: "12px",
+              padding: "6px 10px",
+              outline: "none",
+            }}
           />
         </div>
+      }
+    >
+      <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "8px" }}>
+        Acompanhe o saldo com e sem o descarte oficial do pior dia e o status do seu Mulligan.
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-muted-foreground animate-pulse">
-          Carregando placar da fase...
-        </div>
+        <InstEmpty>Carregando placar da fase...</InstEmpty>
+      ) : placar ? (
+        <PlacarFaseView placar={placar} />
       ) : (
-        placar && <PlacarFaseView placar={placar} />
+        <InstEmpty>Nenhum dado de fase retornado para a data selecionada.</InstEmpty>
       )}
-    </div>
+    </InstPage>
   );
 }

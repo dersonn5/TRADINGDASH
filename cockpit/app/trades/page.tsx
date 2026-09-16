@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { fetchTrades, saveTrade, TradingTrade } from "@/lib/trading-db";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  InstPage,
+  InstCard,
+  InstLabel,
+  InstBadge,
+  InstNum,
+  InstTable,
+  InstRow,
+  InstEmpty,
+} from "@/components/inst";
 import { Dialog, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CandlestickChart, Plus, TrendingUp, TrendingDown, DollarSign, Activity, Percent, Filter, ShieldCheck } from "lucide-react";
+import { Plus, Filter, ShieldCheck } from "lucide-react";
 
 export default function TradesPage() {
   const [trades, setTrades] = useState<TradingTrade[]>([]);
@@ -101,406 +105,461 @@ export default function TradesPage() {
     return matchesSymbol && matchesResult;
   });
 
+  const inputStyle: React.CSSProperties = {
+    background: "var(--inst-panel-2)",
+    border: "1px solid var(--inst-line)",
+    color: "var(--inst-text)",
+    borderRadius: "3px",
+    padding: "8px 12px",
+    fontSize: "13px",
+    outline: "none",
+    width: "100%",
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/40 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-              <CandlestickChart className="size-6" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Banco de Todos os Trades</h1>
-            <Badge variant="outline" className="text-emerald-400 border-emerald-800/40 bg-emerald-950/20">
-              Supabase Live
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Histórico completo de execuções reais, cálculo de R:R e métricas de desempenho.
-          </p>
-        </div>
-
-        {/* Botão e Modal Novo Trade */}
-        <Button
+    <InstPage
+      eyebrow="SUPABASE · HISTÓRICO"
+      title="Banco de Todos os Trades"
+      right={
+        <button
+          type="button"
           onClick={() => setIsDialogOpen(true)}
-          className="gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-600/90 hover:to-teal-600/90 text-white shadow-lg shadow-emerald-950/50"
+          className="mono tabular"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "var(--inst-ok)",
+            border: "1px solid var(--inst-ok)",
+            color: "var(--inst-on-ok)",
+            borderRadius: "3px",
+            padding: "6px 14px",
+            fontSize: "11px",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
         >
-          <Plus className="size-4" />
-          Registrar Novo Trade
-        </Button>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <ShieldCheck className="size-5 text-emerald-400" />
-              Registrar Operação no Banco de Trades
-            </DialogTitle>
-          </DialogHeader>
-
-            <div className="space-y-4 py-2">
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Ativo</label>
-                  <Input
-                    placeholder="WIN, WDO, NQ, BTC"
-                    value={symbol}
-                    onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                    className="mt-1 uppercase font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Direção</label>
-                  <select
-                    className="w-full h-9 mt-1 rounded-md border border-input bg-card text-foreground px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&_option]:bg-[#18181b] [&_option]:text-[#f4f4f5]"
-                    style={{ colorScheme: "dark" }}
-                    value={direction}
-                    onChange={(e) => setDirection(e.target.value as "BUY" | "SELL")}
-                  >
-                    <option value="BUY">BUY (Compra)</option>
-                    <option value="SELL">SELL (Venda)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Lotes / Contratos</label>
-                  <Input
-                    type="number"
-                    value={contracts}
-                    onChange={(e) => setContracts(Number(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Estratégia</label>
-                  <Input
-                    placeholder="Silver Bullet, Breaker Block, etc."
-                    value={strategy}
-                    onChange={(e) => setStrategy(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Sessão / Horário</label>
-                  <Input
-                    placeholder="B3 Abertura, NY AM, London"
-                    value={session}
-                    onChange={(e) => setSession(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2">
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground uppercase">Entrada</label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="131250"
-                    value={entryPrice || ""}
-                    onChange={(e) => setEntryPrice(Number(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground uppercase">Stop Loss</label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="131050"
-                    value={stopLoss || ""}
-                    onChange={(e) => setStopLoss(Number(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground uppercase">Take Profit</label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="131750"
-                    value={takeProfit || ""}
-                    onChange={(e) => setTakeProfit(Number(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground uppercase">Saída Real</label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="131750"
-                    value={exitPrice || ""}
-                    onChange={(e) => setExitPrice(Number(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Resultado</label>
-                  <select
-                    className="w-full h-9 mt-1 rounded-md border border-input bg-card text-foreground px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&_option]:bg-[#18181b] [&_option]:text-[#f4f4f5]"
-                    style={{ colorScheme: "dark" }}
-                    value={result}
-                    onChange={(e) => setResult(e.target.value as "WIN" | "LOSS" | "BE" | "OPEN")}
-                  >
-                    <option value="WIN">WIN (Ganho)</option>
-                    <option value="LOSS">LOSS (Perda)</option>
-                    <option value="BE">BE (Zero a Zero)</option>
-                    <option value="OPEN">OPEN (Em aberto)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">PnL Financeiro ($/R$)</label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="+200 ou -100"
-                    value={pnl || ""}
-                    onChange={(e) => setPnl(Number(e.target.value))}
-                    className="mt-1 font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Score Confluência</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={confluenceScore}
-                    onChange={(e) => setConfluenceScore(Number(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase">Anotações do Trade</label>
-                <Textarea
-                  placeholder="Contexto: liquidez varrida, comportamento do candle, reação no FVG..."
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="mt-1 text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase">Erros & Lições Aprendidas</label>
-                <Textarea
-                  placeholder="O que funcionou bem? Houve hesitação ou quebra de plano?"
-                  rows={2}
-                  value={mistakes}
-                  onChange={(e) => setMistakes(e.target.value)}
-                  className="mt-1 text-xs"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleCreateTrade}
-                  disabled={saving || !symbol || entryPrice <= 0 || stopLoss <= 0}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  {saving ? "Registrando..." : "Salvar no Supabase"}
-                </Button>
-              </div>
-            </div>
-        </Dialog>
+          <Plus style={{ width: "14px", height: "14px" }} /> Registrar Novo Trade
+        </button>
+      }
+    >
+      {/* Header */}
+      <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "8px" }}>
+        Histórico completo de execuções reais, cálculo de R:R e métricas de desempenho.
       </div>
 
-      {/* KPIs Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-card/70 border-border/60">
-          <CardHeader className="pb-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total de Trades</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center justify-between">
-              <span>{totalTrades}</span>
-              <Activity className="size-5 text-muted-foreground opacity-40" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Botão e Modal Novo Trade */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <ShieldCheck className="size-5 text-emerald-400" />
+            Registrar Operação no Banco de Trades
+          </DialogTitle>
+        </DialogHeader>
 
-        <Card className="bg-card/70 border-border/60">
-          <CardHeader className="pb-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Taxa de Acerto (Win Rate)</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-cyan-400 flex items-center justify-between">
-              <span>{winRate}%</span>
-              <Percent className="size-5 text-cyan-400 opacity-40" />
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px", paddingTop: "8px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Ativo</InstLabel>
+              <input
+                placeholder="WIN, WDO, NQ, BTC"
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                className="mono"
+                style={{ ...inputStyle, fontWeight: 700, textTransform: "uppercase" }}
+              />
             </div>
-            <div className="text-[11px] text-muted-foreground mt-1">
-              {wins} W · {losses} L
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Direção</InstLabel>
+              <select
+                className="mono"
+                style={{ ...inputStyle, height: "37px" }}
+                value={direction}
+                onChange={(e) => setDirection(e.target.value as "BUY" | "SELL")}
+              >
+                <option value="BUY">BUY (Compra)</option>
+                <option value="SELL">SELL (Venda)</option>
+              </select>
             </div>
-          </CardContent>
-        </Card>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Lotes / Contratos</InstLabel>
+              <input
+                type="number"
+                value={contracts}
+                onChange={(e) => setContracts(Number(e.target.value))}
+                className="mono tabular"
+                style={inputStyle}
+              />
+            </div>
+          </div>
 
-        <Card className="bg-card/70 border-border/60">
-          <CardHeader className="pb-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">PnL Líquido Acumulado</span>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold flex items-center justify-between ${
-                totalPnL >= 0 ? "text-emerald-400" : "text-red-400"
-              }`}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Estratégia</InstLabel>
+              <input
+                placeholder="Silver Bullet, Breaker Block, etc."
+                value={strategy}
+                onChange={(e) => setStrategy(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Sessão / Horário</InstLabel>
+              <input
+                placeholder="B3 Abertura, NY AM, London"
+                value={session}
+                onChange={(e) => setSession(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Entrada</InstLabel>
+              <input
+                type="number"
+                step="any"
+                placeholder="131250"
+                value={entryPrice || ""}
+                onChange={(e) => setEntryPrice(Number(e.target.value))}
+                className="mono tabular"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Stop Loss</InstLabel>
+              <input
+                type="number"
+                step="any"
+                placeholder="131050"
+                value={stopLoss || ""}
+                onChange={(e) => setStopLoss(Number(e.target.value))}
+                className="mono tabular"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Take Profit</InstLabel>
+              <input
+                type="number"
+                step="any"
+                placeholder="131750"
+                value={takeProfit || ""}
+                onChange={(e) => setTakeProfit(Number(e.target.value))}
+                className="mono tabular"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Saída Real</InstLabel>
+              <input
+                type="number"
+                step="any"
+                placeholder="131750"
+                value={exitPrice || ""}
+                onChange={(e) => setExitPrice(Number(e.target.value))}
+                className="mono tabular"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Resultado</InstLabel>
+              <select
+                className="mono"
+                style={{ ...inputStyle, height: "37px" }}
+                value={result}
+                onChange={(e) => setResult(e.target.value as "WIN" | "LOSS" | "BE" | "OPEN")}
+              >
+                <option value="WIN">WIN (Ganho)</option>
+                <option value="LOSS">LOSS (Perda)</option>
+                <option value="BE">BE (Zero a Zero)</option>
+                <option value="OPEN">OPEN (Em aberto)</option>
+              </select>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>PnL Financeiro ($/R$)</InstLabel>
+              <input
+                type="number"
+                step="any"
+                placeholder="+200 ou -100"
+                value={pnl || ""}
+                onChange={(e) => setPnl(Number(e.target.value))}
+                className="mono tabular"
+                style={{ ...inputStyle, fontWeight: 700 }}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <InstLabel>Score Confluência</InstLabel>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={confluenceScore}
+                onChange={(e) => setConfluenceScore(Number(e.target.value))}
+                className="mono tabular"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <InstLabel>Anotações do Trade</InstLabel>
+            <textarea
+              placeholder="Contexto: liquidez varrida, comportamento do candle, reação no FVG..."
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              style={{ ...inputStyle, fontFamily: "inherit" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <InstLabel>Erros & Lições Aprendidas</InstLabel>
+            <textarea
+              placeholder="O que funcionou bem? Houve hesitação ou quebra de plano?"
+              rows={2}
+              value={mistakes}
+              onChange={(e) => setMistakes(e.target.value)}
+              style={{ ...inputStyle, fontFamily: "inherit" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", paddingTop: "8px" }}>
+            <button
+              type="button"
+              onClick={() => setIsDialogOpen(false)}
+              className="mono tabular"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--inst-line)",
+                color: "var(--inst-dim)",
+                borderRadius: "3px",
+                padding: "8px 16px",
+                fontSize: "11px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
             >
-              <span>{totalPnL >= 0 ? `+${totalPnL.toFixed(2)}` : totalPnL.toFixed(2)}</span>
-              <DollarSign className="size-5 opacity-40" />
-            </div>
-          </CardContent>
-        </Card>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateTrade}
+              disabled={saving || !symbol || entryPrice <= 0 || stopLoss <= 0}
+              className="mono tabular"
+              style={{
+                background: "var(--inst-ok)",
+                border: "1px solid var(--inst-ok)",
+                color: "var(--inst-on-ok)",
+                borderRadius: "3px",
+                padding: "8px 16px",
+                fontSize: "11px",
+                fontWeight: 700,
+                cursor: saving || !symbol || entryPrice <= 0 || stopLoss <= 0 ? "not-allowed" : "pointer",
+                opacity: saving || !symbol || entryPrice <= 0 || stopLoss <= 0 ? 0.6 : 1,
+              }}
+            >
+              {saving ? "Registrando..." : "Salvar no Supabase"}
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
-        <Card className="bg-card/70 border-border/60">
-          <CardHeader className="pb-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Fator de Lucro</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-400 flex items-center justify-between">
-              <span>{profitFactor}</span>
-              <TrendingUp className="size-5 text-purple-400 opacity-40" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* KPIs Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+        <InstCard>
+          <InstLabel>Total de Trades</InstLabel>
+          <div style={{ marginTop: "6px" }}>
+            <InstNum value={totalTrades} size="lg" />
+          </div>
+        </InstCard>
+
+        <InstCard>
+          <InstLabel>Taxa de Acerto (Win Rate)</InstLabel>
+          <div style={{ marginTop: "6px" }}>
+            <InstNum
+              value={`${winRate}%`}
+              tom={Number(winRate) >= 50 ? "ok" : totalTrades > 0 ? "block" : "neutro"}
+              size="lg"
+            />
+          </div>
+          <div className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "4px" }}>
+            {wins} W · {losses} L
+          </div>
+        </InstCard>
+
+        <InstCard>
+          <InstLabel>PnL Líquido Acumulado</InstLabel>
+          <div style={{ marginTop: "6px" }}>
+            <InstNum
+              value={totalPnL >= 0 ? `+${totalPnL.toFixed(2)}` : totalPnL.toFixed(2)}
+              tom={totalPnL > 0 ? "ok" : totalPnL < 0 ? "block" : "neutro"}
+              size="lg"
+            />
+          </div>
+        </InstCard>
+
+        <InstCard>
+          <InstLabel>Fator de Lucro</InstLabel>
+          <div style={{ marginTop: "6px" }}>
+            <InstNum
+              value={profitFactor}
+              tom={profitFactor !== "0.00" && profitFactor !== "NaN" ? "ok" : "neutro"}
+              size="lg"
+            />
+          </div>
+        </InstCard>
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Filter className="size-3.5" />
-          <span>Filtrar:</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          flexWrap: "wrap",
+          padding: "10px 14px",
+          background: "var(--inst-panel)",
+          border: "1px solid var(--inst-line)",
+          borderRadius: "3px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <Filter style={{ width: "13px", height: "13px", color: "var(--inst-dim)" }} />
+          <InstLabel>Filtrar:</InstLabel>
         </div>
-        <div className="flex gap-1">
-          {["TODOS", "WIN", "WDO", "NQ", "XAUUSD"].map((sym) => (
-            <button
-              key={sym}
-              onClick={() => setFilterSymbol(sym)}
-              className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors border ${
-                filterSymbol === sym
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card/60 text-muted-foreground border-border/40 hover:bg-card"
-              }`}
-            >
-              {sym}
-            </button>
-          ))}
+
+        <div style={{ display: "flex", gap: "4px" }}>
+          {["TODOS", "WIN", "WDO", "NQ", "XAUUSD"].map((sym) => {
+            const active = filterSymbol === sym;
+            return (
+              <button
+                key={sym}
+                onClick={() => setFilterSymbol(sym)}
+                className="mono tabular"
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "2px",
+                  fontSize: "11px",
+                  fontWeight: active ? 700 : 500,
+                  cursor: "pointer",
+                  background: active ? "var(--inst-panel-2)" : "transparent",
+                  border: active ? "1px solid var(--inst-text)" : "1px solid var(--inst-line)",
+                  color: active ? "var(--inst-text)" : "var(--inst-dim)",
+                }}
+              >
+                {sym}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex gap-1 ml-auto">
-          {["TODOS", "WIN", "LOSS", "OPEN"].map((res) => (
-            <button
-              key={res}
-              onClick={() => setFilterResult(res)}
-              className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors border ${
-                filterResult === res
-                  ? "bg-secondary text-secondary-foreground border-secondary"
-                  : "bg-card/60 text-muted-foreground border-border/40 hover:bg-card"
-              }`}
-            >
-              {res}
-            </button>
-          ))}
+
+        <div style={{ display: "flex", gap: "4px", marginLeft: "auto" }}>
+          {["TODOS", "WIN", "LOSS", "OPEN"].map((res) => {
+            const active = filterResult === res;
+            return (
+              <button
+                key={res}
+                onClick={() => setFilterResult(res)}
+                className="mono tabular"
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "2px",
+                  fontSize: "11px",
+                  fontWeight: active ? 700 : 500,
+                  cursor: "pointer",
+                  background: active ? "var(--inst-panel-2)" : "transparent",
+                  border: active ? "1px solid var(--inst-text)" : "1px solid var(--inst-line)",
+                  color: active ? "var(--inst-text)" : "var(--inst-dim)",
+                }}
+              >
+                {res}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Tabela de Trades */}
-      <Card className="bg-card/70 border-border/60 overflow-hidden">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/40 bg-muted/30">
-                <TableHead className="text-xs">Data</TableHead>
-                <TableHead className="text-xs">Ativo</TableHead>
-                <TableHead className="text-xs">Direção</TableHead>
-                <TableHead className="text-xs">Estratégia</TableHead>
-                <TableHead className="text-xs">Entrada / Stop / Alvo</TableHead>
-                <TableHead className="text-xs">R:R</TableHead>
-                <TableHead className="text-xs">Resultado</TableHead>
-                <TableHead className="text-xs text-right">PnL</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                    Carregando trades do Supabase...
-                  </TableCell>
-                </TableRow>
-              ) : filteredTrades.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                    Nenhum trade encontrado nos filtros selecionados.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredTrades.map((t) => (
-                  <TableRow key={t.id} className="border-border/40 hover:bg-muted/20">
-                    <TableCell className="text-xs font-mono text-muted-foreground">
-                      {new Date(t.trade_date).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </TableCell>
-                    <TableCell className="font-bold text-xs">{t.symbol}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          t.direction === "BUY"
-                            ? "text-emerald-400 border-emerald-800/40 bg-emerald-950/20"
-                            : "text-red-400 border-red-800/40 bg-red-950/20"
-                        }
-                      >
-                        {t.direction}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs font-medium">{t.strategy}</TableCell>
-                    <TableCell className="text-xs font-mono">
-                      <span className="text-foreground">{t.entry_price}</span>
-                      <span className="text-muted-foreground mx-1">/</span>
-                      <span className="text-red-400">{t.stop_loss}</span>
-                      <span className="text-muted-foreground mx-1">/</span>
-                      <span className="text-emerald-400">{t.take_profit || t.exit_price || "-"}</span>
-                    </TableCell>
-                    <TableCell className="text-xs font-mono font-semibold">
-                      {t.rr_achieved ? `1:${t.rr_achieved}` : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          t.result === "WIN"
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                            : t.result === "LOSS"
-                            ? "bg-red-500/20 text-red-400 border border-red-500/40"
-                            : "bg-muted text-muted-foreground"
-                        }
-                      >
-                        {t.result}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right text-xs font-mono font-bold">
-                      <span className={(t.pnl || 0) >= 0 ? "text-emerald-400" : "text-red-400"}>
-                        {(t.pnl || 0) >= 0 ? `+${(t.pnl || 0).toFixed(2)}` : (t.pnl || 0).toFixed(2)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+      <InstTable
+        colunas={[
+          { label: "Data" },
+          { label: "Ativo" },
+          { label: "Direção" },
+          { label: "Estratégia" },
+          { label: "Entrada / Stop / Alvo" },
+          { label: "R:R" },
+          { label: "Resultado" },
+          { label: "PnL", align: "right" },
+        ]}
+      >
+        {loading ? (
+          <InstRow>
+            <td colSpan={8} style={{ padding: "20px" }}>
+              <InstEmpty>Carregando trades do Supabase...</InstEmpty>
+            </td>
+          </InstRow>
+        ) : filteredTrades.length === 0 ? (
+          <InstRow>
+            <td colSpan={8} style={{ padding: "20px" }}>
+              <InstEmpty>Nenhum trade encontrado nos filtros selecionados.</InstEmpty>
+            </td>
+          </InstRow>
+        ) : (
+          filteredTrades.map((t) => {
+            const tomRow = t.result === "WIN" ? "ok" : t.result === "LOSS" ? "block" : "neutro";
+            return (
+              <InstRow key={t.id} tom={tomRow}>
+                <td className="mono tabular" style={{ padding: "10px 16px", fontSize: "11px", color: "var(--inst-dim)" }}>
+                  {new Date(t.trade_date).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </td>
+                <td style={{ padding: "10px 16px", fontSize: "12px", fontWeight: 700, color: "var(--inst-text)" }}>
+                  {t.symbol}
+                </td>
+                <td style={{ padding: "10px 16px" }}>
+                  <InstBadge tom={t.direction === "BUY" ? "ok" : "block"}>
+                    {t.direction}
+                  </InstBadge>
+                </td>
+                <td style={{ padding: "10px 16px", fontSize: "12px", color: "var(--inst-text)" }}>
+                  {t.strategy}
+                </td>
+                <td className="mono tabular" style={{ padding: "10px 16px", fontSize: "12px" }}>
+                  <span style={{ color: "var(--inst-text)" }}>{t.entry_price}</span>
+                  <span style={{ color: "var(--inst-dim)", margin: "0 4px" }}>/</span>
+                  <span style={{ color: "var(--inst-block)" }}>{t.stop_loss}</span>
+                  <span style={{ color: "var(--inst-dim)", margin: "0 4px" }}>/</span>
+                  <span style={{ color: "var(--inst-ok)" }}>{t.take_profit || t.exit_price || "-"}</span>
+                </td>
+                <td className="mono tabular" style={{ padding: "10px 16px", fontSize: "12px", color: "var(--inst-text)" }}>
+                  {t.rr_achieved ? `1:${t.rr_achieved}` : "-"}
+                </td>
+                <td style={{ padding: "10px 16px" }}>
+                  <InstBadge tom={t.result === "WIN" ? "ok" : t.result === "LOSS" ? "block" : "neutro"}>
+                    {t.result}
+                  </InstBadge>
+                </td>
+                <td style={{ padding: "10px 16px", textAlign: "right" }}>
+                  <InstNum
+                    value={(t.pnl || 0) >= 0 ? `+${(t.pnl || 0).toFixed(2)}` : (t.pnl || 0).toFixed(2)}
+                    tom={(t.pnl || 0) > 0 ? "ok" : (t.pnl || 0) < 0 ? "block" : "neutro"}
+                    size="sm"
+                  />
+                </td>
+              </InstRow>
+            );
+          })
+        )}
+      </InstTable>
+    </InstPage>
   );
 }

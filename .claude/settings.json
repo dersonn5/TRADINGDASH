@@ -13,7 +13,8 @@
       "Bash(python -c ' *)",
       "Bash(echo \"=== VERIFY EXIT: $? ===\")",
       "Bash(echo \"=== BUILD EXIT: $? ===\")",
-      "Bash(echo \"=== EXIT: $? ===\")"
+      "Bash(echo \"=== EXIT: $? ===\")",
+      "Bash(grep \"^-.*//\")"
     ],
     "additionalDirectories": [
       "e:\\AUTOMA��O IA\\TRADING AI"
