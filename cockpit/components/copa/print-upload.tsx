@@ -88,6 +88,33 @@ export function PrintUpload({
     }
   };
 
+  // Colar em QUALQUER lugar da pagina, nao so com a area focada.
+  //
+  // onPaste na div so dispara se a div tiver foco. Mas para focar a area o
+  // usuario precisa clicar nela, e o clique abre o seletor de arquivo — nao
+  // existe caminho para focar sem abrir o dialogo. Resultado: Ctrl+V nascia no
+  // body, nunca passava pela div, e nao acontecia nada nem aparecia erro.
+  //
+  // O listener na janela resolve. So fica ativo enquanto nao ha print, para uma
+  // area ja preenchida nao roubar o Ctrl+V de outra vazia na mesma tela.
+  useEffect(() => {
+    if (disabled || path) return;
+
+    const aoColarNaJanela = (e: ClipboardEvent) => {
+      if (uploading) return;
+      const files = e.clipboardData?.files;
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      // Texto colado num campo nao traz files, entao digitar segue normal.
+      if (!file.type.startsWith("image/")) return;
+      e.preventDefault();
+      processUpload(file);
+    };
+
+    window.addEventListener("paste", aoColarNaJanela);
+    return () => window.removeEventListener("paste", aoColarNaJanela);
+  }, [disabled, path, uploading, data, nome]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       {label && (
@@ -149,11 +176,11 @@ export function PrintUpload({
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <ImageIcon style={{ width: "16px", height: "16px", color: "var(--inst-dim)" }} />
                 <span style={{ fontSize: "12px", color: "var(--inst-text)", fontWeight: 600 }}>
-                  Cole com Ctrl+V ou clique para escolher
+                  Ctrl+V em qualquer lugar da página, ou clique para escolher
                 </span>
               </div>
               <span style={{ fontSize: "10px", color: "var(--inst-faint)" }}>
-                PNG, JPEG ou WebP (máx. 10 MB)
+                Win+Shift+S recorta a tela · PNG, JPEG ou WebP até 10 MB
               </span>
             </div>
           )}
