@@ -8,7 +8,9 @@
       "PowerShell(& \"C:\\\\Users\\\\Pc\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -c \"import xgboost; import sklearn; print\\('xgboost', xgboost.__version__\\); print\\('sklearn', sklearn.__version__\\)\" 2>&1)",
       "PowerShell(Get-Process | Where-Object {$_.Id -eq 36448} | Select-Object Id, CPU, @{n='RAM_MB';e={[math]::Round\\($_.WorkingSet/1MB,1\\)}} | Format-Table -AutoSize)",
       "PowerShell(Stop-Process -Force -ErrorAction SilentlyContinue)",
-      "PowerShell(Get-ChildItem \"e:\\\\AUTOMAÇÃO IA\\\\TRADING AI\\\\data\\\\cached\" | Select-Object Name, @{N='MB';E={[math]::Round\\($_.Length/1MB,1\\)}} | Sort-Object Name)"
+      "PowerShell(Get-ChildItem \"e:\\\\AUTOMAÇÃO IA\\\\TRADING AI\\\\data\\\\cached\" | Select-Object Name, @{N='MB';E={[math]::Round\\($_.Length/1MB,1\\)}} | Sort-Object Name)",
+      "Bash(node \"C:/Users/Pc/AppData/Local/Temp/claude/e--AUTOMA--O-IA-TRADING-AI/10a319a5-2519-4cae-91ea-cc3a0bca98e4/scratchpad/uaz3.mjs\")",
+      "Bash(python -c ' *)"
     ],
     "additionalDirectories": [
       "e:\\AUTOMA��O IA\\TRADING AI"
