@@ -1,0 +1,20 @@
+var
+  p : Float;
+
+begin
+  if LastBarOnChart then
+  begin
+    p := Close;
+    LineSegment(p + 300, p - 300, Date, Date, false, "10h", clRed, 2, 0, 10, tpTopRight, 1000, 1000);
+    LineSegment(p + 300, p - 300, Date, Date, false, "11h", clRed, 2, 0, 10, tpTopRight, 1100, 1100);
+    LineSegment(p + 300, p - 300, Date, Date, false, "12h", clRed, 2, 0, 10, tpTopRight, 1200, 1200);
+    LineSegment(p + 300, p - 300, Date, Date, false, "13h", clRed, 2, 0, 10, tpTopRight, 1300, 1300);
+    LineSegment(p + 300, p - 300, Date, Date, false, "14h", clRed, 2, 0, 10, tpTopRight, 1400, 1400);
+    LineSegment(p + 300, p - 300, Date, Date, false, "15h", clRed, 2, 0, 10, tpTopRight, 1500, 1500);
+    LineSegment(p + 300, p - 300, Date, Date, false, "16h", clRed, 2, 0, 10, tpTopRight, 1600, 1600);
+    LineSegment(p + 300, p - 300, Date, Date, false, "17h", clRed, 2, 0, 10, tpTopRight, 1700, 1700);
+  end;
+
+  if (Time = 1030) or (Time = 1130) or (Time = 1230) then
+    LineSegment(High + 200, Low - 200, Date, Date, false, "hist", clBlue, 2, 0, 10, tpTopRight, Time, Time);
+end;

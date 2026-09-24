@@ -1,0 +1,152 @@
+input
+  HoraIni(1000);
+  HoraFim15(1015);
+  HoraFimLinha(1200);
+  DiasVisiveis(5);
+
+var
+  dataAtual : Integer;
+  hora      : Integer;
+  diaNovo   : Integer;
+  tem10     : Integer;
+  h10       : Float;
+  l10       : Float;
+  i         : Integer;
+  parar     : Integer;
+  nDias     : Integer;
+  dataRef   : Integer;
+  s1d : Integer;
+  s1h : Float;
+  s1l : Float;
+  s2d : Integer;
+  s2h : Float;
+  s2l : Float;
+  s3d : Integer;
+  s3h : Float;
+  s3l : Float;
+  s4d : Integer;
+  s4h : Float;
+  s4l : Float;
+  s5d : Integer;
+  s5h : Float;
+  s5l : Float;
+
+begin
+  dataAtual := Date;
+  hora := Time;
+
+  diaNovo := 0;
+  if dataAtual <> dataAtual[1] then diaNovo := 1;
+
+  if diaNovo = 1 then
+  begin
+    tem10 := 0;
+    h10 := 0;
+    l10 := 0;
+  end
+  else
+  begin
+    tem10 := tem10[1];
+    h10 := h10[1];
+    l10 := l10[1];
+  end;
+
+  if (hora >= HoraIni) and (hora < HoraFim15) then
+  begin
+    if tem10 = 0 then
+    begin
+      h10 := High;
+      l10 := Low;
+      tem10 := 1;
+    end
+    else
+    begin
+      if High > h10 then h10 := High;
+      if Low < l10 then l10 := Low;
+    end;
+  end;
+
+  if LastBarOnChart then
+  begin
+    nDias := 0;
+    parar := 0;
+    dataRef := 0;
+
+    for i := 0 to 5000 do
+    begin
+      if parar = 0 then
+      begin
+        if i >= CurrentBar() then parar := 1;
+      end;
+
+      if parar = 0 then
+      begin
+        if dataAtual[i] <> dataRef then
+        begin
+          dataRef := dataAtual[i];
+          if tem10[i] = 1 then
+          begin
+            nDias := nDias + 1;
+          if nDias = 1 then
+          begin
+            s1d := dataAtual[i];
+            s1h := h10[i];
+            s1l := l10[i];
+          end;
+          if nDias = 2 then
+          begin
+            s2d := dataAtual[i];
+            s2h := h10[i];
+            s2l := l10[i];
+          end;
+          if nDias = 3 then
+          begin
+            s3d := dataAtual[i];
+            s3h := h10[i];
+            s3l := l10[i];
+          end;
+          if nDias = 4 then
+          begin
+            s4d := dataAtual[i];
+            s4h := h10[i];
+            s4l := l10[i];
+          end;
+          if nDias = 5 then
+          begin
+            s5d := dataAtual[i];
+            s5h := h10[i];
+            s5l := l10[i];
+          end;
+          end;
+          if nDias >= 5 then parar := 1;
+        end;
+      end;
+    end;
+
+    if (nDias >= 1) and (1 <= DiasVisiveis) then
+    begin
+      LineSegment(s1h, s1h, s1d, s1d, true, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFim15);
+      LineSegment(s1l, s1l, s1d, s1d, true, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFim15);
+    end;
+    if (nDias >= 2) and (2 <= DiasVisiveis) then
+    begin
+      LineSegment(s2h, s2h, s2d, s2d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+      LineSegment(s2l, s2l, s2d, s2d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+    end;
+    if (nDias >= 3) and (3 <= DiasVisiveis) then
+    begin
+      LineSegment(s3h, s3h, s3d, s3d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+      LineSegment(s3l, s3l, s3d, s3d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+    end;
+    if (nDias >= 4) and (4 <= DiasVisiveis) then
+    begin
+      LineSegment(s4h, s4h, s4d, s4d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+      LineSegment(s4l, s4l, s4d, s4d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+    end;
+    if (nDias >= 5) and (5 <= DiasVisiveis) then
+    begin
+      LineSegment(s5h, s5h, s5d, s5d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+      LineSegment(s5l, s5l, s5d, s5d, false, "", RGB(210, 160, 0), 1, 2, 8, tpTopRight, HoraIni, HoraFimLinha);
+    end;
+  end;
+end;

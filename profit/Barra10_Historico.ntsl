@@ -1,0 +1,61 @@
+input
+  HoraIni(1000);
+  HoraFim15(1015);
+  HoraFimLinha(1200);
+
+var
+  dataAtual : Integer;
+  hora      : Integer;
+  diaNovo   : Integer;
+  tem10     : Integer;
+  h10       : Float;
+  l10       : Float;
+
+begin
+  dataAtual := Date;
+  hora := Time;
+
+  diaNovo := 0;
+  if dataAtual <> dataAtual[1] then diaNovo := 1;
+
+  if diaNovo = 1 then
+  begin
+    tem10 := 0;
+    h10 := 0;
+    l10 := 0;
+  end
+  else
+  begin
+    tem10 := tem10[1];
+    h10 := h10[1];
+    l10 := l10[1];
+  end;
+
+  if (hora >= HoraIni) and (hora < HoraFim15) then
+  begin
+    if tem10 = 0 then
+    begin
+      h10 := High;
+      l10 := Low;
+      tem10 := 1;
+    end
+    else
+    begin
+      if High > h10 then h10 := High;
+      if Low < l10 then l10 := Low;
+    end;
+  end;
+
+  if (tem10 = 1) and (hora >= HoraIni) and (hora < HoraFimLinha) then
+  begin
+    Plot(h10);
+    Plot2(l10);
+  end;
+
+  SetPlotColor(1, RGB(210, 160, 0));
+  SetPlotColor(2, RGB(210, 160, 0));
+  SetPlotWidth(1, 1);
+  SetPlotWidth(2, 1);
+  SetPlotStyle(1, 2);
+  SetPlotStyle(2, 2);
+end;

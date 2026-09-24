@@ -51,11 +51,50 @@ Sessão   → 4 quartos
 Cada quarto recebe um papel do AMD: pode ser **A**cumulação, **M**anipulação,
 **D**istribuição ou **X** (reversão / continuação). Daí `AMDX`, `XAMD`.
 
+### Horários confirmados (NY)
+
+Confirmados em fontes independentes, 21/09/2026 — ver referências no fim.
+
+| Ciclo | Q1 | Q2 | Q3 | Q4 |
+|---|---|---|---|---|
+| Diário (6h) | 18:00–00:00 Ásia | 00:00–06:00 Londres | 06:00–12:00 NY AM | 12:00–18:00 NY PM |
+| 90 min, dentro do NY AM | 06:00–07:30 | 07:30–09:00 | 09:00–10:30 | 10:30–12:00 |
+| Micro | quartos de 22,5 min dentro de cada 90 min | | | |
+
+Sequência de cada quarto: **A → M → D → X**.
+
+### Convertido para B3
+
+O Brasil não tem horário de verão; os EUA têm. **Com os EUA em horário de
+verão, BRT = NY + 1.** Fora dele, BRT = NY + 2.
+
+| 90 min do NY AM | BRT (EUA em DST) | Papel |
+|---|---|---|
+| Q1 | 07:00–08:30 | acumulação — B3 fechada |
+| Q2 | 08:30–10:00 | **manipulação** — a B3 abre às 09:00 dentro dele |
+| Q3 | **10:00–11:30** | **distribuição** |
+| Q4 | 11:30–13:00 | reversão / continuação |
+
 > [!IMPORTANT]
-> **A âncora horária exata dos quartos precisa ser confirmada.** A transcrição
-> está corrompida justamente nessa parte. A divisão fractal (dia = 4 × 6h) está
-> clara; o horário de início de cada quarto, não. Confirmar na fonte antes de
-> usar qualquer coisa ancorada em horário.
+> **A janela nobre 10:00–11:00 do playbook cai no começo do Q3 — o quarto de
+> distribuição.** Ela foi escolhida por outro critério (abertura do à vista às
+> 10:00, abertura americana às 10:30). A Quarterly Theory chega ao mesmo horário
+> por um caminho independente.
+>
+> E é coerente com o modelo: a abertura das 09:00 cai no quarto de
+> **manipulação** — onde o sweep acontece. O movimento real começa às 10:00.
+
+> [!WARNING]
+> **Os EUA saem do horário de verão em 1º de novembro de 2026.** A partir daí,
+> BRT = NY + 2, e o Q3 desloca para **11:00–12:30 BRT**. A janela nobre de
+> 10:00 deixa de coincidir com o quarto de distribuição. A final da Copa é
+> 29/10, ainda dentro do horário de verão — o alinhamento vale para a
+> competição inteira, mas não depois dela.
+
+> Estes horários valem para futuros em horário de NY e **variam por mercado**.
+> O WIN só negocia 09:00–18:00 BRT, então os quartos Q1/Q2 do ciclo diário
+> caem fora do pregão. O ciclo de 90 minutos do NY AM é o que se sobrepõe à
+> janela operacional.
 
 ## 3. Quarter Sequence — a regra de alinhamento
 
@@ -162,4 +201,7 @@ bom de trade ruim nos dados do WIN.
 ---
 
 **Fonte:** canal Chronos CRT, vídeo sobre Quarter Sequence (~34 min).
+**Horários:** [LuxAlgo — Quarterly Theory](https://www.luxalgo.com/library/concept/quarterly-theory/) ·
+[Daye Quarterly Theory, toodegrees](https://www.tradingview.com/script/n2aeO1GB-Daye-Quarterly-Theory-by-toodegrees/) ·
+[FX Replay — Daye Quarterly Theory](https://fxreplay.com/indicators/daye-quarterly-theory)
 **Ver também:** [[Algoritmo_IPDA_e_Ciclos_Tempo]] · [[ICT_Killzones_YouTube_Distilled]] · [[ICT_PowerOfThree_YouTube_Distilled]] · [[FVG_e_MSS]]

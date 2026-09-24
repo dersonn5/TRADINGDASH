@@ -70,3 +70,8 @@ frontend/
 
 # Conversa privada de terceiro — nao versionar
 conversa_ronaldo_*.md
+
+# Manual NTSL oficial da Nelogica (20 MB) - referencia local, nao versionar
+profit/*.pdf
+profit/*.csv
+profit/backtest_plots/

@@ -1,0 +1,17 @@
+input
+  HoraCheck(1000);
+  HoraFim(1200);
+
+var
+  dataAtual : Integer;
+  hora      : Integer;
+
+begin
+  dataAtual := Date;
+  hora := Time;
+
+  if (hora >= HoraCheck) and ((hora[1] < HoraCheck) or (dataAtual <> dataAtual[1])) then
+    PaintBar(RGB(255, 210, 0))
+  else if (hora >= HoraFim) and ((hora[1] < HoraFim) or (dataAtual <> dataAtual[1])) then
+    PaintBar(RGB(200, 0, 0));
+end;

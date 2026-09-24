@@ -1,0 +1,42 @@
+input
+  InicioSessao(0900);
+  HoraCheck(1000);
+  HoraFim(1200);
+  Limite(475);
+  TamanhoRotulo(8);
+
+var
+  dataAtual : Integer;
+  hora      : Integer;
+  diaNovo   : Integer;
+  abertura  : Float;
+  mov       : Float;
+  movAbs    : Float;
+
+begin
+  dataAtual := Date;
+  hora := Time;
+
+  diaNovo := 0;
+  if dataAtual <> dataAtual[1] then diaNovo := 1;
+
+  if (hora >= InicioSessao) and ((diaNovo = 1) or (hora[1] < InicioSessao)) then
+    abertura := Open
+  else
+    abertura := abertura[1];
+
+  if (hora >= HoraCheck) and (hora[1] < HoraCheck) and (diaNovo = 0) then
+  begin
+    mov := Close[1] - abertura;
+    movAbs := mov;
+    if movAbs < 0 then movAbs := 0 - movAbs;
+
+    if movAbs < Limite then
+      PlotText("1H " + FloatToString(mov, 0) + " COMPRIMIDA", RGB(60, 140, 100), 0, TamanhoRotulo)
+    else
+      PlotText("1H " + FloatToString(mov, 0) + " ESTICADA", RGB(170, 85, 78), 0, TamanhoRotulo);
+  end;
+
+  if (hora >= HoraFim) and (hora[1] < HoraFim) and (diaNovo = 0) then
+    PlotText("FIM", RGB(120, 120, 120), 2, TamanhoRotulo);
+end;

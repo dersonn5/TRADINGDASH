@@ -1,0 +1,7 @@
+input
+  Ref("ESZ26", feedCME);
+
+begin
+  if LastBarOnChart then
+    PlotText("Ref " + FloatToString(Ref.Close, 2) + " max " + FloatToString(Ref.High, 2), clRed, 2, 12);
+end;

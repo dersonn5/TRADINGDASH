@@ -1,0 +1,411 @@
+input
+  AncoraQ(0700);
+  InicioSessao(0900);
+  FimSessao(1130);
+  TamanhoRotulo(8);
+  CRT15(1);
+  DiasAtras(0);
+  Diag(0);
+  TomCaixa(212);
+  Sequencia(1);
+
+var
+  dataAtual    : Integer;
+  diaNovo      : Integer;
+  dentro       : Integer;
+  entrouSessao : Integer;
+  qIndex       : Integer;
+  qNum         : Integer;
+  novoQuarto   : Integer;
+  iniQuarto    : Integer;
+  qHigh        : Float;
+  qLow         : Float;
+  periodo      : Integer;
+  novoPeriodo  : Integer;
+  curHigh      : Float;
+  curLow       : Float;
+  prevHigh     : Float;
+  prevLow      : Float;
+  prevIni      : Integer;
+  temPrev      : Integer;
+  i            : Integer;
+  parar        : Integer;
+  fimIdx       : Integer;
+  nBox         : Integer;
+  bH           : Float;
+  bL           : Float;
+  hIni         : Integer;
+  hFim         : Integer;
+  corBox       : Integer;
+  diasVis      : Integer;
+  dataRef      : Integer;
+  dataAlvo     : Integer;
+  minQ         : Integer;
+  r90          : Integer;
+  mQ           : Integer;
+  dIdx         : Integer;
+  dQ           : Integer;
+  wQ           : Integer;
+  cnt          : Integer;
+  alinhado     : Integer;
+  horaBar      : Integer;
+  seqEst       : Integer;
+  seqH         : Float;
+  seqL         : Float;
+  seqI         : Integer;
+  seqF         : Integer;
+  s1H : Float;
+  s1L : Float;
+  s1I : Integer;
+  s1F : Integer;
+  s2H : Float;
+  s2L : Float;
+  s2I : Integer;
+  s2F : Integer;
+  s3H : Float;
+  s3L : Float;
+  s3I : Integer;
+  s3F : Integer;
+  s4H : Float;
+  s4L : Float;
+  s4I : Integer;
+  s4F : Integer;
+  s5H : Float;
+  s5L : Float;
+  s5I : Integer;
+  s5F : Integer;
+  s6H : Float;
+  s6L : Float;
+  s6I : Integer;
+  s6F : Integer;
+  s7H : Float;
+  s7L : Float;
+  s7I : Integer;
+  s7F : Integer;
+
+begin
+  dataAtual := Date;
+
+  diaNovo := 0;
+  if dataAtual <> dataAtual[1] then diaNovo := 1;
+
+  dentro := 0;
+  if (Time >= InicioSessao) and (Time < FimSessao) then dentro := 1;
+
+  entrouSessao := 0;
+  if (dentro = 1) and ((dentro[1] = 0) or (diaNovo = 1)) then entrouSessao := 1;
+
+  qIndex := Floor((TimeToMinutes(Time) - TimeToMinutes(AncoraQ)) / 90);
+  qNum   := Mod(qIndex, 4) + 1;
+  if qNum < 1 then qNum := qNum + 4;
+
+  novoQuarto := 0;
+  if qIndex <> qIndex[1] then novoQuarto := 1;
+
+  iniQuarto := 0;
+  if (dentro = 1) and ((novoQuarto = 1) or (entrouSessao = 1)) then iniQuarto := 1;
+
+  if iniQuarto = 1 then
+  begin
+    qHigh := High;
+    qLow  := Low;
+  end
+  else
+  begin
+    qHigh := qHigh[1];
+    qLow  := qLow[1];
+    if dentro = 1 then
+    begin
+      if High > qHigh then qHigh := High;
+      if Low  < qLow  then qLow  := Low;
+    end;
+  end;
+
+  if iniQuarto = 1 then
+  begin
+    if qNum = 1 then PlotText("Q1", RGB(224, 180, 78), 2, TamanhoRotulo)
+    else if qNum = 2 then PlotText("Q2", RGB(224, 180, 78), 2, TamanhoRotulo)
+    else if qNum = 3 then PlotText("Q3", RGB(224, 180, 78), 2, TamanhoRotulo)
+    else PlotText("Q4", RGB(224, 180, 78), 2, TamanhoRotulo);
+  end;
+
+  horaBar := Time;
+  minQ := TimeToMinutes(Time) - TimeToMinutes(AncoraQ);
+
+  r90 := Mod(minQ, 90);
+  if r90 < 0 then r90 := r90 + 90;
+  mQ := Floor((r90 * 2) / 45) + 1;
+
+  dIdx := Floor(minQ / 360);
+  dQ := Mod(dIdx + 2, 4);
+  if dQ < 0 then dQ := dQ + 4;
+  dQ := dQ + 1;
+
+  wQ := DayOfWeek(dataAtual);
+  if (wQ < 1) or (wQ > 4) then wQ := 0;
+
+  cnt := 1;
+  if (mQ = qNum) or (((mQ = 1) or (mQ = 4)) and ((qNum = 1) or (qNum = 4))) then
+  begin
+    cnt := 2;
+    if (qNum = dQ) or (((qNum = 1) or (qNum = 4)) and ((dQ = 1) or (dQ = 4))) then
+    begin
+      cnt := 3;
+      if (dQ = wQ) or (((dQ = 1) or (dQ = 4)) and ((wQ = 1) or (wQ = 4))) then cnt := 4;
+    end;
+  end;
+
+  alinhado := 0;
+  if (cnt >= 3) and (dentro = 1) then alinhado := 1;
+
+  if (Sequencia = 1) and (alinhado = 1) and (alinhado[1] = 0) then
+  begin
+    if cnt = 4 then
+    begin
+      if mQ = 3 then PlotText("SEQ Q3 x4", RGB(176, 132, 40), 0, TamanhoRotulo)
+      else if mQ = 2 then PlotText("SEQ Q2 x4", RGB(176, 132, 40), 0, TamanhoRotulo)
+      else PlotText("SEQ Q1-Q4 x4", RGB(176, 132, 40), 0, TamanhoRotulo);
+    end
+    else
+    begin
+      if mQ = 3 then PlotText("SEQ Q3 x3", RGB(176, 132, 40), 0, TamanhoRotulo)
+      else if mQ = 2 then PlotText("SEQ Q2 x3", RGB(176, 132, 40), 0, TamanhoRotulo)
+      else PlotText("SEQ Q1-Q4 x3", RGB(176, 132, 40), 0, TamanhoRotulo);
+    end;
+  end;
+
+  periodo := Floor((TimeToMinutes(Time) - TimeToMinutes(AncoraQ)) / 15);
+
+  novoPeriodo := 0;
+  if (diaNovo = 1) or (periodo <> periodo[1]) then novoPeriodo := 1;
+
+  if novoPeriodo = 1 then
+  begin
+    if diaNovo = 1 then
+    begin
+      temPrev  := 0;
+      prevHigh := 0;
+      prevLow  := 0;
+      prevIni  := 0;
+    end
+    else
+    begin
+      temPrev  := 1;
+      prevHigh := curHigh[1];
+      prevLow  := curLow[1];
+      prevIni  := CalcTime(AncoraQ, periodo[1] * 15);
+    end;
+    curHigh := High;
+    curLow  := Low;
+  end
+  else
+  begin
+    temPrev  := temPrev[1];
+    prevHigh := prevHigh[1];
+    prevLow  := prevLow[1];
+    prevIni  := prevIni[1];
+    curHigh  := curHigh[1];
+    curLow   := curLow[1];
+    if High > curHigh then curHigh := High;
+    if Low  < curLow  then curLow  := Low;
+  end;
+
+  if LastBarOnChart then
+  begin
+    corBox := RGB(TomCaixa, TomCaixa, TomCaixa + 6);
+    fimIdx  := 0;
+    nBox    := 0;
+    dataAlvo := dataAtual;
+    parar   := 0;
+    diasVis := 0;
+    dataRef := dataAtual;
+    seqEst  := 0;
+    seqH    := 0;
+    seqL    := 0;
+    seqI    := 0;
+    seqF    := 0;
+
+    for i := 0 to 30000 do
+    begin
+      if parar = 0 then
+      begin
+        if i >= CurrentBar() then parar := 1;
+      end;
+
+      if parar = 0 then
+      begin
+        if dataAtual[i] <> dataRef then
+        begin
+          diasVis := diasVis + 1;
+          dataRef := dataAtual[i];
+          fimIdx  := i;
+        end;
+        if diasVis > DiasAtras then parar := 1;
+      end;
+
+      if (parar = 0) and (diasVis = DiasAtras) then
+      begin
+        if (seqEst = 1) and (alinhado[i] = 0) then seqEst := 2;
+
+        if (seqEst < 2) and (alinhado[i] = 1) then
+        begin
+          if seqEst = 0 then
+          begin
+            seqEst := 1;
+            seqH   := High[i];
+            seqL   := Low[i];
+            seqF   := CalcTime(horaBar[i], 1);
+          end;
+          if High[i] > seqH then seqH := High[i];
+          if Low[i]  < seqL then seqL := Low[i];
+          seqI := horaBar[i];
+        end;
+
+        if (iniQuarto[i] = 1) and (nBox < 7) then
+        begin
+          nBox := nBox + 1;
+          dataAlvo := dataRef;
+
+          bH := qHigh[fimIdx];
+          bL := qLow[fimIdx];
+
+          hIni := CalcTime(AncoraQ, qIndex[i] * 90);
+          if hIni < InicioSessao then hIni := InicioSessao;
+          hFim := CalcTime(AncoraQ, (qIndex[i] + 1) * 90);
+          if hFim > FimSessao then hFim := FimSessao;
+
+          if nBox = 1 then
+          begin
+            s1H := bH;
+            s1L := bL;
+            s1I := hIni;
+            s1F := hFim;
+          end;
+
+          if nBox = 2 then
+          begin
+            s2H := bH;
+            s2L := bL;
+            s2I := hIni;
+            s2F := hFim;
+          end;
+
+          if nBox = 3 then
+          begin
+            s3H := bH;
+            s3L := bL;
+            s3I := hIni;
+            s3F := hFim;
+          end;
+
+          if nBox = 4 then
+          begin
+            s4H := bH;
+            s4L := bL;
+            s4I := hIni;
+            s4F := hFim;
+          end;
+
+          if nBox = 5 then
+          begin
+            s5H := bH;
+            s5L := bL;
+            s5I := hIni;
+            s5F := hFim;
+          end;
+
+          if nBox = 6 then
+          begin
+            s6H := bH;
+            s6L := bL;
+            s6I := hIni;
+            s6F := hFim;
+          end;
+
+          if nBox = 7 then
+          begin
+            s7H := bH;
+            s7L := bL;
+            s7I := hIni;
+            s7F := hFim;
+          end;
+
+          fimIdx := i + 1;
+        end;
+      end;
+    end;
+
+    if nBox >= 1 then
+    begin
+      LineSegment(s1H, s1H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s1I, s1F);
+      LineSegment(s1L, s1L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s1I, s1F);
+      LineSegment(s1H, s1L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s1I, s1I);
+      LineSegment(s1H, s1L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s1F, s1F);
+    end;
+
+    if nBox >= 2 then
+    begin
+      LineSegment(s2H, s2H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s2I, s2F);
+      LineSegment(s2L, s2L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s2I, s2F);
+      LineSegment(s2H, s2L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s2I, s2I);
+      LineSegment(s2H, s2L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s2F, s2F);
+    end;
+
+    if nBox >= 3 then
+    begin
+      LineSegment(s3H, s3H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s3I, s3F);
+      LineSegment(s3L, s3L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s3I, s3F);
+      LineSegment(s3H, s3L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s3I, s3I);
+      LineSegment(s3H, s3L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s3F, s3F);
+    end;
+
+    if nBox >= 4 then
+    begin
+      LineSegment(s4H, s4H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s4I, s4F);
+      LineSegment(s4L, s4L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s4I, s4F);
+      LineSegment(s4H, s4L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s4I, s4I);
+      LineSegment(s4H, s4L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s4F, s4F);
+    end;
+
+    if nBox >= 5 then
+    begin
+      LineSegment(s5H, s5H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s5I, s5F);
+      LineSegment(s5L, s5L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s5I, s5F);
+      LineSegment(s5H, s5L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s5I, s5I);
+      LineSegment(s5H, s5L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s5F, s5F);
+    end;
+
+    if nBox >= 6 then
+    begin
+      LineSegment(s6H, s6H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s6I, s6F);
+      LineSegment(s6L, s6L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s6I, s6F);
+      LineSegment(s6H, s6L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s6I, s6I);
+      LineSegment(s6H, s6L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s6F, s6F);
+    end;
+
+    if nBox >= 7 then
+    begin
+      LineSegment(s7H, s7H, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s7I, s7F);
+      LineSegment(s7L, s7L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s7I, s7F);
+      LineSegment(s7H, s7L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s7I, s7I);
+      LineSegment(s7H, s7L, dataAlvo, dataAlvo, false, "", corBox, 1, 2, 8, tpTopRight, s7F, s7F);
+    end;
+
+    if (Sequencia = 1) and (seqEst > 0) then
+    begin
+      LineSegment(seqH, seqH, dataAlvo, dataAlvo, false, "", RGB(226, 200, 140), 1, 0, 8, tpTopRight, seqI, seqF);
+      LineSegment(seqL, seqL, dataAlvo, dataAlvo, false, "", RGB(226, 200, 140), 1, 0, 8, tpTopRight, seqI, seqF);
+      LineSegment(seqH, seqL, dataAlvo, dataAlvo, false, "", RGB(226, 200, 140), 1, 0, 8, tpTopRight, seqI, seqI);
+      LineSegment(seqH, seqL, dataAlvo, dataAlvo, false, "", RGB(226, 200, 140), 1, 0, 8, tpTopRight, seqF, seqF);
+    end;
+
+    if (CRT15 = 1) and (temPrev = 1) and (DiasAtras = 0) then
+    begin
+      LineSegment(prevHigh, prevHigh, dataAtual, dataAtual, true, "", RGB(70, 110, 170), 1, 2, 8, tpTopRight, prevIni, CalcTime(prevIni, 15));
+      LineSegment(prevLow, prevLow, dataAtual, dataAtual, true, "", RGB(170, 85, 78), 1, 2, 8, tpTopRight, prevIni, CalcTime(prevIni, 15));
+    end;
+
+    if Diag = 1 then
+      PlotText("caixas " + FloatToString(nBox, 0), clRed, 0, 10);
+  end;
+end;
