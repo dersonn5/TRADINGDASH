@@ -12,7 +12,7 @@ import {
   getDataSaoPaulo,
 } from "@/lib/copa-db";
 import { supabase } from "@/lib/supabase";
-import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA } from "@/data/strategies";
+import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10 } from "@/data/strategies";
 import {
   InstPage,
   InstCard,
@@ -547,6 +547,24 @@ export default function PreSessaoPage() {
 
             <button
               type="button"
+              onClick={() => updateField("setup_do_dia", "varrida_barra_10")}
+              disabled={isFechada}
+              className="mono"
+              style={{
+                ...btnChoiceStyle(sessao.setup_do_dia === "varrida_barra_10", isFechada),
+                padding: "16px 14px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <span style={{ fontSize: "13px", fontWeight: 700 }}>VARRIDA DA BARRA DAS 10</span>
+              <span style={{ fontSize: "10px", opacity: 0.7 }}>7 KILLs · 5 PONTOS · EM TESTE</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => updateField("setup_do_dia", "NENHUM")}
               disabled={isFechada}
               className="mono"
@@ -579,6 +597,7 @@ export default function PreSessaoPage() {
             >
               {sessao.setup_do_dia === "reversao_htf" && REVERSAO_HTF.descricao}
               {sessao.setup_do_dia === "continuidade_tendencia" && CONTINUIDADE_TENDENCIA.descricao}
+              {sessao.setup_do_dia === "varrida_barra_10" && VARRIDA_BARRA_10.descricao}
               {sessao.setup_do_dia === "NENHUM" &&
                 "Hoje é dia de não operar. Decisão válida e sem risco ao capital. O checklist não permitirá novas ordens."}
             </div>

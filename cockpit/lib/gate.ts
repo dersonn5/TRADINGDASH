@@ -26,6 +26,19 @@ export const MAX_PERDAS_DIA = 3;
 export const MAX_OPERACOES_DIA = 5;
 export const COOLDOWN_APOS_LOSS_MIN = 30;
 
+/**
+ * Mercados liberados para operar. So WIN.
+ *
+ * Nos trades reais de 22/08 a 22/09/2026 (export do Profit), o WIN fez todo o
+ * lucro da conta da Copa (+R$ 20.576, 44% de acerto); WDO e Bitcoin tiraram
+ * R$ 7.137 e dividiram a atencao nos momentos decisivos.
+ */
+export const MERCADOS_PERMITIDOS = ["WIN"] as const;
+
+export function mercadoPermitido(mercado: string): boolean {
+  return (MERCADOS_PERMITIDOS as readonly string[]).includes(mercado);
+}
+
 export interface LimitesDia {
   bloqueado: boolean;
   motivos: string[];
@@ -72,8 +85,17 @@ export function avaliarLimitesDia(
 /**
  * Converte agora para America/Sao_Paulo e classifica a janela de operação:
  * - PRIME: de 10:00 (inclusive) a 11:00 (exclusive)
- * - VALIDA: de 09:00 (inclusive) a 12:00 (exclusive), fora do PRIME
- * - FORA: qualquer outro horário
+ * - VALIDA: de 11:00 (inclusive) a 11:30 (exclusive)
+ * - FORA: qualquer outro horário, inclusive 09:00-09:59 e 11:30-12:00
+ *
+ * 09:00-09:59 saiu da janela em 22/09/2026 (teste de 2 semanas). E a hora em que
+ * o indice faz a manipulacao da abertura, antes de o volume do a vista (10:00) e
+ * de NY (10:30) definir um lado. Nos trades reais de WIN: 19% de acerto e
+ * -R$ 800 nessa hora na conta real; 10:00-11:59 foi o melhor trecho nas duas contas.
+ *
+ * Abertura de posicao so ate 11:29 (decisao do operador, 22/09/2026). A tela fica
+ * aberta ate 12:00 para gerenciar o que ja esta posicionado. 11:30-11:59 foi misto:
+ * +R$ 1.087 na conta real, -R$ 3.240 na Copa (a sequencia de stops de 22/09).
  */
 export function classificarJanela(agora: Date): Janela {
   const formatter = new Intl.DateTimeFormat("pt-BR", {
@@ -94,8 +116,8 @@ export function classificarJanela(agora: Date): Janela {
     return "PRIME";
   }
 
-  // VALIDA: de 09:00 (inclusive, 540 min) a 12:00 (exclusive, 720 min), fora do PRIME
-  if (minutos >= 540 && minutos < 720) {
+  // VALIDA: de 11:00 (inclusive, 660 min) a 11:30 (exclusive, 690 min)
+  if (minutos >= 660 && minutos < 690) {
     return "VALIDA";
   }
 
@@ -146,7 +168,7 @@ export function avaliarGate(
   }
 
   if (janela === "FORA") {
-    motivos.push("fora da janela de operação 09:00–12:00");
+    motivos.push("fora da janela de entrada 10:00–11:30");
   }
 
   for (const label of killsFaltando) {

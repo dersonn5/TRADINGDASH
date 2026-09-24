@@ -23,7 +23,7 @@
     "Preco longe de qualquer array da tendencia",
     "Operador em tilt"
   ],
-  "horarios_validos": [{"inicio": "09:00", "fim": "12:00"}],
+  "horarios_validos": [{"inicio": "10:00", "fim": "11:30"}],
 
   "regras_ambiente": [
     {"campo": "contexto", "op": "=", "valor": "TENDENCIA", "efeito": "FAVORAVEL", "motivo": "e o unico ambiente onde este setup existe"},

@@ -5,21 +5,47 @@
 > Se algo no sistema não está aqui, sai do sistema.
 
 **Definido pelo operador em:** 2026-09-15
-**Mercado:** WIN (mini índice) · WDO
+**Mercado:** **só WIN** (mini índice) — desde 22/09/2026
 **Plataforma:** Profit Chart
 
 ---
 
 ## 1. Janela
 
-| | |
-|---|---|
-| Abertura do pregão B3 | 09:00 |
-| **Janela de operação** | **09:00 – 12:00** |
-| Depois das 12:00 | o Profit trava sozinho |
+> **Atualizado em 22/09/2026 — teste de 2 semanas (até ~06/10).** Fonte: trades
+> reais exportados do Profit, 22/08–22/09 (conta real e conta da Copa). Script:
+> `profit/analise_trades.py`.
 
-Não existe operação fora dessa janela. O trava do Profit é o limite externo; o
-checklist é o limite interno e chega antes.
+| Horário | O que fazer |
+|---|---|
+| **09:00 – 10:00** | **Só observar e marcar**: micro tendência, lado manipulado, liquidez. **Sem entrada.** |
+| 10:00 | Ler o rótulo do indicador: 1ª hora COMPRIMIDA ou ESTICADA |
+| **10:00 – 11:00** | **Janela nobre de entrada**: abertura do à vista (10:00) e de NY (10:30) |
+| **11:00 – 11:30** | Entrada ainda válida (score maior) |
+| **11:30 – 12:00** | **Sem entrada nova.** Só gerenciar o que está aberto |
+| **12:00** | **FIM.** Fecha o Profit |
+
+**O norte, em três linhas** (definido pelo operador em 22/09/2026):
+1. Tela só de **09:00 a 12:00**, sempre.
+2. Abrir posição só de **10:00 a 11:30**.
+3. Só **WIN**.
+
+**Por quê** (só WIN, entradas por horário):
+
+| | 09:00–09:59 | 10:00–10:59 | 11:00–11:59 | 14:00+ |
+|---|---|---|---|---|
+| Conta real | −R$ 800 (19% acerto) | +R$ 526 | +R$ 1.916 | −R$ 1.669 |
+| Copa | +R$ 2.970 (4 trades) | +R$ 11.755 | +R$ 6.375 | −R$ 2.009 |
+
+- 09:00–10:00 é quando o índice faz a **manipulação da abertura**, antes de o volume
+  do à vista e de NY definir um lado. Entrar ali muitas vezes é ser a liquidez.
+- WDO e Bitcoin: na Copa, WIN fez +R$ 20.576; WDO + BIT tiraram R$ 7.137.
+
+O cockpit trava: entrada só de 10:00 a 11:29, e só WIN. O Profit não trava o horário
+nem o ativo — tirar WDO/BIT do layout e fechar o Profit às 12:00.
+
+**Decisão ao fim do teste:** comparar os trades das 2 semanas (registrados no cockpit)
+com o período anterior. Se 10:00–12:00 mantiver o resultado com menos operações, fica.
 
 ## 2. Gerenciamento de risco
 
@@ -137,6 +163,60 @@ continuidade em tendência. Escolher na pré-sessão, não no calor.
 
 ---
 
+# Setup C — VARRIDA DA BARRA DAS 10 *(em teste desde 23/09/2026)*
+
+Observado pelo operador no gráfico de 15 min: *"a barra das 10 ou manipula ou é
+manipulada, deixando máxima e mínima"*. A abertura do à vista cria liquidez nos dois
+lados da barra das 10:00, e o mercado costuma voltar para buscar.
+
+## Regras
+
+```
+1. NÍVEL      às 10:15, máxima e mínima da barra de 15 min das 10:00
+              (linhas douradas do indicador Barra10H)
+2. VARRIDA    entre 10:15 e 11:14, uma barra de 15 min PASSA da linha
+              e FECHA DE VOLTA dentro da barra das 10
+                topo varrido  -> procurar VENDA
+                fundo varrido -> procurar COMPRA
+              fechou fora e ficou fora = rompimento -> SEM TRADE
+3. GATILHO    no 1 min: MSS no sentido da reversão, até 45 min depois
+              do início da barra que varreu
+4. ENTRADA    reteste do FVG da pernada do MSS
+5. STOP       além do extremo da pernada (o topo/fundo da varrida)
+6. ALVO       próximo BSL/SSL; trailing: zero a zero em 1R, depois
+              atrás dos swings de 1 min
+```
+
+- **Um trade do Setup C por dia.** Dentro da janela de entrada 10:00–11:30, só WIN,
+  limites do dia valendo.
+- **As duas direções valem.** A direção da 1ª hora (a favor ou contra) não separou
+  resultado nos testes — o lado varrido define a direção.
+- **Tamanho calculado para o stop** (mediana do backtest: ~420 pts).
+
+## Evidência
+
+| Parte | Função | Base |
+|---|---|---|
+| Barra das 10 varrida | onde e quando | 5 anos de 15 min: varrida em ~2/3 dos dias todo ano; volta ao outro lado 52% × 44% da barra das 11, em todos os 6 anos (z = 3,7) |
+| MSS + FVG no 1 min | entrada com stop curto | 5 meses de 1 min: 64 trades, **+0,39R/trade** (t = 2,5), positivo em todos os meses; 3 contratos: +R$ 3.888, pior queda −R$ 834 |
+| Alvo BSL/SSL + trailing | o ganho | a gestão do operador |
+
+**Operar a varrida no fechamento do 15 min NÃO funciona** (5 anos: 41% de acerto, payoff
+1,12, −0,08R/trade). O resultado vem do gatilho de 1 min em cima da estrutura.
+
+Detalhes: [[Estudo_Barra_das_10]].
+
+## Critério de manutenção (definido antes do teste)
+
+- Registrar cada trade no cockpit com o **R final** e o tipo do dia (lateral/tendência).
+- **20–30 trades:** média acima de zero → fica; perto do backtest (+0,3R ou mais) →
+  setup principal.
+- **Negativo depois de 30 trades → sai.** Sem ajustar regra para salvar o setup.
+- Cenário novo durante o teste (ex.: rompimento seguido de continuidade, 23/09): anotar,
+  **não mudar a regra**. Mudança só no fim, com os números.
+
+---
+
 ## 4. O que NÃO faz parte deste sistema
 
 Registrado explicitamente para não voltar por acidente:
@@ -148,7 +228,9 @@ Registrado explicitamente para não voltar por acidente:
 - **GEX, order flow, volume profile** — outro operacional, do campeão, não deste
 - **BPR como ponto de entrada isolado** — BPR entra como array de reteste no
   Setup A, não como gatilho próprio fora da sequência
-- **Qualquer setup fora de 09:00–12:00**
+- **Qualquer entrada fora de 10:00–11:30** (09:00–10:00 é leitura; 11:30–12:00 é gestão)
+- **WDO, Bitcoin e outros ativos** — só WIN
+- **Operar depois das 12:00** — nas duas contas, a tarde deu prejuízo
 
 ---
 
@@ -185,7 +267,9 @@ tamanho, não a leitura.
 
 ## 6. Rotina — durante
 
-- Só a janela 09:00–12:00
+- 09:00–10:00: só leitura — marcar o lado manipulado e a liquidez
+- Entradas só de 10:00 a 11:29, só WIN; de 11:30 a 12:00 só gestão
+- 12:00: fecha o Profit
 - Um setup por vez, o escolhido na pré-sessão
 - Checklist preenchido **antes** da ordem, sempre
 - Fechou o trade, registra e sai do gráfico — não fica caçando o próximo

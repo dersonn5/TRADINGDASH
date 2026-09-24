@@ -27,7 +27,7 @@ export const REVERSAO_HTF: Strategy = {
     "Preco no meio do range, longe de qualquer array",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "09:00", fim: "12:00" }],
+  horarios_validos: [{ inicio: "10:00", fim: "11:30" }],
   regras_ambiente: [
     {
       campo: "niveis_marcados",
@@ -206,7 +206,7 @@ export const CONTINUIDADE_TENDENCIA: Strategy = {
     "Preco longe de qualquer array da tendencia",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "09:00", fim: "12:00" }],
+  horarios_validos: [{ inicio: "10:00", fim: "11:30" }],
   regras_ambiente: [
     {
       campo: "contexto",
@@ -359,4 +359,146 @@ export const CONTINUIDADE_TENDENCIA: Strategy = {
   ] as any,
 };
 
-export const DEFAULT_STRATEGIES: Strategy[] = [REVERSAO_HTF, CONTINUIDADE_TENDENCIA];
+export const VARRIDA_BARRA_10: Strategy = {
+  id: "varrida_barra_10",
+  ordem: 3,
+  nome: "Varrida da Barra das 10",
+  mercado: ["WIN"],
+  descricao:
+    "A abertura do a vista cria liquidez nos dois lados da barra de 15 min das 10:00. Entre 10:15 e 11:14, uma barra de 15 min passa da maxima ou da minima dela e FECHA de volta dentro: topo varrido -> venda, fundo varrido -> compra. No 1m, MSS no sentido da reversao, entrada no reteste do FVG, stop alem do extremo da varrida, alvo no proximo BSL/SSL com trailing. Fechou fora e ficou fora = rompimento, sem trade.",
+  score_minimo: 65,
+  calibracao: {
+    status: "EM_CALIBRACAO",
+    observacao:
+      "Estrutura medida em 5 anos de 15 min (varrida em ~2/3 dos dias; volta ao outro lado 52% x 44% da barra das 11, z=3,7). Com o gatilho de 1m: 64 trades, +0,39R/trade (t=2,5), abr-set/2026. Pesos dos PONTOS sao ESTIMADO. Teste prospectivo desde 2026-09-23: 20-30 trades; negativo apos 30 -> sai.",
+    atualizado_em: "2026-09-23",
+  },
+  ambiente_favoravel: [
+    "Barra das 10 (15 min) com maxima e minima claras, marcadas as 10:15",
+    "Varrida por pavio, com fechamento de volta dentro da barra",
+    "Reversao no 1m com barras grandes e consecutivas",
+  ],
+  ambiente_desfavoravel: [
+    "Barra de 15 min fechou fora da barra das 10 e ficou fora - rompimento, nao varrida",
+    "Nenhuma varrida ate 11:14",
+    "Stop largo demais para o tamanho declarado",
+    "Operador em tilt",
+  ],
+  horarios_validos: [{ inicio: "10:00", fim: "11:30" }],
+  regras_ambiente: [
+    {
+      campo: "tilt",
+      op: ">=",
+      valor: 3,
+      efeito: "DESFAVORAVEL",
+      motivo: "tilt alto: risco de romper o plano",
+    },
+    {
+      campo: "sono",
+      op: "<=",
+      valor: 2,
+      efeito: "DESFAVORAVEL",
+      motivo: "sono baixo degrada leitura",
+    },
+    {
+      campo: "tem_noticia_alta",
+      op: "=",
+      valor: true,
+      efeito: "NEUTRA",
+      motivo: "noticia de alto impacto no dia: reduzir tamanho, nao a leitura",
+    },
+  ],
+  checklist: [
+    {
+      id: "k1",
+      tipo: "KILL",
+      peso: 0,
+      label: "Barra das 10 (15 min) marcada: maxima e minima",
+      ajuda: "As linhas douradas do indicador. O nivel so fica fixo depois das 10:15.",
+    },
+    {
+      id: "k2",
+      tipo: "KILL",
+      peso: 0,
+      label: "VARRIDA confirmada: barra de 15 min passou da linha e FECHOU de volta dentro (10:15-11:14)",
+      ajuda: "Esperar o fechamento da barra. Fechou fora e ficou fora e rompimento - sem trade.",
+    },
+    {
+      id: "k3",
+      tipo: "KILL",
+      peso: 0,
+      label: "Direcao CONTRA o lado varrido: topo varrido = venda, fundo varrido = compra",
+      ajuda: "A direcao da 1a hora nao muda a regra - o lado varrido define a direcao.",
+    },
+    {
+      id: "k4",
+      tipo: "KILL",
+      peso: 0,
+      label: "MSS no 1m em vela FECHADA, no sentido da reversao, ate 45 min do inicio da barra que varreu",
+      ajuda: "Sem MSS nao ha entrada. Entrar no fechamento do 15 min nao paga: stop de ~500 pts.",
+    },
+    {
+      id: "k5",
+      tipo: "KILL",
+      peso: 0,
+      label: "Entrada no RETESTE do FVG deixado pela perna do MSS",
+      ajuda: "Nao perseguir preco. Espera o retorno na regiao do FVG.",
+    },
+    {
+      id: "k6",
+      tipo: "KILL",
+      peso: 0,
+      label: "Stop alem do extremo da varrida · alvo no proximo BSL/SSL",
+      ajuda: "Trailing: zero a zero em 1R, depois atras dos swings de 1m. Tamanho calculado para o stop (mediana ~420 pts).",
+    },
+    {
+      id: "k7",
+      tipo: "KILL",
+      peso: 0,
+      label: "Primeiro trade do Setup C hoje",
+      ajuda: "Um trade do Setup C por dia. Stopou, o setup acabou no dia.",
+    },
+    {
+      id: "p1",
+      tipo: "PONTO",
+      peso: 25,
+      label: "Varrida por pavio LONGO, com rejeicao clara",
+      ajuda: "Pavio grande alem da linha e fechamento bem dentro da barra das 10.",
+      origem: "ESTIMADO",
+    },
+    {
+      id: "p2",
+      tipo: "PONTO",
+      peso: 25,
+      label: "Reversao com barras GRANDES e CONSECUTIVAS no 1m",
+      ajuda: "A perna do MSS precisa ter conviccao. Reversao arrastada enfraquece.",
+      origem: "ESTIMADO",
+    },
+    {
+      id: "p3",
+      tipo: "PONTO",
+      peso: 20,
+      label: "FVG limpo e ainda nao mitigado",
+      ajuda: "FVG virgem reage melhor.",
+      origem: "ESTIMADO",
+    },
+    {
+      id: "p4",
+      tipo: "PONTO",
+      peso: 15,
+      label: "Alvo (BSL/SSL) a pelo menos 2R",
+      ajuda: "Se a liquidez mais proxima esta perto demais, o trade paga pouco para o risco.",
+      origem: "ESTIMADO",
+    },
+    {
+      id: "p5",
+      tipo: "PONTO",
+      peso: 15,
+      label: "A varrida coincide com outra liquidez (PDH/PDL ou max/min da 1a hora)",
+      ajuda: "Duas liquidezes no mesmo lugar valem mais que uma.",
+      origem: "ESTIMADO",
+    },
+  ] as any,
+};
+
+export const DEFAULT_STRATEGIES: Strategy[] = [REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10];

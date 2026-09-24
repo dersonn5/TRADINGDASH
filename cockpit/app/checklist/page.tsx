@@ -22,6 +22,7 @@ import {
   DEFAULT_STRATEGIES,
   REVERSAO_HTF,
   CONTINUIDADE_TENDENCIA,
+  VARRIDA_BARRA_10,
 } from "@/data/strategies";
 import { Strategy } from "@/lib/copa-api";
 import {
@@ -142,6 +143,8 @@ export default function ChecklistPage() {
           setSelectedStrategy(REVERSAO_HTF);
         } else if (ps.setup_do_dia === "continuidade_tendencia") {
           setSelectedStrategy(CONTINUIDADE_TENDENCIA);
+        } else if (ps.setup_do_dia === "varrida_barra_10") {
+          setSelectedStrategy(VARRIDA_BARRA_10);
         }
         if (ps.contratos_declarados) {
           setContratos(String(ps.contratos_declarados));
@@ -403,14 +406,14 @@ export default function ChecklistPage() {
         return {
           cor: "var(--inst-now)",
           texto: "FORA DA NOBRE",
-          nota: "dentro de 09:00–12:00 · exige score maior",
+          nota: "11:00–11:30 · exige score maior",
         };
       case "FORA":
       default:
         return {
           cor: "var(--inst-block)",
           texto: "FORA DA JANELA",
-          nota: "operação permitida só das 09:00 às 12:00",
+          nota: "entrada só das 10:00 às 11:30 · 09:00–10:00 observar · até 12:00 só gerenciar",
         };
     }
   }, [gate.janela]);
@@ -1431,22 +1434,7 @@ export default function ChecklistPage() {
                 >
                   WIN
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setMercado("WDO")}
-                  className="mono tabular"
-                  style={{
-                    padding: "3px 8px",
-                    fontSize: "10px",
-                    borderRadius: "2px",
-                    border: `1px solid ${mercado === "WDO" ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
-                    background: mercado === "WDO" ? "var(--inst-ok-bg)" : "transparent",
-                    color: mercado === "WDO" ? "var(--inst-ok)" : "var(--inst-faint)",
-                    cursor: "pointer",
-                  }}
-                >
-                  WDO
-                </button>
+                {/* WDO removido: so WIN no operacional (ver MERCADOS_PERMITIDOS em lib/gate.ts). */}
               </div>
             </div>
 

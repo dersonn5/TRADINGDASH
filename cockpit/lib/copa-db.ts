@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { mercadoPermitido } from "./gate";
 
 export interface TradeInput {
   strategy_id: string;
@@ -222,6 +223,12 @@ export async function getTrade(id: string) {
  * Se o passo 2 falhar, apaga o trade do passo 1 e propaga o erro.
  */
 export async function registrarTrade(input: TradeInput): Promise<string> {
+  // Trava na gravacao, e nao so na tela: nenhum caminho da interface consegue
+  // registrar um mercado fora do operacional.
+  if (!mercadoPermitido(input.mercado)) {
+    throw new Error(`${input.mercado} fora do operacional: so WIN`);
+  }
+
   const sessionId = await getSessaoFechadaDoDia();
   const versionId = await getVersaoVigente(input.strategy_id);
 
@@ -358,7 +365,7 @@ export interface PreSessao {
   sono: number;
   tilt: number;
   pressao: number;
-  setup_do_dia: "reversao_htf" | "continuidade_tendencia" | "NENHUM" | null;
+  setup_do_dia: "reversao_htf" | "continuidade_tendencia" | "varrida_barra_10" | "NENHUM" | null;
   contratos_declarados: number | null;
   screenshot_path: string | null;
   fechada_em: string | null;

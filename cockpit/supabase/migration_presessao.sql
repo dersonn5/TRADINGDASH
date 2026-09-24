@@ -70,13 +70,25 @@ ALTER TABLE copa_trades RENAME COLUMN screenshot_url TO screenshot_path;
 -- -----------------------------------------------------------------------------
 -- Bucket privado. Imagem de journal nao vai para link publico.
 
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('copa-prints', 'copa-prints', false, 10485760,
-        ARRAY['image/png','image/jpeg','image/webp'])
-ON CONFLICT (id) DO UPDATE
-   SET public = false,
-       file_size_limit = 10485760,
-       allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp'];
+-- O bucket NAO se cria por SQL. O Supabase bloqueia INSERT direto em
+-- storage.buckets, e a instrucao falha em silencio: o script roda inteiro, diz
+-- sucesso, e o bucket nao existe. So aparece na primeira tentativa de upload,
+-- como "Bucket not found".
+--
+-- Criar pelo painel: Storage > New bucket
+--   nome: copa-prints
+--   public: OFF
+--   file size limit: 10 MB
+--   allowed MIME types: image/png, image/jpeg, image/webp
+--
+-- Ou pela API de storage com a service key:
+--   POST <SUPABASE_URL>/storage/v1/bucket
+--   { "id": "copa-prints", "name": "copa-prints", "public": false,
+--     "file_size_limit": 10485760,
+--     "allowed_mime_types": ["image/png","image/jpeg","image/webp"] }
+--
+-- As politicas abaixo, sim, sao SQL e funcionam — mas so depois que o bucket
+-- existir.
 
 
 -- Cada usuario so enxerga e escreve na propria pasta: copa-prints/<uid>/...

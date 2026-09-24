@@ -10,8 +10,9 @@ import {
   ItemAvaliado,
   Janela,
   avaliarLimitesDia,
+  mercadoPermitido,
 } from "../lib/gate";
-import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA } from "../data/strategies";
+import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10 } from "../data/strategies";
 import { gradeFor, pendenciasDaPreSessao, PreSessao } from "../lib/copa-db";
 
 let hasErrors = false;
@@ -48,8 +49,11 @@ const casosJanela: Array<{
   { horaSP: "10:00", hour: 10, minute: 0, janelaEsperada: "PRIME", scoreMinEsperado: 65 },
   { horaSP: "10:59", hour: 10, minute: 59, janelaEsperada: "PRIME", scoreMinEsperado: 65 },
   { horaSP: "11:00", hour: 11, minute: 0, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
-  { horaSP: "09:30", hour: 9, minute: 30, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
-  { horaSP: "11:59", hour: 11, minute: 59, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
+  { horaSP: "09:30", hour: 9, minute: 30, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
+  { horaSP: "09:59", hour: 9, minute: 59, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
+  { horaSP: "11:29", hour: 11, minute: 29, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
+  { horaSP: "11:30", hour: 11, minute: 30, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
+  { horaSP: "11:59", hour: 11, minute: 59, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
   { horaSP: "08:59", hour: 8, minute: 59, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
   { horaSP: "13:00", hour: 13, minute: 0, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
 ];
@@ -88,14 +92,14 @@ const itensCaso1: ItemAvaliado[] = [
 const gate1 = avaliarGate(itensCaso1, "BULLISH", makeSPDate(10, 30));
 report("Gate Caso 1: 7 KILLs + 70 pts às 10:30 -> liberado === true", gate1.liberado === true, JSON.stringify(gate1.motivos));
 
-// Cenário 2: Mesmo conjunto às 09:30 -> liberado === false, motivo cita score 70 e mínimo 80
-const gate2 = avaliarGate(itensCaso1, "BULLISH", makeSPDate(9, 30));
+// Cenário 2: Mesmo conjunto às 11:15 -> liberado === false, motivo cita score 70 e mínimo 80
+const gate2 = avaliarGate(itensCaso1, "BULLISH", makeSPDate(11, 15));
 const gate2Bloqueado = gate2.liberado === false;
 const gate2CitaScore = gate2.motivos.some(
   (m) => m.includes("score 70") && m.includes("80")
 );
 report(
-  "Gate Caso 2: Mesmo conjunto às 09:30 -> liberado === false e cita score 70 e mínimo 80",
+  "Gate Caso 2: Mesmo conjunto às 11:15 -> liberado === false e cita score 70 e mínimo 80",
   gate2Bloqueado && gate2CitaScore,
   `liberado=${gate2.liberado}, motivos=${JSON.stringify(gate2.motivos)}`
 );
@@ -195,11 +199,12 @@ function checarEstrategia(
 
 const resRev = checarEstrategia("reversao_htf.json", REVERSAO_HTF, 7, 6, 100);
 const resCont = checarEstrategia("continuidade_tendencia.json", CONTINUIDADE_TENDENCIA, 6, 6, 100);
-const sincroniaOk = resRev.ok && resCont.ok;
-const detalheSincronia = [resRev.detalhe, resCont.detalhe].filter(Boolean).join(" | ");
+const resVarr = checarEstrategia("varrida_barra_10.json", VARRIDA_BARRA_10, 7, 5, 100);
+const sincroniaOk = resRev.ok && resCont.ok && resVarr.ok;
+const detalheSincronia = [resRev.detalhe, resCont.detalhe, resVarr.detalhe].filter(Boolean).join(" | ");
 
 report(
-  "Sincronia: duas estratégias idênticas aos JSONs e pesos somando 100",
+  "Sincronia: três estratégias idênticas aos JSONs e pesos somando 100",
   sincroniaOk,
   detalheSincronia
 );
@@ -403,6 +408,28 @@ report(
   "Gate Integrado Caso 11: Mesmo caso com 3 perdas -> bloqueado citando o pregao encerrado",
   gate11.liberado === false && gate11.motivos.some((m) => m.includes("pregao encerrado")),
   JSON.stringify(gate11.motivos)
+);
+
+// Regras tiradas dos trades reais (22/08-22/09/2026): so WIN, entradas 10:00-11:29.
+const gate0930 = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null);
+report(
+  "Operacional: 09:30 bloqueado (hora da manipulacao da abertura)",
+  gate0930.liberado === false && gate0930.motivos.some((m) => m.includes("10:00–11:30")),
+  JSON.stringify(gate0930.motivos)
+);
+report(
+  "Operacional: so WIN -> WIN permitido, WDO e BIT bloqueados",
+  mercadoPermitido("WIN") && !mercadoPermitido("WDO") && !mercadoPermitido("BIT"),
+  `WIN=${mercadoPermitido("WIN")} WDO=${mercadoPermitido("WDO")} BIT=${mercadoPermitido("BIT")}`
+);
+const gate1129 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 29), 65, limLiberado, null);
+const gate1130 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 30), 65, limLiberado, null);
+report(
+  "Operacional: 11:29 ainda abre posicao, 11:30 bloqueado",
+  gate1129.janela !== "FORA" &&
+    gate1130.liberado === false &&
+    gate1130.motivos.some((m) => m.includes("fora da janela")),
+  `11:29=${gate1129.janela} 11:30 liberado=${gate1130.liberado} motivos=${JSON.stringify(gate1130.motivos)}`
 );
 
 
