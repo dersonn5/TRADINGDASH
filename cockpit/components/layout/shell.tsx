@@ -157,11 +157,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ padding: "16px", borderRadius: "14px", background: "var(--s1)", border: "1px solid var(--bd)", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--tx3)" }}>Janela de entrada</span>
-            <span style={{ fontSize: "18px", fontWeight: 600 }}>10:00 – 11:30</span>
-            <span style={{ fontSize: "12px", color: "var(--tx2)" }}>Só WIN · tela até 12:00</span>
-          </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "0 8px" }}>
             <span style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--acs)", color: "var(--actx)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 600, flexShrink: 0 }}>
               {iniciais(nome)}
