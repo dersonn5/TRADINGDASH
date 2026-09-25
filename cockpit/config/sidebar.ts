@@ -1,18 +1,4 @@
-import {
-  LayoutDashboard,
-  CandlestickChart,
-  Brain,
-  Activity,
-  BookOpen,
-  Trophy,
-  FileText,
-  PlusCircle,
-  BarChart3,
-  Calendar,
-  SlidersHorizontal,
-  History,
-  ShieldCheck,
-} from "lucide-react";
+import { Activity, BarChart3, FileText, History, ShieldCheck } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -30,37 +16,19 @@ export interface NavGroup {
 export const sidebarData: { navGroups: NavGroup[] } = {
   navGroups: [
     {
-      title: "Copa BTG",
+      title: "Pregão",
       items: [
-        { title: "Painel Copa", url: "/copa", icon: Trophy },
-        { title: "Pré-Sessão", url: "/copa/pre-sessao", icon: FileText },
-        { title: "Novo Trade", url: "/copa/novo", icon: PlusCircle },
-        { title: "Trades", url: "/copa/trades", icon: History },
-        { title: "Fase", url: "/copa/fase", icon: Calendar },
-        { title: "Estatística", url: "/copa/stats", icon: BarChart3 },
-        { title: "Estratégias", url: "/copa/estrategias", icon: Activity },
-        { title: "Config", url: "/copa/config", icon: SlidersHorizontal },
-      ],
-    },
-    {
-      title: "Dashboard",
-      items: [{ title: "Visão Geral", url: "/", icon: LayoutDashboard }],
-    },
-    {
-      title: "Trading",
-      items: [
-        { title: "Banco de Trades", url: "/trades", icon: CandlestickChart },
+        { title: "Visão Geral", url: "/", icon: BarChart3 },
         { title: "Pré-Sessão", url: "/pre-sessao", icon: FileText },
-        { title: "Checklist Pregão", url: "/checklist", icon: ShieldCheck },
-        { title: "Estratégias", url: "/estrategias", icon: Activity },
+        { title: "Checklist", url: "/checklist", icon: ShieldCheck },
       ],
     },
     {
-      title: "Inteligência",
+      title: "Registro",
       items: [
-        { title: "Segundo Cérebro", url: "/cerebro", icon: Brain },
+        { title: "Histórico", url: "/trades", icon: History },
+        { title: "Estratégias", url: "/estrategias", icon: Activity },
       ],
     },
   ],
 };
-

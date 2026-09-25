@@ -13,7 +13,23 @@ import {
   mercadoPermitido,
 } from "../lib/gate";
 import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10 } from "../data/strategies";
-import { gradeFor, pendenciasDaPreSessao, PreSessao } from "../lib/copa-db";
+import { gradeFor, pendenciasDaPreSessao, PreSessao, validarCamposNovosTrade } from "../lib/copa-db";
+import {
+  TradeMetricas,
+  calcularKPIsGerais,
+  calcularDrawdown,
+  agruparPorEstrategia,
+  agruparPorHorario,
+  agruparPorGatilho,
+  calcularDistribuicaoStops,
+  calcularDisciplina,
+  agruparSetupCeContexto,
+  classificarFaixaHorario,
+  formatarBRL,
+  formatarR,
+  formatarNumero,
+  formatarPct,
+} from "../lib/metricas";
 
 let hasErrors = false;
 
@@ -614,6 +630,217 @@ report(
   "Gate Pré-sessão/Print Caso 9: preSessaoFechada true e temPrint true -> liberado",
   caso9Ok,
   JSON.stringify(gateAmbosTrue.motivos)
+);
+
+// -------------------------------------------------------------
+// 9. VALIDAÇÃO DE CAMPOS NOVOS DO TRADE (FR-005)
+// -------------------------------------------------------------
+// Caso 1: Sem gatilho -> lança erro citando gatilho
+let erroGatilho = false;
+try {
+  validarCamposNovosTrade({
+    strategy_id: "reversao_htf",
+    contexto_1h: "REVERSAO",
+  });
+} catch (e: any) {
+  erroGatilho = e.message.includes("gatilho");
+}
+report("Campos Novos Caso 1: Sem gatilho -> lança erro citando gatilho", erroGatilho);
+
+// Caso 2: Sem contexto_1h -> lança erro citando contexto
+let erroCtx = false;
+try {
+  validarCamposNovosTrade({
+    strategy_id: "reversao_htf",
+    gatilho: "MSS_FVG",
+  });
+} catch (e: any) {
+  erroCtx = e.message.includes("contexto");
+}
+report("Campos Novos Caso 2: Sem contexto_1h -> lança erro citando contexto", erroCtx);
+
+// Caso 3: varrida_barra_10 sem setup_c_modo -> lança erro citando modo
+let erroModo = false;
+try {
+  validarCamposNovosTrade({
+    strategy_id: "varrida_barra_10",
+    gatilho: "MSS_FVG",
+    contexto_1h: "REVERSAO",
+  });
+} catch (e: any) {
+  erroModo = e.message.includes("modo do Setup C");
+}
+report("Campos Novos Caso 3: varrida_barra_10 sem modo -> lança erro citando modo do Setup C", erroModo);
+
+// Caso 4: reversao_htf sem setup_c_modo -> válido (passa sem erro)
+let revSemModoOk = false;
+try {
+  validarCamposNovosTrade({
+    strategy_id: "reversao_htf",
+    gatilho: "MSS_FVG",
+    contexto_1h: "REVERSAO",
+  });
+  revSemModoOk = true;
+} catch (e) {
+  revSemModoOk = false;
+}
+report("Campos Novos Caso 4: reversao_htf com gatilho e contexto -> liberado sem exigir modo", revSemModoOk);
+
+// Caso 5: varrida_barra_10 com C1, gatilho MSS_OB e contexto REVERSAO -> válido
+let varrValidaOk = false;
+try {
+  validarCamposNovosTrade({
+    strategy_id: "varrida_barra_10",
+    gatilho: "MSS_OB",
+    contexto_1h: "REVERSAO",
+    setup_c_modo: "C1",
+  });
+  varrValidaOk = true;
+} catch (e) {
+  varrValidaOk = false;
+}
+report("Campos Novos Caso 5: varrida_barra_10 completo (C1 + MSS_OB + REVERSAO) -> liberado", varrValidaOk);
+
+// -------------------------------------------------------------
+// 10. MÉTRICAS DA VISÃO GERAL (TASK-402)
+// -------------------------------------------------------------
+const tradesTeste: TradeMetricas[] = [
+  {
+    strategy_id: "varrida_barra_10",
+    direcao: "COMPRA",
+    entrada: 100000,
+    stop: 99800,
+    saida: 100400,
+    pontos_real: 400,
+    pnl_real: 240,
+    hora_entrada: "2026-09-25T13:05:00Z", // 10:05 SP
+    hora_saida: "2026-09-25T13:10:00Z",
+    gatilho: "MSS_FVG",
+    contexto_1h: "CONTINUACAO",
+    setup_c_modo: "C1",
+    respeitou_plano: true,
+  },
+  {
+    strategy_id: "reversao_htf",
+    direcao: "VENDA",
+    entrada: 101000,
+    stop: 101150,
+    saida: 101150,
+    pontos_real: -150,
+    pnl_real: -90,
+    hora_entrada: "2026-09-25T13:15:00Z", // 10:15 SP
+    hora_saida: "2026-09-25T13:20:00Z",
+    gatilho: "MSS_OB",
+    contexto_1h: "REVERSAO",
+    respeitou_plano: true,
+  },
+  {
+    strategy_id: "varrida_barra_10",
+    direcao: "COMPRA",
+    entrada: 100500,
+    stop: 100300,
+    saida: 100300,
+    pontos_real: -200,
+    pnl_real: -120,
+    hora_entrada: "2026-09-25T13:30:00Z", // 10:30 SP
+    hora_saida: "2026-09-25T13:35:00Z",
+    gatilho: "BPR",
+    contexto_1h: "LATERAL",
+    setup_c_modo: "C2",
+    respeitou_plano: true,
+  },
+  {
+    strategy_id: "varrida_barra_10",
+    direcao: "VENDA",
+    entrada: 100800,
+    stop: 101000,
+    saida: 100200,
+    pontos_real: 600,
+    pnl_real: 360,
+    hora_entrada: "2026-09-25T13:45:00Z", // 10:45 SP
+    hora_saida: "2026-09-25T13:50:00Z",
+    gatilho: "MSS_FVG",
+    contexto_1h: "CONTINUACAO",
+    setup_c_modo: "C1",
+    respeitou_plano: true,
+  },
+];
+
+const kpis = calcularKPIsGerais(tradesTeste);
+
+report(
+  "Métricas: Resultado total R$ 390 e 3R",
+  kpis.resultadoReais === 390 && kpis.resultadoR === 3,
+  `reais=${kpis.resultadoReais}, R=${kpis.resultadoR}`
+);
+
+report(
+  "Métricas: Taxa de acerto 50% e expectativa 0,75R",
+  kpis.taxaAcerto === 0.5 && kpis.expectativaR === 0.75,
+  `acerto=${kpis.taxaAcerto}, exp=${kpis.expectativaR}`
+);
+
+const pfStr = kpis.profitFactor?.toFixed(3);
+const poStr = kpis.payoff?.toFixed(3);
+report(
+  "Métricas: Profit factor 2,857 e payoff 2,857",
+  pfStr === "2.857" && poStr === "2.857",
+  `pf=${pfStr}, payoff=${poStr}`
+);
+
+report(
+  "Métricas: Max Drawdown R$ 210 e 2R",
+  kpis.maxDrawdownReais === 210 && kpis.maxDrawdownR === 2,
+  `ddReais=${kpis.maxDrawdownReais}, ddR=${kpis.maxDrawdownR}`
+);
+
+report(
+  "Métricas: Stop mediano 200 pts",
+  kpis.stopMediano === 200,
+  `stopMediano=${kpis.stopMediano}`
+);
+
+// Agrupamento por estratégia
+const porStrat = agruparPorEstrategia(tradesTeste);
+const stratVarrida = porStrat.itens.find((i) => i.strategy_id === "varrida_barra_10");
+const stratReversao = porStrat.itens.find((i) => i.strategy_id === "reversao_htf");
+
+report(
+  "Métricas por estratégia: varrida_barra_10 -> R$ 480, DD R$ 120 e 1R",
+  stratVarrida?.pnl === 480 && stratVarrida?.maxDrawdownReais === 120 && stratVarrida?.maxDrawdownR === 1,
+  `pnl=${stratVarrida?.pnl}, ddReais=${stratVarrida?.maxDrawdownReais}, ddR=${stratVarrida?.maxDrawdownR}`
+);
+
+report(
+  "Métricas por estratégia: reversao_htf -> R$ -90, DD R$ 90 e 1R",
+  stratReversao?.pnl === -90 && stratReversao?.maxDrawdownReais === 90 && stratReversao?.maxDrawdownR === 1,
+  `pnl=${stratReversao?.pnl}, ddReais=${stratReversao?.maxDrawdownReais}, ddR=${stratReversao?.maxDrawdownR}`
+);
+
+// Lista vazia
+const kpisVazio = calcularKPIsGerais([]);
+const kpisVazioOk =
+  kpisVazio.totalTrades === 0 &&
+  kpisVazio.profitFactor === null &&
+  kpisVazio.payoff === null &&
+  formatarNumero(kpisVazio.profitFactor) === "—" &&
+  formatarNumero(kpisVazio.payoff) === "—";
+report(
+  "Métricas: Lista vazia não quebra e devolve '—' onde não há divisor",
+  kpisVazioOk,
+  `pf=${formatarNumero(kpisVazio.profitFactor)}, payoff=${formatarNumero(kpisVazio.payoff)}`
+);
+
+// Faixa de horário em America/Sao_Paulo
+const f1000 = classificarFaixaHorario("2026-09-25T13:14:00Z");
+const f1015 = classificarFaixaHorario("2026-09-25T13:15:00Z");
+const fForaAntes = classificarFaixaHorario("2026-09-25T12:59:00Z");
+const fForaDepois = classificarFaixaHorario("2026-09-25T14:30:00Z");
+
+report(
+  "Métricas: Faixas de horário SP (13:14Z = 10:00, 13:15Z = 10:15, fora < 10:00 e >= 11:30)",
+  f1000 === "10:00" && f1015 === "10:15" && fForaAntes === "fora da janela" && fForaDepois === "fora da janela",
+  `13:14Z=${f1000}, 13:15Z=${f1015}, 12:59Z=${fForaAntes}, 14:30Z=${fForaDepois}`
 );
 
 if (hasErrors) {

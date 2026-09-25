@@ -24,7 +24,7 @@ import {
   CONTINUIDADE_TENDENCIA,
   VARRIDA_BARRA_10,
 } from "@/data/strategies";
-import { Strategy } from "@/lib/copa-api";
+import { Strategy } from "@/lib/types";
 import {
   getResumoDoDia,
   registrarTrade,
@@ -36,8 +36,11 @@ import {
   pendenciasDaPreSessao,
   PreSessao,
   ResumoDoDia,
+  GatilhoTrade,
+  Contexto1h,
+  SetupCModo,
 } from "@/lib/copa-db";
-import { PrintUpload } from "@/components/copa/print-upload";
+import { PrintUpload } from "@/components/print-upload";
 import { InstBand } from "@/components/inst";
 
 export default function ChecklistPage() {
@@ -71,6 +74,9 @@ export default function ChecklistPage() {
   const [stop, setStop] = useState<string>("");
   const [alvo, setAlvo] = useState<string>("");
   const [contratos, setContratos] = useState<string>("1");
+  const [gatilho, setGatilho] = useState<GatilhoTrade | "">("");
+  const [contexto1h, setContexto1h] = useState<Contexto1h | "">("");
+  const [setupCModo, setSetupCModo] = useState<SetupCModo | "">("");
 
   // Diálogo de fechamento de trade
   const [modalFechamentoOpen, setModalFechamentoOpen] = useState(false);
@@ -473,7 +479,13 @@ export default function ChecklistPage() {
     return { distStop, distAlvo, riscoReais, retornoReais, rr };
   }, [precosPreenchidos, mercado, numEntrada, numStop, numAlvo, numContratos]);
 
-  const formularioValido = precosPreenchidos && validacaoDirecao.ok && numContratos >= 1;
+  const novosCamposValidos =
+    Boolean(gatilho) &&
+    Boolean(contexto1h) &&
+    (selectedStrategy.id !== "varrida_barra_10" || Boolean(setupCModo));
+
+  const formularioValido =
+    precosPreenchidos && validacaoDirecao.ok && numContratos >= 1 && novosCamposValidos;
 
   // Handler para abrir ordem
   async function handleAbrirOrdem() {
@@ -506,6 +518,9 @@ export default function ChecklistPage() {
         itens: itemsSnapshot,
         notas: checklist.notes || "",
         screenshot_path: tradePrintPath,
+        gatilho,
+        contexto_1h: contexto1h,
+        setup_c_modo: selectedStrategy.id === "varrida_barra_10" ? setupCModo : null,
       });
 
       // Sucesso: limpa o checklist e formulário, recarrega o resumo e confirma
@@ -513,6 +528,9 @@ export default function ChecklistPage() {
       setEntrada("");
       setStop("");
       setAlvo("");
+      setGatilho("");
+      setContexto1h("");
+      setSetupCModo("");
       setTradePrintPath(null);
       setOrdemSuccess("Ordem aberta e registrada com sucesso!");
       await loadResumo();
@@ -594,11 +612,19 @@ export default function ChecklistPage() {
   if (loading || !checklist || preSessaoLoading) {
     return (
       <div
-        className="-m-4 md:-m-6 flex flex-1 items-center justify-center min-h-[calc(100vh-4rem)]"
-        style={{ background: "var(--inst-bg)", color: "var(--inst-dim)" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+          color: "var(--tx)",
+        }}
       >
-        <div className="mono tabular" style={{ fontSize: "12px", letterSpacing: "0.1em" }}>
-          CARREGANDO INSTRUMENTO...
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate operacional WIN</span>
+          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
+        </div>
+        <div style={{ padding: "14px 18px", borderRadius: "12px", background: "var(--s1)", border: "1px solid var(--bd)", fontSize: "13px", color: "var(--tx3)" }}>
+          Carregando instrumento...
         </div>
       </div>
     );
@@ -606,93 +632,98 @@ export default function ChecklistPage() {
 
   // 5a. Sem pré-sessão fechada, a tela não opera
   if (!preSessao?.fechada_em) {
-    const pendencias = preSessao ? pendenciasDaPreSessao(preSessao) : ["pre-sessao nao iniciada"];
     return (
-      <div
-        className="-m-4 md:-m-6 flex flex-1 flex-col min-h-[calc(100vh-4rem)] p-6"
-        style={{ background: "var(--inst-bg)", color: "var(--inst-text)", gap: "20px" }}
-      >
-        <div style={{ borderBottom: "1px solid var(--inst-line-2)", paddingBottom: "18px" }}>
-          <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
-            CHECKLIST OPERACIONAL
-          </span>
-          <h1 style={{ fontSize: "23px", fontWeight: 600, letterSpacing: "-0.015em", marginTop: "4px" }}>
-            Checklist Pregão
-          </h1>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate operacional WIN</span>
+          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
         </div>
-
-        <InstBand
-          tom="block"
-          titulo="PRÉ-SESSÃO DO DIA NÃO FOI FECHADA"
-          linhas={[
-            "O gate operacional exige que o ritual de pré-sessão seja concluído e fechado antes de liberar qualquer operação.",
-            ...pendencias,
-          ]}
-          acao={
-            <Link href="/pre-sessao">
-              <button
-                type="button"
-                className="mono tabular"
-                style={{
-                  background: "var(--inst-ok)",
-                  border: "1px solid var(--inst-ok)",
-                  color: "#08150F",
-                  borderRadius: "3px",
-                  padding: "10px 20px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Ir para a Pré-Sessão
-              </button>
-            </Link>
-          }
-        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "20px 24px",
+            borderRadius: "16px",
+            background: "var(--s1)",
+            border: "1px solid var(--bd)",
+          }}
+        >
+          <div style={{ flexGrow: 1 }}>
+            <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>Pré-sessão do dia não foi fechada</div>
+            <div style={{ fontSize: "13px", color: "var(--tx3)" }}>O gate operacional exige que o ritual de pré-sessão seja concluído antes de liberar qualquer operação.</div>
+            <ul style={{ margin: "10px 0 0", paddingLeft: "18px", fontSize: "13px", lineHeight: 1.6, color: "var(--tx2)" }}>
+              {(preSessao ? pendenciasDaPreSessao(preSessao) : ["pré-sessão não iniciada"]).map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </div>
+          <Link href="/pre-sessao">
+            <button
+              type="button"
+              style={{
+                height: "44px",
+                padding: "0 20px",
+                borderRadius: "12px",
+                border: "1px solid var(--bd)",
+                background: "transparent",
+                color: "var(--tx2)",
+                fontFamily: "inherit",
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              Ir para Pré-Sessão
+            </button>
+          </Link>
+        </div>
       </div>
     );
   }
 
+
   // 5b. Se setup_do_dia for NENHUM, hoje é dia de não operar
   if (preSessao.setup_do_dia === "NENHUM") {
     return (
-      <div
-        className="-m-4 md:-m-6 flex flex-1 flex-col min-h-[calc(100vh-4rem)] p-6"
-        style={{ background: "var(--inst-bg)", color: "var(--inst-text)", gap: "20px" }}
-      >
-        <div style={{ borderBottom: "1px solid var(--inst-line-2)", paddingBottom: "18px" }}>
-          <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
-            CHECKLIST OPERACIONAL
-          </span>
-          <h1 style={{ fontSize: "23px", fontWeight: 600, letterSpacing: "-0.015em", marginTop: "4px" }}>
-            Checklist Pregão
-          </h1>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate operacional WIN</span>
+          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
         </div>
-
-        <InstBand
-          tom="lock"
-          titulo="HOJE É DIA DE NÃO OPERAR"
-          linhas={["Decidido na pré-sessão do dia. Preservação de capital ativa."]}
-          acao={
-            <Link href="/pre-sessao">
-              <button
-                type="button"
-                className="mono tabular"
-                style={{
-                  background: "var(--inst-panel-2)",
-                  border: "1px solid var(--inst-line)",
-                  color: "var(--inst-text)",
-                  borderRadius: "3px",
-                  padding: "8px 16px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                }}
-              >
-                Ver Pré-Sessão
-              </button>
-            </Link>
-          }
-        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "20px 24px",
+            borderRadius: "16px",
+            background: "var(--s1)",
+            border: "1px solid var(--bd)",
+          }}
+        >
+          <div style={{ flexGrow: 1 }}>
+            <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>Hoje é dia de não operar</div>
+            <div style={{ fontSize: "13px", color: "var(--tx3)" }}>Decidido na pré-sessão do dia. Preservação de capital ativa.</div>
+          </div>
+          <Link href="/pre-sessao">
+            <button
+              type="button"
+              style={{
+                height: "44px",
+                padding: "0 20px",
+                borderRadius: "12px",
+                border: "1px solid var(--bd)",
+                background: "transparent",
+                color: "var(--tx2)",
+                fontFamily: "inherit",
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              Ver Pré-Sessão
+            </button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -705,22 +736,23 @@ export default function ChecklistPage() {
 
   return (
     <div
-      className="-m-4 md:-m-6 flex flex-1 flex-col min-h-[calc(100vh-4rem)]"
-      style={{ background: "var(--inst-bg)", color: "var(--inst-text)" }}
+      className="-m-4 md:-m-6 px-6 md:px-10 pt-8 pb-10 flex flex-1 flex-col gap-4 min-h-[calc(100vh-4rem)]"
+      style={{ background: "var(--bg)", color: "var(--tx)" }}
     >
       {/* ============ 6a. SETUP DO DIA TRAVADO ============ */}
       <div
         style={{
-          padding: "14px 24px",
-          background: "#0A0D10",
-          borderBottom: "1px solid var(--inst-line-2)",
+          padding: "16px 20px",
+          background: "var(--s1)",
+          border: "1px solid var(--bd)",
+          borderRadius: "14px",
           display: "flex",
           alignItems: "center",
           gap: "12px",
           flexWrap: "wrap",
         }}
       >
-        <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.14em", color: "var(--inst-faint)", textTransform: "uppercase" }}>
+        <span className="mono" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)", textTransform: "uppercase" }}>
           SETUP DO DIA
         </span>
         <span style={{ color: "var(--inst-line-2)" }}>·</span>
@@ -743,23 +775,24 @@ export default function ChecklistPage() {
         style={{
           display: "flex",
           alignItems: "stretch",
-          borderBottom: "1px solid var(--inst-line-2)",
-          background: "var(--inst-panel)",
+          gap: "12px",
           flexWrap: "wrap",
         }}
       >
         {/* PREGÃO */}
         <div
           style={{
-            padding: "12px 20px",
-            borderRight: "1px solid var(--inst-line-2)",
+            padding: "16px 18px",
+            borderRadius: "14px",
+            border: "1px solid var(--bd)",
+            background: "var(--s1)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
             minWidth: "160px",
           }}
         >
-          <span className="mono tabular" style={{ fontSize: "9px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
             PREGÃO
           </span>
           <span className="mono tabular" style={{ fontSize: "18px", fontWeight: 600, letterSpacing: "-0.01em" }}>
@@ -770,8 +803,10 @@ export default function ChecklistPage() {
         {/* JANELA */}
         <div
           style={{
-            padding: "12px 20px",
-            borderRight: "1px solid var(--inst-line-2)",
+            padding: "16px 18px",
+            borderRadius: "14px",
+            border: "1px solid var(--bd)",
+            background: "var(--s1)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
@@ -779,7 +814,7 @@ export default function ChecklistPage() {
             minWidth: "240px",
           }}
         >
-          <span className="mono tabular" style={{ fontSize: "9px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
             JANELA
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -806,21 +841,23 @@ export default function ChecklistPage() {
         {/* OPERAÇÕES (operacoes_hoje / 5) */}
         <div
           style={{
-            padding: "12px 20px",
-            borderRight: "1px solid var(--inst-line-2)",
+            padding: "16px 18px",
+            borderRadius: "14px",
+            border: "1px solid var(--bd)",
+            background: "var(--s1)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
             minWidth: "130px",
           }}
         >
-          <span className="mono tabular" style={{ fontSize: "9px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
             OPERAÇÕES
           </span>
           <span
             className="mono tabular"
             style={{
-              fontSize: "15px",
+              fontSize: "20px",
               fontWeight: 600,
               color: resumoLoading || !resumo
                 ? "var(--inst-dim)"
@@ -838,21 +875,23 @@ export default function ChecklistPage() {
         {/* PERDAS (perdas_hoje / 3) */}
         <div
           style={{
-            padding: "12px 20px",
-            borderRight: "1px solid var(--inst-line-2)",
+            padding: "16px 18px",
+            borderRadius: "14px",
+            border: "1px solid var(--bd)",
+            background: "var(--s1)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
             minWidth: "120px",
           }}
         >
-          <span className="mono tabular" style={{ fontSize: "9px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
             PERDAS
           </span>
           <span
             className="mono tabular"
             style={{
-              fontSize: "15px",
+              fontSize: "20px",
               fontWeight: 600,
               color: resumoLoading || !resumo
                 ? "var(--inst-dim)"
@@ -870,21 +909,23 @@ export default function ChecklistPage() {
         {/* PNL DIA */}
         <div
           style={{
-            padding: "12px 20px",
-            borderRight: "1px solid var(--inst-line-2)",
+            padding: "16px 18px",
+            borderRadius: "14px",
+            border: "1px solid var(--bd)",
+            background: "var(--s1)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
             minWidth: "130px",
           }}
         >
-          <span className="mono tabular" style={{ fontSize: "9px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
             PNL DIA
           </span>
           <span
             className="mono tabular"
             style={{
-              fontSize: "15px",
+              fontSize: "20px",
               fontWeight: 600,
               color: resumoLoading || !resumo
                 ? "var(--inst-dim)"
@@ -907,7 +948,6 @@ export default function ChecklistPage() {
         {/* BOTÕES RESETAR E SALVAR */}
         <div
           style={{
-            padding: "10px 20px",
             display: "flex",
             alignItems: "center",
             gap: "8px",
@@ -917,14 +957,14 @@ export default function ChecklistPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="mono tabular hover:text-[#E8ECEF] hover:border-[#394148] transition-colors"
+            className="mono tabular hover:text-[var(--tx)] hover:border-[var(--ac)] transition-colors"
             style={{
               background: "transparent",
               border: "1px solid var(--inst-line-2)",
-              borderRadius: "3px",
+              borderRadius: "10px",
               color: "var(--inst-dim)",
               padding: "6px 12px",
-              fontSize: "10px",
+              fontSize: "11px",
               fontWeight: 600,
               letterSpacing: "0.08em",
               cursor: "pointer",
@@ -936,14 +976,14 @@ export default function ChecklistPage() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="mono tabular hover:border-[#394148] transition-colors"
+            className="mono tabular hover:border-[var(--ac)] transition-colors"
             style={{
               background: saveSuccess ? "var(--inst-ok-bg)" : "var(--inst-line)",
               border: `1px solid ${saveSuccess ? "var(--inst-ok-line)" : "var(--inst-line-2)"}`,
-              borderRadius: "3px",
+              borderRadius: "10px",
               color: saveSuccess ? "var(--inst-ok)" : "var(--inst-text)",
               padding: "6px 14px",
-              fontSize: "10px",
+              fontSize: "11px",
               fontWeight: 600,
               letterSpacing: "0.08em",
               cursor: saving ? "not-allowed" : "pointer",
@@ -958,9 +998,10 @@ export default function ChecklistPage() {
       {resumo?.trade_aberto_id && (
         <div
           style={{
-            padding: "12px 24px",
-            background: "#18140B",
-            borderBottom: "1px solid #573B11",
+            padding: "14px 20px",
+            background: "var(--acs)",
+            border: "1px solid var(--ac)",
+            borderRadius: "14px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -972,11 +1013,11 @@ export default function ChecklistPage() {
             <span
               style={{
                 background: "var(--inst-now)",
-                color: "#18140B",
-                fontSize: "10px",
+                color: "var(--onac)",
+                fontSize: "11px",
                 fontWeight: 700,
                 padding: "2px 6px",
-                borderRadius: "2px",
+                borderRadius: "8px",
                 letterSpacing: "0.08em",
               }}
               className="mono tabular"
@@ -998,9 +1039,9 @@ export default function ChecklistPage() {
             className="mono tabular transition-colors"
             style={{
               background: "var(--inst-now)",
-              color: "#0B0E11",
+              color: "var(--onac)",
               border: "none",
-              borderRadius: "3px",
+              borderRadius: "10px",
               padding: "7px 16px",
               fontSize: "11px",
               fontWeight: 700,
@@ -1017,9 +1058,10 @@ export default function ChecklistPage() {
       {ordemSuccess && (
         <div
           style={{
-            padding: "10px 24px",
+            padding: "12px 20px",
             background: "var(--inst-ok-bg)",
-            borderBottom: "1px solid var(--inst-ok-line)",
+            border: "1px solid var(--inst-ok-line)",
+            borderRadius: "14px",
             color: "var(--inst-ok)",
             fontSize: "12px",
             fontWeight: 600,
@@ -1032,9 +1074,10 @@ export default function ChecklistPage() {
       {ordemError && (
         <div
           style={{
-            padding: "10px 24px",
+            padding: "12px 20px",
             background: "var(--inst-block-bg)",
-            borderBottom: "1px solid var(--inst-block-line)",
+            border: "1px solid var(--inst-block-line)",
+            borderRadius: "14px",
             color: "var(--inst-block)",
             fontSize: "12px",
             fontWeight: 600,
@@ -1046,24 +1089,27 @@ export default function ChecklistPage() {
       )}
 
       <div
-        className="flex flex-col lg:flex-row flex-grow items-stretch"
+        className="flex flex-col lg:flex-row flex-grow items-start gap-5"
         style={{ minHeight: 0 }}
       >
         {/* ============ TRILHA (Coluna Principal) ============ */}
         <div
           className="flex-grow flex flex-col"
           style={{
-            padding: "24px 28px 32px 28px",
+            padding: "24px",
             gap: "18px",
+            background: "var(--s1)",
+            border: "1px solid var(--bd)",
+            borderRadius: "16px",
           }}
         >
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                <span className="mono tabular" style={{ fontSize: "10px", letterSpacing: "0.16em", color: "var(--inst-faint)" }}>
+                <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.16em", color: "var(--inst-faint)" }}>
                   {selectedStrategy.nome.toUpperCase()} · {checklist.market || "WIN"}
                 </span>
-                <span style={{ color: "var(--inst-line-2)", fontSize: "10px" }}>·</span>
+                <span style={{ color: "var(--inst-line-2)", fontSize: "11px" }}>·</span>
                 <div style={{ display: "inline-flex", gap: "4px" }}>
                   {(["BULLISH", "BEARISH", "NEUTRO", "NAO_OPERAR"] as const).map((b) => {
                     const active = checklist.bias === b;
@@ -1074,10 +1120,10 @@ export default function ChecklistPage() {
                         onClick={() => handleBiasChange(b)}
                         className="mono tabular"
                         style={{
-                          fontSize: "9px",
+                          fontSize: "11px",
                           letterSpacing: "0.08em",
                           padding: "2px 6px",
-                          borderRadius: "2px",
+                          borderRadius: "8px",
                           background: active
                             ? b === "NAO_OPERAR"
                               ? "var(--inst-block-bg)"
@@ -1135,9 +1181,9 @@ export default function ChecklistPage() {
 
               const marca = done ? "var(--inst-ok)" : (nowStep ? "var(--inst-now)" : "var(--inst-lock)");
               const borda = nowStep ? "var(--inst-now-line)" : "var(--inst-line)";
-              const fundo = nowStep ? "var(--inst-now-bg)" : (done ? "var(--inst-panel-2)" : "#0D1013");
+              const fundo = nowStep ? "var(--inst-now-bg)" : (done ? "var(--inst-panel-2)" : "var(--s1)");
               const corTexto = done ? "var(--inst-text-2)" : (nowStep ? "var(--inst-text)" : "var(--inst-ghost)");
-              const corAjuda = nowStep ? "var(--inst-dim)" : (done ? "var(--inst-ghost)" : "#333B42");
+              const corAjuda = nowStep ? "var(--inst-dim)" : (done ? "var(--inst-ghost)" : "var(--tx3)");
               const simbolo = done ? "✓" : String(n);
               const isLive = done || nowStep;
 
@@ -1155,7 +1201,7 @@ export default function ChecklistPage() {
                     border: `1px solid ${borda}`,
                     borderLeft: `3px solid ${marca}`,
                     background: fundo,
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     cursor: isLive ? "pointer" : "default",
                   }}
                 >
@@ -1167,7 +1213,7 @@ export default function ChecklistPage() {
                       width: "26px",
                       height: "26px",
                       border: `1px solid ${marca}`,
-                      borderRadius: "2px",
+                      borderRadius: "8px",
                     }}
                   >
                     <span className="mono tabular" style={{ fontSize: "12px", fontWeight: 600, color: marca }}>
@@ -1189,7 +1235,7 @@ export default function ChecklistPage() {
                   <span
                     className="mono tabular"
                     style={{
-                      fontSize: "10px",
+                      fontSize: "11px",
                       letterSpacing: "0.12em",
                       color: marca,
                       paddingTop: "5px",
@@ -1210,7 +1256,7 @@ export default function ChecklistPage() {
               gap: "10px",
               padding: "10px 14px",
               border: "1px dashed var(--inst-line-2)",
-              borderRadius: "3px",
+              borderRadius: "10px",
             }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--inst-faint)" strokeWidth="1.6" strokeLinecap="round">
@@ -1225,7 +1271,7 @@ export default function ChecklistPage() {
 
           {/* Anotações da Sessão */}
           <div style={{ marginTop: "auto", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span className="mono tabular" style={{ fontSize: "10px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+            <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
               ANOTAÇÕES DA SESSÃO
             </span>
             <textarea
@@ -1235,9 +1281,9 @@ export default function ChecklistPage() {
               rows={2}
               style={{
                 width: "100%",
-                background: "#0D1013",
+                background: "var(--s1)",
                 border: "1px solid var(--inst-line-2)",
-                borderRadius: "3px",
+                borderRadius: "10px",
                 color: "var(--inst-text)",
                 fontSize: "12px",
                 padding: "8px 12px",
@@ -1245,31 +1291,32 @@ export default function ChecklistPage() {
                 outline: "none",
                 fontFamily: "inherit",
               }}
-              className="focus:border-[#394148] transition-colors"
+              className="focus:border-[var(--ac)] transition-colors"
             />
           </div>
         </div>
 
         {/* ============ CONFLUÊNCIA + GATE + FORMULÁRIO (Painel Lateral) ============ */}
         <div
-          className="w-full lg:w-[460px] shrink-0 border-t lg:border-t-0 lg:border-l flex flex-col"
+          className="w-full lg:w-[460px] shrink-0 flex flex-col overflow-hidden"
           style={{
-            borderColor: "var(--inst-line-2)",
-            background: "var(--inst-panel)",
+            border: "1px solid var(--bd)",
+            borderRadius: "16px",
+            background: "var(--s1)",
           }}
         >
           {/* Cabeçalho de Score */}
           <div
             style={{
               padding: "20px 24px 16px 24px",
-              borderBottom: "1px solid var(--inst-line-2)",
+              borderBottom: "1px solid var(--bd)",
               display: "flex",
               flexDirection: "column",
               gap: "12px",
             }}
           >
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-              <span className="mono tabular" style={{ fontSize: "10px", letterSpacing: "0.16em", color: "var(--inst-faint)" }}>
+              <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.16em", color: "var(--inst-faint)" }}>
                 CONFLUÊNCIA
               </span>
               <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
@@ -1295,7 +1342,7 @@ export default function ChecklistPage() {
               style={{
                 position: "relative",
                 height: "6px",
-                background: "#1B1F23",
+                background: "var(--s2)",
                 borderRadius: "1px",
                 overflow: "hidden",
               }}
@@ -1328,7 +1375,7 @@ export default function ChecklistPage() {
               />
             </div>
 
-            <span className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-faint)", letterSpacing: "0.06em" }}>
+            <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", letterSpacing: "0.06em" }}>
               {gate.janela === "PRIME"
                 ? `MÍNIMO ${selectedStrategy.score_minimo || 65} NA JANELA NOBRE`
                 : gate.janela === "VALIDA"
@@ -1344,7 +1391,7 @@ export default function ChecklistPage() {
               display: "flex",
               flexDirection: "column",
               gap: "1px",
-              borderBottom: "1px solid var(--inst-line-2)",
+              borderBottom: "1px solid var(--bd)",
             }}
           >
             {pontoItems.map((p) => {
@@ -1360,7 +1407,7 @@ export default function ChecklistPage() {
                     gap: "12px",
                     alignItems: "start",
                     padding: "8px 12px",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     background: on ? "var(--inst-ok-bg)" : "transparent",
                     cursor: "pointer",
                   }}
@@ -1371,7 +1418,7 @@ export default function ChecklistPage() {
                       height: "13px",
                       border: `1px solid ${on ? "var(--inst-ok)" : "var(--inst-lock)"}`,
                       background: on ? "var(--inst-ok)" : "transparent",
-                      borderRadius: "2px",
+                      borderRadius: "8px",
                       marginTop: "2px",
                     }}
                   />
@@ -1379,7 +1426,7 @@ export default function ChecklistPage() {
                     <span
                       style={{
                         fontSize: "12px",
-                        color: on ? "var(--inst-text)" : "#6E787F",
+                        color: on ? "var(--inst-text)" : "var(--tx3)",
                         lineHeight: 1.35,
                       }}
                     >
@@ -1406,15 +1453,15 @@ export default function ChecklistPage() {
           <div
             style={{
               padding: "16px 20px",
-              borderBottom: "1px solid var(--inst-line-2)",
+              borderBottom: "1px solid var(--bd)",
               display: "flex",
               flexDirection: "column",
               gap: "12px",
-              background: "#0E1114",
+              background: "var(--s1)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span className="mono tabular" style={{ fontSize: "10px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+              <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
                 PARÂMETROS DA OPERAÇÃO
               </span>
               <div style={{ display: "flex", gap: "6px" }}>
@@ -1424,8 +1471,8 @@ export default function ChecklistPage() {
                   className="mono tabular"
                   style={{
                     padding: "3px 8px",
-                    fontSize: "10px",
-                    borderRadius: "2px",
+                    fontSize: "11px",
+                    borderRadius: "8px",
                     border: `1px solid ${mercado === "WIN" ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
                     background: mercado === "WIN" ? "var(--inst-ok-bg)" : "transparent",
                     color: mercado === "WIN" ? "var(--inst-ok)" : "var(--inst-faint)",
@@ -1448,7 +1495,7 @@ export default function ChecklistPage() {
                   padding: "8px",
                   fontSize: "11px",
                   fontWeight: 600,
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   border: `1px solid ${direcao === "COMPRA" ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
                   background: direcao === "COMPRA" ? "var(--inst-ok-bg)" : "transparent",
                   color: direcao === "COMPRA" ? "var(--inst-ok)" : "var(--inst-faint)",
@@ -1465,7 +1512,7 @@ export default function ChecklistPage() {
                   padding: "8px",
                   fontSize: "11px",
                   fontWeight: 600,
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   border: `1px solid ${direcao === "VENDA" ? "var(--inst-block)" : "var(--inst-line-2)"}`,
                   background: direcao === "VENDA" ? "var(--inst-block-bg)" : "transparent",
                   color: direcao === "VENDA" ? "var(--inst-block)" : "var(--inst-faint)",
@@ -1479,7 +1526,7 @@ export default function ChecklistPage() {
             {/* Preços: Entrada, Stop, Alvo, Contratos */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <div>
-                <label className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
                   ENTRADA
                 </label>
                 <input
@@ -1492,9 +1539,9 @@ export default function ChecklistPage() {
                   style={{
                     width: "100%",
                     padding: "6px 8px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "2px",
+                    borderRadius: "8px",
                     color: "var(--inst-text)",
                     fontSize: "12px",
                     outline: "none",
@@ -1503,7 +1550,7 @@ export default function ChecklistPage() {
               </div>
 
               <div>
-                <label className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
                   STOP LOSS
                 </label>
                 <input
@@ -1516,9 +1563,9 @@ export default function ChecklistPage() {
                   style={{
                     width: "100%",
                     padding: "6px 8px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "2px",
+                    borderRadius: "8px",
                     color: "var(--inst-text)",
                     fontSize: "12px",
                     outline: "none",
@@ -1527,7 +1574,7 @@ export default function ChecklistPage() {
               </div>
 
               <div>
-                <label className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
                   ALVO (TAKE PROFIT)
                 </label>
                 <input
@@ -1540,9 +1587,9 @@ export default function ChecklistPage() {
                   style={{
                     width: "100%",
                     padding: "6px 8px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "2px",
+                    borderRadius: "8px",
                     color: "var(--inst-text)",
                     fontSize: "12px",
                     outline: "none",
@@ -1551,7 +1598,7 @@ export default function ChecklistPage() {
               </div>
 
               <div>
-                <label className="mono tabular" style={{ fontSize: "9px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
                   CONTRATOS
                 </label>
                 <input
@@ -1564,9 +1611,9 @@ export default function ChecklistPage() {
                   style={{
                     width: "100%",
                     padding: "6px 8px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "2px",
+                    borderRadius: "8px",
                     color: "var(--inst-text)",
                     fontSize: "12px",
                     outline: "none",
@@ -1574,7 +1621,7 @@ export default function ChecklistPage() {
                     cursor: "not-allowed",
                   }}
                 />
-                <span className="mono" style={{ fontSize: "9px", color: "var(--inst-dim)", marginTop: "2px", display: "block" }}>
+                <span className="mono" style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px", display: "block" }}>
                   Declarado na pré-sessão. Alterar exige reabrir.
                 </span>
               </div>
@@ -1585,11 +1632,11 @@ export default function ChecklistPage() {
               <div
                 className="mono tabular"
                 style={{
-                  fontSize: "10px",
+                  fontSize: "11px",
                   color: "var(--inst-block)",
                   background: "var(--inst-block-bg)",
                   padding: "6px 8px",
-                  borderRadius: "2px",
+                  borderRadius: "8px",
                   border: "1px solid var(--inst-block-line)",
                 }}
               >
@@ -1597,15 +1644,134 @@ export default function ChecklistPage() {
               </div>
             )}
 
+            {/* 3 Seletores de botão: Gatilho, Contexto da 1ª hora e Modo (FR-005) */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "4px" }}>
+              <div>
+                <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "6px" }}>
+                  GATILHO *
+                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {[
+                    { val: "MSS_FVG", lbl: "MSS + FVG" },
+                    { val: "MSS_OB", lbl: "MSS + OB" },
+                    { val: "BPR", lbl: "BPR" },
+                    { val: "RISK_ENTRY", lbl: "Risk entry" },
+                    { val: "FVG_POS_SWING", lbl: "FVG após swing" },
+                  ].map((o) => {
+                    const sel = gatilho === o.val;
+                    return (
+                      <button
+                        key={o.val}
+                        type="button"
+                        onClick={() => setGatilho(o.val as GatilhoTrade)}
+                        style={{
+                          height: "34px",
+                          padding: "0 14px",
+                          borderRadius: "999px",
+                          fontFamily: "inherit",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          background: sel ? "var(--ac)" : "transparent",
+                          color: sel ? "var(--onac)" : "var(--tx2)",
+                          border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
+                          fontWeight: sel ? 600 : 400,
+                          transition: "all 120ms ease",
+                        }}
+                      >
+                        {o.lbl}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: selectedStrategy.id === "varrida_barra_10" ? "1.6fr 1fr" : "1fr", gap: "12px" }}>
+                <div>
+                  <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "6px" }}>
+                    CONTEXTO DA 1ª HORA *
+                  </span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {[
+                      { val: "CONTINUACAO", lbl: "Continuação" },
+                      { val: "REVERSAO", lbl: "Reversão" },
+                      { val: "LATERAL", lbl: "Lateral" },
+                    ].map((o) => {
+                      const sel = contexto1h === o.val;
+                      return (
+                        <button
+                          key={o.val}
+                          type="button"
+                          onClick={() => setContexto1h(o.val as Contexto1h)}
+                          style={{
+                            height: "34px",
+                            padding: "0 14px",
+                            borderRadius: "999px",
+                            fontFamily: "inherit",
+                            fontSize: "12px",
+                            cursor: "pointer",
+                            background: sel ? "var(--ac)" : "transparent",
+                            color: sel ? "var(--onac)" : "var(--tx2)",
+                            border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
+                            fontWeight: sel ? 600 : 400,
+                            transition: "all 120ms ease",
+                          }}
+                        >
+                          {o.lbl}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {selectedStrategy.id === "varrida_barra_10" && (
+                  <div>
+                    <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "6px" }}>
+                      MODO DO SETUP C *
+                    </span>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {[
+                        { val: "C1", lbl: "C1" },
+                        { val: "C2", lbl: "C2" },
+                      ].map((o) => {
+                        const sel = setupCModo === o.val;
+                        return (
+                          <button
+                            key={o.val}
+                            type="button"
+                            onClick={() => setSetupCModo(o.val as SetupCModo)}
+                            style={{
+                              height: "34px",
+                              padding: "0 16px",
+                              borderRadius: "999px",
+                              fontFamily: "inherit",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                              background: sel ? "var(--ac)" : "transparent",
+                              color: sel ? "var(--onac)" : "var(--tx2)",
+                              border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
+                              fontWeight: sel ? 600 : 400,
+                              transition: "all 120ms ease",
+                            }}
+                          >
+                            {o.lbl}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Risco e RR em Tempo Real */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr",
                 gap: "6px",
-                background: "#080A0C",
+                background: "var(--bg)",
                 padding: "8px 10px",
-                borderRadius: "2px",
+                borderRadius: "8px",
                 border: "1px solid var(--inst-line-2)",
               }}
             >
@@ -1651,7 +1817,7 @@ export default function ChecklistPage() {
           <div
             style={{
               borderTop: `1px solid ${gate.liberado ? "var(--inst-ok-line)" : "var(--inst-block-line)"}`,
-              background: gate.liberado ? "#0D1512" : "var(--inst-block-bg)",
+              background: gate.liberado ? "var(--acs)" : "var(--inst-block-bg)",
               padding: "16px 20px",
               display: "flex",
               flexDirection: "column",
@@ -1710,12 +1876,12 @@ export default function ChecklistPage() {
                   padding: "6px 10px",
                   background: "var(--inst-now-bg)",
                   border: "1px solid var(--inst-now-line)",
-                  borderRadius: "2px",
+                  borderRadius: "8px",
                 }}
               >
                 {gate.avisos.map((aviso, idx) => (
                   <div key={idx} style={{ display: "grid", gridTemplateColumns: "12px 1fr", gap: "6px", alignItems: "start" }}>
-                    <span className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-now)", lineHeight: 1.4 }}>
+                    <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-now)", lineHeight: 1.4 }}>
                       !
                     </span>
                     <span style={{ fontSize: "10.5px", color: "var(--inst-now)", lineHeight: 1.4 }}>
@@ -1753,9 +1919,9 @@ export default function ChecklistPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: "14px",
-                    border: `1px solid ${podeAbrir ? "var(--inst-ok)" : "#2A3138"}`,
+                    border: `1px solid ${podeAbrir ? "var(--inst-ok)" : "var(--bd)"}`,
                     background: podeAbrir ? "var(--inst-ok)" : "transparent",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     cursor: podeAbrir ? "pointer" : "not-allowed",
                   }}
                 >
@@ -1764,7 +1930,7 @@ export default function ChecklistPage() {
                       fontSize: "12.5px",
                       fontWeight: 700,
                       letterSpacing: "0.1em",
-                      color: podeAbrir ? "#08150F" : "var(--inst-ghost)",
+                      color: podeAbrir ? "var(--onac)" : "var(--inst-ghost)",
                     }}
                   >
                     {submittingOrdem ? "REGISTRANDO ORDEM..." : "ABRIR ORDEM"}
@@ -1795,7 +1961,7 @@ export default function ChecklistPage() {
         >
           <div
             style={{
-              background: "#0D1114",
+              background: "var(--s1)",
               border: "1px solid var(--inst-line-2)",
               borderRadius: "4px",
               width: "100%",
@@ -1810,9 +1976,9 @@ export default function ChecklistPage() {
             }}
           >
             {/* Header Fechamento */}
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid var(--inst-line-2)", paddingBottom: "12px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid var(--bd)", paddingBottom: "12px" }}>
               <div>
-                <span className="mono tabular" style={{ fontSize: "10px", letterSpacing: "0.16em", color: "var(--inst-now)" }}>
+                <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.16em", color: "var(--inst-now)" }}>
                   JOURNAL DE SAÍDA
                 </span>
                 <h2 style={{ margin: "4px 0 0 0", fontSize: "18px", fontWeight: 700, letterSpacing: "-0.01em" }}>
@@ -1845,7 +2011,7 @@ export default function ChecklistPage() {
                   border: "1px solid var(--inst-block-line)",
                   color: "var(--inst-block)",
                   fontSize: "11px",
-                  borderRadius: "2px",
+                  borderRadius: "8px",
                 }}
               >
                 {fechamentoError}
@@ -1855,7 +2021,7 @@ export default function ChecklistPage() {
             {/* Preço de saída e motivo */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <div>
-                <label className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
                   PREÇO DE SAÍDA *
                 </label>
                 <input
@@ -1868,9 +2034,9 @@ export default function ChecklistPage() {
                   style={{
                     width: "100%",
                     padding: "8px 10px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     color: "var(--inst-text)",
                     fontSize: "13px",
                     outline: "none",
@@ -1879,7 +2045,7 @@ export default function ChecklistPage() {
               </div>
 
               <div>
-                <label className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
                   MOTIVO DA SAÍDA *
                 </label>
                 <select
@@ -1889,9 +2055,9 @@ export default function ChecklistPage() {
                   style={{
                     width: "100%",
                     padding: "8px 10px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     color: "var(--inst-text)",
                     fontSize: "12px",
                     outline: "none",
@@ -1907,8 +2073,8 @@ export default function ChecklistPage() {
 
             {/* Se MANUAL: desfecho no plano obrigatório */}
             {motivoSaida === "MANUAL" && (
-              <div style={{ padding: "10px 14px", background: "#13161A", border: "1px solid var(--inst-line-2)", borderRadius: "3px" }}>
-                <label className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-now)", display: "block", marginBottom: "6px" }}>
+              <div style={{ padding: "10px 14px", background: "var(--s2)", border: "1px solid var(--inst-line-2)", borderRadius: "10px" }}>
+                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-now)", display: "block", marginBottom: "6px" }}>
                   DESFECHO SEGUNDO O PLANO (OBRIGATÓRIO PARA SAÍDA MANUAL) *
                 </label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
@@ -1925,7 +2091,7 @@ export default function ChecklistPage() {
                       style={{
                         padding: "6px 8px",
                         fontSize: "11px",
-                        borderRadius: "2px",
+                        borderRadius: "8px",
                         border: `1px solid ${desfechoPlano === d.val ? "var(--inst-now)" : "var(--inst-line-2)"}`,
                         background: desfechoPlano === d.val ? "var(--inst-now-bg)" : "transparent",
                         color: desfechoPlano === d.val ? "var(--inst-now)" : "var(--inst-faint)",
@@ -1943,9 +2109,9 @@ export default function ChecklistPage() {
             <div
               style={{
                 padding: "14px 16px",
-                background: "#080A0C",
+                background: "var(--bg)",
                 border: "1px solid var(--inst-line-2)",
-                borderRadius: "3px",
+                borderRadius: "10px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
@@ -1993,7 +2159,7 @@ export default function ChecklistPage() {
                         padding: "10px 12px",
                         border: `1px solid ${sel ? item.cor : "var(--inst-line-2)"}`,
                         background: sel ? item.bg : "transparent",
-                        borderRadius: "3px",
+                        borderRadius: "10px",
                         cursor: "pointer",
                         display: "flex",
                         flexDirection: "column",
@@ -2017,7 +2183,7 @@ export default function ChecklistPage() {
 
             {/* As 4 perguntas de disciplina */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <span className="mono tabular" style={{ fontSize: "10px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
+              <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
                 CHECKLIST DE DISCIPLINA *
               </span>
 
@@ -2034,9 +2200,9 @@ export default function ChecklistPage() {
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "8px 12px",
-                    background: "#080A0C",
+                    background: "var(--bg)",
                     border: "1px solid var(--inst-line-2)",
-                    borderRadius: "2px",
+                    borderRadius: "8px",
                   }}
                 >
                   <span style={{ fontSize: "12px", color: "var(--inst-text-2)" }}>{perg.label}</span>
@@ -2047,8 +2213,8 @@ export default function ChecklistPage() {
                       className="mono tabular"
                       style={{
                         padding: "3px 10px",
-                        fontSize: "10px",
-                        borderRadius: "2px",
+                        fontSize: "11px",
+                        borderRadius: "8px",
                         border: `1px solid ${perg.val === true ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
                         background: perg.val === true ? "var(--inst-ok-bg)" : "transparent",
                         color: perg.val === true ? "var(--inst-ok)" : "var(--inst-faint)",
@@ -2063,8 +2229,8 @@ export default function ChecklistPage() {
                       className="mono tabular"
                       style={{
                         padding: "3px 10px",
-                        fontSize: "10px",
-                        borderRadius: "2px",
+                        fontSize: "11px",
+                        borderRadius: "8px",
                         border: `1px solid ${perg.val === false ? "var(--inst-block)" : "var(--inst-line-2)"}`,
                         background: perg.val === false ? "var(--inst-block-bg)" : "transparent",
                         color: perg.val === false ? "var(--inst-block)" : "var(--inst-faint)",
@@ -2080,7 +2246,7 @@ export default function ChecklistPage() {
 
             {/* Notas livres de encerramento */}
             <div>
-              <label className="mono tabular" style={{ fontSize: "10px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
+              <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
                 OBSERVAÇÕES DO FECHAMENTO
               </label>
               <textarea
@@ -2092,9 +2258,9 @@ export default function ChecklistPage() {
                 style={{
                   width: "100%",
                   padding: "8px 10px",
-                  background: "#080A0C",
+                  background: "var(--bg)",
                   border: "1px solid var(--inst-line-2)",
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   color: "var(--inst-text)",
                   fontSize: "12px",
                   outline: "none",
@@ -2115,7 +2281,7 @@ export default function ChecklistPage() {
                   background: "transparent",
                   border: "1px solid var(--inst-line-2)",
                   color: "var(--inst-dim)",
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   fontSize: "11px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -2133,8 +2299,8 @@ export default function ChecklistPage() {
                   padding: "12px",
                   background: "var(--inst-ok)",
                   border: "1px solid var(--inst-ok)",
-                  color: "#08150F",
-                  borderRadius: "3px",
+                  color: "var(--onac)",
+                  borderRadius: "10px",
                   fontSize: "11px",
                   fontWeight: 700,
                   letterSpacing: "0.08em",

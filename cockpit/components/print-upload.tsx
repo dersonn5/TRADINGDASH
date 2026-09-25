@@ -119,11 +119,11 @@ export function PrintUpload({
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       {label && (
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <span className="mono" style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
+          <span className="mono" style={{ fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
             {label}
           </span>
           {obrigatorio && (
-            <span style={{ fontSize: "10px", color: "var(--inst-block)", fontWeight: 700 }}>*</span>
+            <span style={{ fontSize: "11px", color: "var(--inst-block)", fontWeight: 700 }}>*</span>
           )}
         </div>
       )}
@@ -155,7 +155,7 @@ export function PrintUpload({
           className="mono"
           style={{
             border: "1px dashed var(--inst-line-2)",
-            borderRadius: "3px",
+            borderRadius: "10px",
             padding: "20px 16px",
             textAlign: "center",
             cursor: disabled ? "not-allowed" : "pointer",
@@ -179,7 +179,7 @@ export function PrintUpload({
                   Ctrl+V em qualquer lugar da página, ou clique para escolher
                 </span>
               </div>
-              <span style={{ fontSize: "10px", color: "var(--inst-faint)" }}>
+              <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
                 Win+Shift+S recorta a tela · PNG, JPEG ou WebP até 10 MB
               </span>
             </div>
@@ -191,7 +191,7 @@ export function PrintUpload({
           onPaste={handlePaste}
           style={{
             border: "1px solid var(--inst-ok-line)",
-            borderRadius: "3px",
+            borderRadius: "10px",
             padding: "10px 14px",
             background: "var(--inst-ok-bg)",
             display: "flex",
@@ -211,7 +211,7 @@ export function PrintUpload({
                   width: "56px",
                   height: "40px",
                   objectFit: "cover",
-                  borderRadius: "2px",
+                  borderRadius: "8px",
                   border: "1px solid var(--inst-ok-line)",
                   cursor: "pointer",
                   flexShrink: 0,
@@ -227,9 +227,9 @@ export function PrintUpload({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "9px",
+                  fontSize: "11px",
                   color: "var(--inst-dim)",
-                  borderRadius: "2px",
+                  borderRadius: "8px",
                   flexShrink: 0,
                 }}
               >
@@ -277,9 +277,9 @@ export function PrintUpload({
                   background: "var(--inst-panel-2)",
                   border: "1px solid var(--inst-line)",
                   color: "var(--inst-text)",
-                  borderRadius: "2px",
+                  borderRadius: "8px",
                   padding: "4px 8px",
-                  fontSize: "10px",
+                  fontSize: "11px",
                   cursor: "pointer",
                 }}
               >
@@ -355,7 +355,7 @@ export function PrintUpload({
                   background: "var(--inst-panel-2)",
                   border: "1px solid var(--inst-line)",
                   color: "var(--inst-text)",
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   padding: "4px 10px",
                   cursor: "pointer",
                   display: "flex",
@@ -374,7 +374,7 @@ export function PrintUpload({
                 maxWidth: "100%",
                 maxHeight: "85vh",
                 objectFit: "contain",
-                borderRadius: "3px",
+                borderRadius: "10px",
                 border: "1px solid var(--inst-line)",
               }}
             />

@@ -1,4 +1,4 @@
-import { Strategy } from "@/lib/copa-api";
+import { Strategy } from "@/lib/types";
 
 export type { Strategy };
 
@@ -365,12 +365,12 @@ export const VARRIDA_BARRA_10: Strategy = {
   nome: "Varrida da Barra das 10",
   mercado: ["WIN"],
   descricao:
-    "A abertura do a vista cria liquidez nos dois lados da barra de 15 min das 10:00. Entre 10:15 e 11:14, uma barra de 15 min passa da maxima ou da minima dela e FECHA de volta dentro: topo varrido -> venda, fundo varrido -> compra. No 1m, MSS no sentido da reversao, entrada no reteste do FVG, stop alem do extremo da varrida, alvo no proximo BSL/SSL com trailing. Fechou fora e ficou fora = rompimento, sem trade.",
+    "A abertura do a vista (barra de 15 min das 10:00) e o momento da manipulacao, em dois modos. C1 - a barra das 10 E MANIPULADA: entre 10:15 e 11:14 o preco passa da maxima ou da minima dela (sweep). C2 - a barra das 10 MANIPULA: ela mesma varre o topo ou o fundo de uma barra de 15 min anterior e devolve (nao precisa romper). Cenarios: continuacao (1a hora em tendencia, varre a maxima/minima contra a tendencia) ou reversao (varre BSL/SSL e devolve). Nos dois: operar CONTRA o lado varrido; NAO esperar o 15 min fechar - o sweep libera olhar o 1m; MSS no sentido da operacao, entrada no reteste do FVG, stop no extremo da pernada do MSS, alvo no proximo BSL/SSL com trailing. Registrar C1 ou C2 nas notas.",
   score_minimo: 65,
   calibracao: {
     status: "EM_CALIBRACAO",
     observacao:
-      "Estrutura medida em 5 anos de 15 min (varrida em ~2/3 dos dias; volta ao outro lado 52% x 44% da barra das 11, z=3,7). Com o gatilho de 1m: 64 trades, +0,39R/trade (t=2,5), abr-set/2026. Pesos dos PONTOS sao ESTIMADO. Teste prospectivo desde 2026-09-23: 20-30 trades; negativo apos 30 -> sai.",
+      "1 min, 5 meses, sweep -> MSS + FVG de reversao sem esperar o 15 min fechar: C1 86 trades +0,21R (t=1,8), C2 95 trades +0,20R (t=1,8); base (todo gatilho 10:00-11:14) +0,11R. Melhor recorte: C1 contra a tendencia da 1a hora, 36 trades +0,43R (visto depois dos dados). Numeros antigos (+0,35R/+0,39R) tinham erro, corrigidos 25/09. Pesos dos PONTOS ESTIMADO. C1 e C2 medidos separados.",
     atualizado_em: "2026-09-23",
   },
   ambiente_favoravel: [
@@ -420,36 +420,36 @@ export const VARRIDA_BARRA_10: Strategy = {
       id: "k2",
       tipo: "KILL",
       peso: 0,
-      label: "VARRIDA confirmada: barra de 15 min passou da linha e FECHOU de volta dentro (10:15-11:14)",
-      ajuda: "Esperar o fechamento da barra. Fechou fora e ficou fora e rompimento - sem trade.",
+      label: "SWEEP do a vista: C1 (entre 10:15 e 11:14 o preco passou da maxima/minima da barra das 10) ou C2 (a barra das 10 passou do topo/fundo de uma barra de 15 min anterior)",
+      ajuda: "Nao esperar a barra de 15 min fechar: o sweep ja libera olhar o 1 min. Anotar C1 ou C2 e o contexto da 1a hora (a favor, contra ou lateral).",
     },
     {
       id: "k3",
       tipo: "KILL",
       peso: 0,
       label: "Direcao CONTRA o lado varrido: topo varrido = venda, fundo varrido = compra",
-      ajuda: "A direcao da 1a hora nao muda a regra - o lado varrido define a direcao.",
+      ajuda: "Vale para C1 e C2. Anotar o contexto: no teste, a reversao CONTRA a tendencia da 1a hora foi o melhor recorte do C1.",
     },
     {
       id: "k4",
       tipo: "KILL",
       peso: 0,
-      label: "MSS no 1m em vela FECHADA, no sentido da reversao, ate 45 min do inicio da barra que varreu",
-      ajuda: "Sem MSS nao ha entrada. Entrar no fechamento do 15 min nao paga: stop de ~500 pts.",
+      label: "MSS no 1m em vela FECHADA, no sentido da operacao, em ate 30 min depois do sweep e ate 11:14",
+      ajuda: "Sem MSS nao ha entrada. Se o preco segue alem do sweep sem virar, nao e setup.",
     },
     {
       id: "k5",
       tipo: "KILL",
       peso: 0,
-      label: "Entrada no RETESTE do FVG deixado pela perna do MSS",
-      ajuda: "Nao perseguir preco. Espera o retorno na regiao do FVG.",
+      label: "Entrada no RETESTE do FVG ou do BLOCO DE ORDEM deixado pela perna do MSS",
+      ajuda: "Nao perseguir preco. OB = ultimo candle contrario antes da pernada; entrada na abertura dele. OB: stop ~metade (~205 pts), menos entradas, mais 5R. Teste de 5 meses: no C1, OB igual ao FVG (+0,23R x +0,21R); no C2, OB pior (+0,01R x +0,20R) - no C2 preferir FVG.",
     },
     {
       id: "k6",
       tipo: "KILL",
       peso: 0,
-      label: "Stop alem do extremo da varrida · alvo no proximo BSL/SSL",
-      ajuda: "Trailing: zero a zero em 1R, depois atras dos swings de 1m. Tamanho calculado para o stop (mediana ~420 pts).",
+      label: "Stop no extremo da pernada do MSS · alvo no proximo BSL/SSL",
+      ajuda: "Nao usar o extremo da barra das 10 como stop no C2 - fica largo demais. Trailing: zero a zero em 1R, depois atras dos swings de 1m.",
     },
     {
       id: "k7",
@@ -462,8 +462,8 @@ export const VARRIDA_BARRA_10: Strategy = {
       id: "p1",
       tipo: "PONTO",
       peso: 25,
-      label: "Varrida por pavio LONGO, com rejeicao clara",
-      ajuda: "Pavio grande alem da linha e fechamento bem dentro da barra das 10.",
+      label: "Sweep com rejeicao clara no 1m (pavio longo alem do nivel)",
+      ajuda: "O preco passa do nivel e volta rapido. Aceitacao alem do nivel enfraquece.",
       origem: "ESTIMADO",
     },
     {

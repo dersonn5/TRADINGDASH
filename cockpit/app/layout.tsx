@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Sora, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { AuthGate } from "@/components/auth-gate";
 
-const archivo = Archivo({
+const sora = Sora({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -19,8 +19,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ICT Cognitive Cockpit",
-  description: "Monitoramento do robô de trading ICT Top-Down v2",
+  title: "Cognitive Trading",
+  description: "Pré-sessão, checklist e resultados do operacional WIN",
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${archivo.variable} ${plexMono.variable} dark h-full antialiased`}
+      className={`${sora.variable} ${plexMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full">
         <AuthGate>

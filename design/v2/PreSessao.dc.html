@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Pré-Sessão</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1560px; display: flex; background: var(--bg); color: var(--tx); font-family: Sora, system-ui, sans-serif; font-variant-numeric: tabular-nums; {{vars}}">
+
+  <nav aria-label="Principal" style="width: 232px; flex-shrink: 0; box-sizing: border-box; padding: 28px 16px 24px; border-right: 1px solid var(--bd); display: flex; flex-direction: column; gap: 32px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="0.5" y="0.5" width="29" height="29" rx="8" style="fill: var(--acs); stroke: var(--ac); stroke-opacity: 0.45"></rect><path d="M6 17h4l3-7 4 12 3-7h4" style="fill: none; stroke: var(--ac); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em">Cognitive Trading</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="padding: 0 12px 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx3)">Pregão</span>
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M4 20V11M10 20V5M16 20v-6M21 20H3"></path></svg>
+        Visão Geral
+      </a>
+      <a href="PreSessao.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 500; text-decoration: none; background: var(--acs); color: var(--actx)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3v3M5 9l2 2M19 9l-2 2M3 18h18M7 18a5 5 0 0 1 10 0"></path></svg>
+        Pré-Sessão
+      </a>
+      <a href="Checklist.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg>
+        Checklist
+      </a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="padding: 0 12px 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx3)">Registro</span>
+      <a href="Historico.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v4h4"></path><path d="M12 7v5l3 2"></path></svg>
+        Histórico
+      </a>
+      <a href="Estrategias.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3l9 5-9 5-9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>
+        Estratégias
+      </a>
+    </div>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 16px">
+      <div style="padding: 16px; border-radius: 14px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx3)">Janela de entrada</span>
+        <span style="font-size: 18px; font-weight: 600">10:00 – 11:30</span>
+        <span style="font-size: 12px; color: var(--tx2)">Só WIN · tela até 12:00</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+        <span style="width: 32px; height: 32px; border-radius: 50%; background: var(--acs); color: var(--actx); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">AN</span>
+        <span style="font-size: 13px; color: var(--tx2)">Anderson</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px 40px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; color: var(--tx3)">Sexta, 25 de setembro · ritual antes das 10:00</span>
+        <h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em">Pré-Sessão</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="height: 32px; padding: 0 14px; border-radius: 999px; display: flex; align-items: center; gap: 8px; font-size: 13px; background: var(--s1); border: 1px solid var(--bd); color: var(--tx2)"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{status.cor}}"></span>{{status.txt}}</span>
+        <button type="button" disabled="{{status.bloqueado}}" style="height: 44px; padding: 0 22px; border-radius: 12px; border: 0; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; background: {{status.btnBg}}; color: {{status.btnCor}}">Fechar pré-sessão</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{req}}" as="r" hint-placeholder-count="6">
+        <div style="padding: 14px 16px; border-radius: 14px; background: var(--s1); border: 1px solid {{r.bd}}; display: flex; align-items: center; gap: 10px">
+          <span style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{r.bg}}; color: var(--onac)">
+            <sc-if value="{{r.ok}}" hint-placeholder-val="{{true}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            </sc-if>
+          </span>
+          <span style="font-size: 13px; line-height: 1.3; color: {{r.cor}}">{{r.l}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+
+        <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">1 · Print do gráfico HTF</span>
+            <span style="font-size: 16px; font-weight: 600">60m e 15m com liquidez e arrays marcados</span>
+          </div>
+          <div style="height: 220px; border-radius: 12px; border: 1px solid var(--bd); background: var(--bg); overflow: hidden; position: relative">
+            <svg width="100%" height="220" viewBox="0 0 560 220" preserveAspectRatio="none" aria-label="Miniatura do print anexado" role="img">
+              <line x1="0" x2="560" y1="62" y2="62" style="stroke: var(--k1); stroke-width: 1; stroke-dasharray: 5 5"></line>
+              <line x1="0" x2="560" y1="168" y2="168" style="stroke: var(--k2); stroke-width: 1; stroke-dasharray: 5 5"></line>
+              <rect x="300" y="96" width="160" height="30" style="fill: var(--ac); fill-opacity: 0.12"></rect>
+              <path d="M10 150 L40 128 L70 140 L100 110 L130 118 L160 90 L190 104 L220 76 L250 88 L280 58 L310 84 L340 112 L370 100 L400 132 L430 124 L460 150 L490 138 L520 160 L550 146" style="fill: none; stroke: var(--tx2); stroke-width: 1.6"></path>
+            </svg>
+            <span style="position: absolute; left: 14px; bottom: 12px; font-size: 12px; padding: 6px 10px; border-radius: 8px; background: var(--s1); border: 1px solid var(--bd); color: var(--tx2)">htf_25-09.png · anexado 08:42</span>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button type="button" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--bd); background: transparent; color: var(--tx); font-family: inherit; font-size: 13px; cursor: pointer">Trocar print</button>
+            <button type="button" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--bd); background: transparent; color: var(--tx2); font-family: inherit; font-size: 13px; cursor: pointer">Colar da área de transferência</button>
+          </div>
+        </section>
+
+        <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">2 · Liquidez e arrays</span>
+              <span style="font-size: 16px; font-weight: 600">3 níveis marcados · mínimo 2</span>
+            </div>
+            <button type="button" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--acs); color: var(--actx); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">+ Adicionar nível</button>
+          </div>
+          <sc-for list="{{niveis}}" as="nv" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--bd)">
+              <span style="width: 76px; flex-shrink: 0; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: var(--acs); color: var(--actx)">{{nv.tag}}</span>
+              <span style="flex-grow: 1; font-size: 14px">{{nv.nome}}</span>
+              <span style="font-size: 15px; font-weight: 600">{{nv.preco}}</span>
+              <button type="button" aria-label="Remover nível" style="width: 36px; height: 36px; border-radius: 8px; border: 0; background: transparent; color: var(--tx3); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+            </div>
+          </sc-for>
+        </section>
+
+        <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">5 · Agenda do dia</span>
+            <span style="font-size: 16px; font-weight: 600">NY às 10:30 é o evento de maior impacto</span>
+          </div>
+          <sc-for list="{{agenda}}" as="ev" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--bd)">
+              <span style="width: 52px; font-size: 15px; font-weight: 600">{{ev.h}}</span>
+              <span style="flex-grow: 1; font-size: 14px; color: var(--tx2)">{{ev.nome}}</span>
+              <span style="height: 26px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; font-size: 12px; font-weight: 600; background: {{ev.bg}}; color: {{ev.cor}}">{{ev.imp}}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">3 · Bias e contexto</span>
+            <span style="font-size: 16px; font-weight: 600">{{biasFrase}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; color: var(--tx2)">Bias diário (D1)</span>
+            <div role="group" style="display: flex; gap: 4px; padding: 4px; background: var(--bg); border: 1px solid var(--bd); border-radius: 12px">
+              <sc-for list="{{d1}}" as="o" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{o.sel}}" onClick="{{o.pick}}" style="flex-grow: 1; height: 40px; padding: 0 14px; border: 0; border-radius: 9px; font-family: inherit; font-size: 13px; cursor: pointer; background: {{o.bg}}; color: {{o.cor}}; font-weight: {{o.fw}}">{{o.l}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; color: var(--tx2)">Bias intraday (H1)</span>
+            <div role="group" style="display: flex; gap: 4px; padding: 4px; background: var(--bg); border: 1px solid var(--bd); border-radius: 12px">
+              <sc-for list="{{h1}}" as="o" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{o.sel}}" onClick="{{o.pick}}" style="flex-grow: 1; height: 40px; padding: 0 14px; border: 0; border-radius: 9px; font-family: inherit; font-size: 13px; cursor: pointer; background: {{o.bg}}; color: {{o.cor}}; font-weight: {{o.fw}}">{{o.l}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; color: var(--tx2)">Contexto</span>
+            <div role="group" style="display: flex; gap: 4px; padding: 4px; background: var(--bg); border: 1px solid var(--bd); border-radius: 12px">
+              <sc-for list="{{ctx}}" as="o" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{o.sel}}" onClick="{{o.pick}}" style="flex-grow: 1; height: 40px; padding: 0 14px; border: 0; border-radius: 9px; font-family: inherit; font-size: 13px; cursor: pointer; background: {{o.bg}}; color: {{o.cor}}; font-weight: {{o.fw}}">{{o.l}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">4 · Setup do dia</span>
+            <span style="font-size: 16px; font-weight: 600">Um setup por dia, escolhido agora — não no calor</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <sc-for list="{{setups}}" as="o" hint-placeholder-count="4">
+              <button type="button" aria-pressed="{{o.sel}}" onClick="{{o.pick}}" style="text-align: left; padding: 14px 16px; border-radius: 12px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 6px; background: {{o.cardBg}}; border: 1px solid {{o.bd}}; color: var(--tx)">
+                <span style="font-size: 12px; font-weight: 600; color: {{o.tagCor}}">{{o.tag}}</span>
+                <span style="font-size: 14px; font-weight: 600">{{o.l}}</span>
+                <span style="font-size: 12px; line-height: 1.4; color: var(--tx2)">{{o.d}}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--bd)">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 14px; font-weight: 500">Contratos declarados</span>
+              <span style="font-size: 12px; color: var(--tx3)">tamanho fixo para o dia</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; padding: 4px; border-radius: 12px; border: 1px solid var(--bd); background: var(--bg)">
+              <button type="button" aria-label="Menos um contrato" onClick="{{menos}}" style="width: 40px; height: 40px; border-radius: 9px; border: 0; background: var(--s2); color: var(--tx); font-family: inherit; font-size: 18px; cursor: pointer">−</button>
+              <span style="width: 44px; text-align: center; font-size: 20px; font-weight: 600">{{contratos}}</span>
+              <button type="button" aria-label="Mais um contrato" onClick="{{mais}}" style="width: 40px; height: 40px; border-radius: 9px; border: 0; background: var(--s2); color: var(--tx); font-family: inherit; font-size: 18px; cursor: pointer">+</button>
+            </div>
+          </div>
+        </section>
+
+        <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">6 · Estado</span>
+            <span style="font-size: 16px; font-weight: 600">Pronto para operar</span>
+          </div>
+          <sc-for list="{{estado}}" as="e" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 16px">
+              <span style="width: 150px; font-size: 13px; color: var(--tx2)">{{e.l}}</span>
+              <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+                <sc-for list="{{e.seg}}" as="g" hint-placeholder-count="5">
+                  <span style="height: 10px; border-radius: 3px; background: {{g.bg}}"></span>
+                </sc-for>
+              </div>
+              <span style="width: 32px; text-align: right; font-size: 13px; font-weight: 600">{{e.v}}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-radius: 14px; background: var(--acs); border: 1px solid var(--bd)">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink: 0; fill: none; stroke: var(--actx); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg>
+      <span style="flex-grow: 1; font-size: 15px">{{rodape}}</span>
+    </div>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema": {"editor": "enum", "options": ["dark", "light"], "default": "dark", "section": "Tema"}, "perdaVermelha": {"editor": "boolean", "default": false, "section": "Tema"}, "$preview": {"width": 1440, "height": 1560}}'>
+class Component extends DCLogic {
+  vars() {
+    const red = this.props.perdaVermelha ?? false;
+    const D = { bg: '#000000', s1: '#0A0E10', s2: '#121A1E', bd: '#1B252A', ln: '#141C20', tx: '#EAF7FA', tx2: '#9DB2B9', tx3: '#657A81', ac: '#22D3EE', acs: 'rgba(34,211,238,0.10)', actx: '#67E8F9', onac: '#00191F', k1: '#22D3EE', k2: '#0891B2', k3: '#A5F3FC', k4: '#155E75', k5: '#67E8F9', neg: red ? '#F2625E' : '#4F6E78', negtx: red ? '#F2625E' : '#8FA7AF' };
+    const L = { bg: '#FFFFFF', s1: '#F4F9FA', s2: '#E7F1F4', bd: '#DCE8EB', ln: '#EBF2F4', tx: '#06181D', tx2: '#48626A', tx3: '#728C94', ac: '#0891B2', acs: 'rgba(8,145,178,0.08)', actx: '#0E7490', onac: '#FFFFFF', k1: '#0891B2', k2: '#164E63', k3: '#22D3EE', k4: '#67E8F9', k5: '#0E7490', neg: red ? '#D63B3F' : '#A9BDC3', negtx: red ? '#C2363A' : '#5E777F' };
+    const c = (this.props.tema ?? 'dark') === 'light' ? L : D;
+    return Object.keys(c).map((k) => '--' + k + ': ' + c[k]).join('; ');
+  }
+
+
+  opcoes(lista, atual, campo) {
+    return lista.map((o) => {
+      const sel = o.v === atual;
+      return { ...o, sel, pick: () => this.setState({ [campo]: o.v }), bg: sel ? 'var(--ac)' : 'transparent', cor: sel ? 'var(--onac)' : 'var(--tx2)', fw: sel ? 600 : 400, bd: sel ? 'var(--ac)' : 'var(--bd)' };
+    });
+  }
+
+  renderVals() {
+    const s = this.state || {};
+    const d1 = s.d1 ?? 'VENDA', h1 = s.h1 ?? 'INDEFINIDO', ctx = s.ctx ?? 'TENDENCIA';
+    const setup = s.setup ?? null, contratos = s.contratos ?? 0;
+    const BIAS = [{ v: 'COMPRA', l: 'Compra' }, { v: 'VENDA', l: 'Venda' }, { v: 'INDEFINIDO', l: 'Indefinido' }];
+    const CTX = [{ v: 'TENDENCIA', l: 'Tendência' }, { v: 'RANGE', l: 'Range' }, { v: 'INDEFINIDO', l: 'Indefinido' }];
+    const SETUPS = [
+      { v: 'A', tag: 'SETUP A', l: 'Reversão HTF', d: 'Sweep de liquidez HTF e MSS no 1m' },
+      { v: 'B', tag: 'SETUP B', l: 'Continuidade', d: 'Captura do extremo do swing a favor da tendência' },
+      { v: 'C', tag: 'SETUP C', l: 'Varrida das 10', d: 'A barra das 10 varre ou é varrida' },
+      { v: 'N', tag: 'SEM SETUP', l: 'Não operar hoje', d: 'Dia fora do plano' },
+    ];
+    const setups = this.opcoes(SETUPS, setup, 'setup').map((o) => ({ ...o, cardBg: o.sel ? 'var(--acs)' : 'var(--bg)', tagCor: o.sel ? 'var(--actx)' : 'var(--tx3)' }));
+    const req = [
+      { l: 'Print HTF', ok: true },
+      { l: 'Bias H1', ok: h1 !== 'INDEFINIDO' },
+      { l: 'Contexto', ok: ctx !== 'INDEFINIDO' },
+      { l: '2 níveis', ok: true },
+      { l: 'Setup do dia', ok: !!setup },
+      { l: 'Tamanho', ok: setup === 'N' || contratos > 0 },
+    ].map((r) => ({ ...r, bg: r.ok ? 'var(--ac)' : 'var(--s2)', bd: r.ok ? 'var(--bd)' : 'var(--bd)', cor: r.ok ? 'var(--tx)' : 'var(--tx3)' }));
+    const faltam = req.filter((r) => !r.ok);
+    const bloqueado = faltam.length > 0;
+    const status = {
+      bloqueado,
+      txt: bloqueado ? 'Aberta · ' + faltam.length + (faltam.length === 1 ? ' pendência' : ' pendências') : 'Pronta para fechar',
+      cor: bloqueado ? 'var(--tx3)' : 'var(--ac)',
+      btnBg: bloqueado ? 'var(--s2)' : 'var(--ac)',
+      btnCor: bloqueado ? 'var(--tx3)' : 'var(--onac)',
+    };
+    const nomeBias = (v) => BIAS.find((b) => b.v === v).l.toLowerCase();
+    const IMP = { Alto: ['var(--ac)', 'var(--onac)'], Médio: ['var(--acs)', 'var(--actx)'], Baixo: ['var(--s2)', 'var(--tx2)'] };
+    const agenda = [
+      { h: '10:00', nome: 'Abertura do mercado à vista', imp: 'Médio' },
+      { h: '10:30', nome: 'Abertura de Nova York', imp: 'Alto' },
+      { h: '11:30', nome: 'Estoques de petróleo (EUA)', imp: 'Baixo' },
+    ].map((e) => ({ ...e, bg: IMP[e.imp][0], cor: IMP[e.imp][1] }));
+    const seg = (v) => [1, 2, 3, 4, 5].map((i) => ({ bg: i <= v ? 'var(--ac)' : 'var(--s2)' }));
+    return {
+      vars: this.vars(),
+      d1: this.opcoes(BIAS, d1, 'd1'),
+      h1: this.opcoes(BIAS, h1, 'h1'),
+      ctx: this.opcoes(CTX, ctx, 'ctx'),
+      biasFrase: 'D1 ' + nomeBias(d1) + ' · H1 ' + nomeBias(h1) + ' · ' + CTX.find((c) => c.v === ctx).l.toLowerCase(),
+      setups, contratos,
+      menos: () => this.setState({ contratos: Math.max(0, contratos - 1) }),
+      mais: () => this.setState({ contratos: contratos + 1 }),
+      req, status,
+      rodape: bloqueado ? 'Falta: ' + faltam.map((r) => r.l.toLowerCase()).join(', ') + '. O checklist só abre com a pré-sessão fechada.' : 'Tudo pronto. Fechar congela as escolhas e libera o checklist.',
+      niveis: [
+        { tag: 'BSL 60m', nome: 'Máxima de ontem', preco: '132.850' },
+        { tag: 'FVG 15m', nome: 'Gap da queda das 09:30', preco: '132.310' },
+        { tag: 'SSL 1ª h', nome: 'Mínima da primeira hora', preco: '131.940' },
+      ],
+      agenda,
+      estado: [
+        { l: 'Qualidade do sono', v: 4, seg: seg(4) },
+        { l: 'Tilt / ansiedade', v: 1, seg: seg(1) },
+        { l: 'Pressão por meta', v: 2, seg: seg(2) },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

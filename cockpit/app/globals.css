@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -49,75 +49,184 @@
 }
 
 :root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.94 0.02 264.376);
-  --accent-foreground: oklch(0.35 0.15 264.376);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0 0);
-  --input: oklch(0.91 0 0);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.6 0.18 200);
-  --chart-3: oklch(0.7 0.15 150);
-  --chart-4: oklch(0.65 0.2 30);
-  --chart-5: oklch(0.6 0.22 320);
+  /* Design v2 - Tema Claro */
+  --bg: #FFFFFF;
+  --s1: #F4F9FA;
+  --s2: #E7F1F4;
+  --bd: #DCE8EB;
+  --ln: #EBF2F4;
+  --tx: #06181D;
+  --tx2: #48626A;
+  --tx3: #728C94;
+  --ac: #0891B2;
+  --acs: rgba(8, 145, 178, 0.08);
+  --actx: #0E7490;
+  --onac: #FFFFFF;
+  --k1: #0891B2;
+  --k2: #164E63;
+  --k3: #22D3EE;
+  --k4: #67E8F9;
+  --k5: #0E7490;
+  --neg: #A9BDC3;
+  --negtx: #5E777F;
+
+  /* Mapeamento Shadcn */
+  --background: var(--bg);
+  --foreground: var(--tx);
+  --card: var(--s1);
+  --card-foreground: var(--tx);
+  --popover: var(--s1);
+  --popover-foreground: var(--tx);
+  --primary: var(--ac);
+  --primary-foreground: var(--onac);
+  --secondary: var(--s2);
+  --secondary-foreground: var(--tx);
+  --muted: var(--s2);
+  --muted-foreground: var(--tx3);
+  --accent: var(--acs);
+  --accent-foreground: var(--actx);
+  --destructive: var(--negtx);
+  --border: var(--bd);
+  --input: var(--bd);
+  --ring: var(--ac);
+  --chart-1: var(--k1);
+  --chart-2: var(--k2);
+  --chart-3: var(--k3);
+  --chart-4: var(--k4);
+  --chart-5: var(--k5);
   --radius: 0.5rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.25 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.94 0.02 264.376);
-  --sidebar-accent-foreground: oklch(0.35 0.15 264.376);
-  --sidebar-border: oklch(0.91 0 0);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --sidebar: var(--bg);
+  --sidebar-foreground: var(--tx);
+  --sidebar-primary: var(--ac);
+  --sidebar-primary-foreground: var(--onac);
+  --sidebar-accent: var(--acs);
+  --sidebar-accent-foreground: var(--actx);
+  --sidebar-border: var(--bd);
+  --sidebar-ring: var(--ac);
+
+  /* Mapeamento Tokens Instrumento (--inst-*) */
+  --inst-bg: var(--bg);
+  --inst-panel: var(--s1);
+  --inst-panel-2: var(--s2);
+  --inst-line: var(--bd);
+  --inst-line-2: var(--ln);
+  --inst-line-soft: var(--ln);
+  --inst-bg-deep: var(--s2);
+  --inst-hover: var(--s2);
+  --inst-text: var(--tx);
+  --inst-text-2: var(--tx2);
+  --inst-dim: var(--tx3);
+  --inst-faint: var(--tx3);
+  --inst-ghost: var(--tx3);
+  --inst-ok: var(--ac);
+  --inst-ok-bg: var(--acs);
+  --inst-ok-line: var(--bd);
+  --inst-on-ok: var(--onac);
+  --inst-now: var(--actx);
+  --inst-now-bg: var(--acs);
+  --inst-now-line: var(--ac);
+  --inst-block: var(--negtx);
+  --inst-block-bg: rgba(169, 189, 195, 0.15);
+  --inst-block-line: var(--neg);
+  --inst-lock: var(--tx3);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.2 264.376);
-  --primary: oklch(0.62 0.22 264.376);
-  --accent: oklch(0.3 0.06 264.376);
-  --accent-foreground: oklch(0.9 0.05 264.376);
-  --chart-1: oklch(0.62 0.22 264.376);
-  --chart-2: oklch(0.65 0.18 200);
-  --chart-3: oklch(0.72 0.16 150);
-  --chart-4: oklch(0.68 0.2 30);
-  --chart-5: oklch(0.65 0.24 320);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Design v2 - Tema Escuro (Padrão) */
+  --bg: #000000;
+  --s1: #0A0E10;
+  --s2: #121A1E;
+  --bd: #1B252A;
+  --ln: #141C20;
+  --tx: #EAF7FA;
+  --tx2: #9DB2B9;
+  --tx3: #657A81;
+  --ac: #22D3EE;
+  --acs: rgba(34, 211, 238, 0.10);
+  --actx: #67E8F9;
+  --onac: #00191F;
+  --k1: #22D3EE;
+  --k2: #0891B2;
+  --k3: #A5F3FC;
+  --k4: #155E75;
+  --k5: #67E8F9;
+  --neg: #4F6E78;
+  --negtx: #8FA7AF;
+
+  /* Mapeamento Shadcn */
+  --background: var(--bg);
+  --foreground: var(--tx);
+  --card: var(--s1);
+  --card-foreground: var(--tx);
+  --popover: var(--s1);
+  --popover-foreground: var(--tx);
+  --primary: var(--ac);
+  --primary-foreground: var(--onac);
+  --secondary: var(--s2);
+  --secondary-foreground: var(--tx);
+  --muted: var(--s2);
+  --muted-foreground: var(--tx3);
+  --accent: var(--acs);
+  --accent-foreground: var(--actx);
+  --destructive: var(--negtx);
+  --border: var(--bd);
+  --input: var(--bd);
+  --ring: var(--ac);
+  --chart-1: var(--k1);
+  --chart-2: var(--k2);
+  --chart-3: var(--k3);
+  --chart-4: var(--k4);
+  --chart-5: var(--k5);
+  --sidebar: var(--bg);
+  --sidebar-foreground: var(--tx);
+  --sidebar-primary: var(--ac);
+  --sidebar-primary-foreground: var(--onac);
+  --sidebar-accent: var(--acs);
+  --sidebar-accent-foreground: var(--actx);
+  --sidebar-border: var(--bd);
+  --sidebar-ring: var(--ac);
+
+  /* Mapeamento Tokens Instrumento (--inst-*) */
+  --inst-bg: var(--bg);
+  --inst-panel: var(--s1);
+  --inst-panel-2: var(--s2);
+  --inst-line: var(--bd);
+  --inst-line-2: var(--ln);
+  --inst-line-soft: var(--ln);
+  --inst-bg-deep: var(--bg);
+  --inst-hover: var(--s2);
+  --inst-text: var(--tx);
+  --inst-text-2: var(--tx2);
+  --inst-dim: var(--tx3);
+  --inst-faint: var(--tx3);
+  --inst-ghost: var(--tx3);
+  --inst-ok: var(--actx);
+  --inst-ok-bg: var(--acs);
+  --inst-ok-line: var(--bd);
+  --inst-on-ok: var(--onac);
+  --inst-now: var(--actx);
+  --inst-now-bg: var(--acs);
+  --inst-now-line: var(--ac);
+  --inst-block: var(--negtx);
+  --inst-block-bg: rgba(79, 110, 120, 0.14);
+  --inst-block-line: var(--neg);
+  --inst-lock: var(--tx3);
+}
+
+/* Opção perda vermelha (quando ativada) */
+.perda-vermelha, [data-perda-vermelha="true"] {
+  --neg: #D63B3F;
+  --negtx: #C2363A;
+  --inst-block: #C2363A;
+  --inst-block-bg: rgba(214, 59, 63, 0.12);
+  --inst-block-line: #D63B3F;
+}
+.dark.perda-vermelha, .dark[data-perda-vermelha="true"] {
+  --neg: #F2625E;
+  --negtx: #F2625E;
+  --inst-block: #F2625E;
+  --inst-block-bg: rgba(242, 98, 94, 0.14);
+  --inst-block-line: #F2625E;
 }
 
 @layer base {
@@ -126,6 +235,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-variant-numeric: tabular-nums;
   }
   html {
     @apply font-sans;
@@ -165,46 +275,12 @@
   }
 }
 
-/* Tokens do instrumento. Cor aqui NUNCA é decoração: cada uma significa
-   um estado. Ver design/Main.dc.html. */
-:root {
-  --inst-bg:        #0C0E10;
-  --inst-panel:     #0F1215;
-  --inst-panel-2:   #101416;
-  --inst-line:      #1E2327;
-  --inst-line-2:    #262B30;
-
-  --inst-text:      #E8ECEF;
-  --inst-text-2:    #A8B2B9;
-  --inst-dim:       #8A949C;
-  --inst-faint:     #5A646C;
-  --inst-ghost:     #4A535A;
-
-  --inst-ok:        #3FB27F;  /* cumprido, liberado */
-  --inst-now:       #E0B44E;  /* agora, atenção */
-  --inst-block:     #E0574A;  /* bloqueado, desvio */
-  --inst-lock:      #394148;  /* travado */
-
-  --inst-ok-bg:     #101614;
-  --inst-now-bg:    #15140E;
-  --inst-block-bg:  #150F0E;
-  --inst-ok-line:   #1E3A2E;
-  --inst-now-line:  #3A3020;
-  --inst-block-line:#3A1F1C;
-
-  /* Superficies e cores derivadas. Existiam como literal espalhado pelas
-     paginas, o que refaz a divergencia que os tokens existem para impedir. */
-  --inst-bg-deep:   #080A0C;  /* fundo rebaixado, dentro de card */
-  --inst-hover:     #15191D;  /* realce de linha sob o cursor */
-  --inst-line-soft: #14181B;  /* divisoria interna de tabela */
-  --inst-on-ok:     #08150F;  /* texto sobre fundo --inst-ok */
-}
-
-.tabular { font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-.mono { font-family: var(--font-mono), ui-monospace, monospace; }
+/* v2: tudo em Sora. .mono e .tabular ficaram so como marcadores de numero alinhado. */
+.tabular { font-variant-numeric: tabular-nums; }
+.mono { font-variant-numeric: tabular-nums; }
 .step { transition: background 140ms ease, border-color 140ms ease; }
 .step-live { cursor: pointer !important; }
-.step-live:hover { background: #1B2024 !important; }
+.step-live:hover { background: var(--s2) !important; }
 
 /* Mãozinha (cursor: pointer) universal em todos os botões e elementos interativos */
 button:not(:disabled),

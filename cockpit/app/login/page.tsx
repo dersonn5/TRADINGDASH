@@ -130,7 +130,7 @@ export default function LoginPage() {
             className="w-full rounded py-2.5 px-4 text-xs font-semibold mono tracking-wider uppercase transition-opacity cursor-pointer mt-2"
             style={{
               background: "var(--inst-ok, #3FB27F)",
-              color: "#05130D",
+              color: "var(--onac)",
               opacity: loading ? 0.6 : 1,
             }}
           >

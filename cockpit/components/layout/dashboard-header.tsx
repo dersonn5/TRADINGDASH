@@ -7,7 +7,7 @@ import { Search, Moon, Sun, User, LogOut, Bot } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,24 +20,34 @@ import {
 
 const TITLES: Record<string, string> = {
   "/": "Visão Geral",
-  "/trades": "Banco de Trades",
-  "/checklist": "Checklist Pregão",
+  "/pre-sessao": "Pré-Sessão",
+  "/checklist": "Checklist",
+  "/trades": "Histórico",
   "/estrategias": "Estratégias",
-  "/backtests": "Backtests",
-  "/cerebro": "Segundo Cérebro",
-  "/pesquisa": "Pesquisa",
-  "/config": "Configurações",
 };
 
 export function DashboardHeader() {
   const pathname = usePathname();
-  const title = TITLES[pathname] ?? "Dashboard";
+  const title = TITLES[pathname] ?? "Visão Geral";
   const [dark, setDark] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("cognitive-theme");
+    if (saved) {
+      const isDark = saved === "dark";
+      setDark(isDark);
+      document.documentElement.classList.toggle("dark", isDark);
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
   function toggleTheme() {
     setDark((d) => {
-      document.documentElement.classList.toggle("dark", !d);
-      return !d;
+      const next = !d;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("cognitive-theme", next ? "dark" : "light");
+      return next;
     });
   }
 
@@ -70,7 +80,7 @@ export function DashboardHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center justify-center rounded-full cursor-pointer border-0 p-0 bg-transparent focus:outline-none">
             <Avatar className="size-7 select-none">
-              <AvatarFallback className="text-xs bg-primary text-primary-foreground">IC</AvatarFallback>
+              <AvatarFallback className="text-xs bg-primary text-primary-foreground">CT</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -78,7 +88,7 @@ export function DashboardHeader() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">Trader</p>
-                  <p className="text-xs leading-none text-muted-foreground">ICT Cognitive Cockpit</p>
+                  <p className="text-xs leading-none text-muted-foreground">Cognitive Trading</p>
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>

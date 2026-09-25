@@ -1,0 +1,123 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-09-25T19:27:40Z"
+  },
+  "title": "Cognitive Trading · v2",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1860,
+      "title": "Visão Geral · escuro",
+      "is_interactive": true
+    },
+    "MainClaro.dc.html": {
+      "x": 0,
+      "y": 2260,
+      "w": 1440,
+      "h": 1860,
+      "title": "Visão Geral · claro",
+      "is_interactive": true
+    },
+    "PreSessao.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 1560,
+      "title": "Pré-Sessão · escuro",
+      "is_interactive": true
+    },
+    "PreSessaoClaro.dc.html": {
+      "x": 1520,
+      "y": 2260,
+      "w": 1440,
+      "h": 1560,
+      "title": "Pré-Sessão · claro",
+      "is_interactive": true
+    },
+    "Checklist.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 1480,
+      "title": "Checklist · escuro",
+      "is_interactive": true
+    },
+    "ChecklistClaro.dc.html": {
+      "x": 3040,
+      "y": 2260,
+      "w": 1440,
+      "h": 1480,
+      "title": "Checklist · claro",
+      "is_interactive": true
+    },
+    "Historico.dc.html": {
+      "x": 4560,
+      "y": 0,
+      "w": 1440,
+      "h": 1320,
+      "title": "Histórico · escuro",
+      "is_interactive": true
+    },
+    "HistoricoClaro.dc.html": {
+      "x": 4560,
+      "y": 2260,
+      "w": 1440,
+      "h": 1320,
+      "title": "Histórico · claro",
+      "is_interactive": true
+    },
+    "Estrategias.dc.html": {
+      "x": 6080,
+      "y": 0,
+      "w": 1440,
+      "h": 1320,
+      "title": "Estratégias · escuro",
+      "is_interactive": true
+    },
+    "EstrategiasClaro.dc.html": {
+      "x": 6080,
+      "y": 2260,
+      "w": 1440,
+      "h": 1320,
+      "title": "Estratégias · claro",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "MainClaro.dc.html",
+    "PreSessao.dc.html",
+    "PreSessaoClaro.dc.html",
+    "Checklist.dc.html",
+    "ChecklistClaro.dc.html",
+    "Historico.dc.html",
+    "HistoricoClaro.dc.html",
+    "Estrategias.dc.html",
+    "EstrategiasClaro.dc.html"
+  ],
+  "notes": {
+    "tituloEscuro": {
+      "x": 0,
+      "y": -300,
+      "text": "Tema escuro",
+      "kind": "title1",
+      "maxW": 7520
+    },
+    "tituloClaro": {
+      "x": 0,
+      "y": 1960,
+      "text": "Tema claro",
+      "kind": "title1",
+      "maxW": 7520
+    }
+  },
+  "designSystems": []
+}

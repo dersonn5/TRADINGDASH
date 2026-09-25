@@ -9,9 +9,7 @@ import {
   reabrirPreSessao,
   pendenciasDaPreSessao,
   PreSessao,
-  getDataSaoPaulo,
 } from "@/lib/copa-db";
-import { supabase } from "@/lib/supabase";
 import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10 } from "@/data/strategies";
 import {
   InstPage,
@@ -23,7 +21,7 @@ import {
   InstEmpty,
   InstNum,
 } from "@/components/inst";
-import { PrintUpload } from "@/components/copa/print-upload";
+import { PrintUpload } from "@/components/print-upload";
 import { Plus, Trash2, Check, Lock, Unlock, AlertCircle, ArrowRight, X } from "lucide-react";
 
 export default function PreSessaoPage() {
@@ -35,31 +33,17 @@ export default function PreSessaoPage() {
   const [modalReabrir, setModalReabrir] = useState(false);
   const [motivoReabrir, setMotivoReabrir] = useState("");
   const [reabrindo, setReabrindo] = useState(false);
-  const [faseNome, setFaseNome] = useState<string>("");
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sessaoRef = useRef<PreSessao | null>(null);
   sessaoRef.current = sessao;
 
-  // Carrega pré-sessão de hoje e informações da fase
+  // Carrega pré-sessão de hoje
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
-      const hoje = getDataSaoPaulo();
       const s = await getPreSessaoDeHoje();
       setSessao(s);
-
-      // Busca nome da fase
-      const { data: phases } = await supabase
-        .from("copa_phases")
-        .select("nome")
-        .lte("data_inicio", hoje)
-        .gte("data_fim", hoje)
-        .maybeSingle();
-
-      if (phases?.nome) {
-        setFaseNome(phases.nome);
-      }
     } catch (err: any) {
       console.error("Erro ao carregar pré-sessão:", err);
     } finally {
@@ -199,13 +183,13 @@ export default function PreSessaoPage() {
   });
   const dataExtenso = formatadorData.format(dataHojeObj);
   const dataFormatada = dataExtenso.charAt(0).toUpperCase() + dataExtenso.slice(1);
-  const eyebrowTexto = faseNome ? `${dataFormatada} · ${faseNome}` : dataFormatada;
+  const eyebrowTexto = dataFormatada;
 
   const inputStyle: React.CSSProperties = {
     background: "var(--inst-panel-2)",
     border: "1px solid var(--inst-line)",
     color: "var(--inst-text)",
-    borderRadius: "3px",
+    borderRadius: "10px",
     padding: "8px 12px",
     fontSize: "12px",
     outline: "none",
@@ -216,7 +200,7 @@ export default function PreSessaoPage() {
     border: selecionado ? "1px solid var(--inst-ok)" : "1px solid var(--inst-line)",
     color: selecionado ? "var(--inst-ok)" : "var(--inst-dim)",
     padding: "8px 16px",
-    borderRadius: "3px",
+    borderRadius: "10px",
     fontSize: "11px",
     fontWeight: selecionado ? 700 : 500,
     cursor: disabled ? "not-allowed" : "pointer",
@@ -225,43 +209,89 @@ export default function PreSessaoPage() {
   });
 
   return (
-    <InstPage
-      eyebrow={eyebrowTexto}
-      title="Pré-sessão"
-      right={
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
+      {/* Cabeçalho v2 */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>
+            {eyebrowTexto} · ritual antes das 10:00
+          </span>
+          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>
+            Pré-Sessão
+          </h1>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {!isFechada && (
-            <span className="mono tabular" style={{ fontSize: "11px", color: saveStatus === "salvando" ? "var(--inst-now)" : "var(--inst-ok)" }}>
+            <span style={{ fontSize: "12px", color: saveStatus === "salvando" ? "var(--ac)" : "var(--tx3)" }}>
               {saveStatus === "salvando" ? "Salvando..." : "Salvo"}
             </span>
           )}
-
+          <span
+            style={{
+              height: "32px",
+              padding: "0 14px",
+              borderRadius: "999px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+              background: "var(--s1)",
+              border: "1px solid var(--bd)",
+              color: "var(--tx2)",
+            }}
+          >
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: isFechada ? "var(--tx3)" : "var(--ac)",
+              }}
+            />
+            {isFechada ? "Fechada" : "Aberta"}
+          </span>
           {isFechada ? (
-            <>
-              <InstBadge tom="ok">FECHADA</InstBadge>
-              <button
-                type="button"
-                onClick={() => setModalReabrir(true)}
-                className="mono tabular"
-                style={{
-                  background: "transparent",
-                  border: "1px solid var(--inst-line)",
-                  color: "var(--inst-dim)",
-                  borderRadius: "3px",
-                  padding: "4px 10px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                }}
-              >
-                Reabrir
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={() => setModalReabrir(true)}
+              style={{
+                height: "44px",
+                padding: "0 22px",
+                borderRadius: "12px",
+                border: "1px solid var(--bd)",
+                background: "transparent",
+                color: "var(--tx2)",
+                fontFamily: "inherit",
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              Reabrir
+            </button>
           ) : (
-            <InstBadge tom="now">ABERTA</InstBadge>
+            <button
+              type="button"
+              onClick={handleFechar}
+              disabled={fechando || pendencias.length > 0}
+              style={{
+                height: "44px",
+                padding: "0 22px",
+                borderRadius: "12px",
+                border: 0,
+                fontFamily: "inherit",
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: fechando || pendencias.length > 0 ? "not-allowed" : "pointer",
+                background: pendencias.length > 0 ? "var(--s1)" : "var(--ac)",
+                color: pendencias.length > 0 ? "var(--tx3)" : "var(--onac)",
+                opacity: fechando ? 0.7 : 1,
+              }}
+            >
+              {fechando ? "Fechando..." : "Fechar pré-sessão"}
+            </button>
           )}
         </div>
-      }
-    >
+      </div>
       <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "8px" }}>
         Mapeamento institucional frio e declaração mecânica antes da abertura do pregão.
       </div>
@@ -282,8 +312,8 @@ export default function PreSessaoPage() {
                 style={{
                   background: "var(--inst-ok)",
                   border: "1px solid var(--inst-ok)",
-                  color: "#08150F",
-                  borderRadius: "3px",
+                  color: "var(--onac)",
+                  borderRadius: "10px",
                   padding: "8px 16px",
                   fontSize: "11px",
                   fontWeight: 700,
@@ -346,7 +376,7 @@ export default function PreSessaoPage() {
                     background: "var(--inst-panel-2)",
                     border: "1px solid var(--inst-line)",
                     color: "var(--inst-text)",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     padding: "4px 10px",
                     fontSize: "11px",
                     cursor: "pointer",
@@ -475,7 +505,7 @@ export default function PreSessaoPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                 <InstLabel>Bias Intraday (H1)</InstLabel>
-                <span style={{ fontSize: "10px", color: "var(--inst-block)", fontWeight: 700 }}>*</span>
+                <span style={{ fontSize: "11px", color: "var(--inst-block)", fontWeight: 700 }}>*</span>
               </div>
               <div style={{ display: "flex", gap: "6px" }}>
                 {(["COMPRA", "VENDA", "INDEFINIDO"] as const).map((b) => (
@@ -524,7 +554,7 @@ export default function PreSessaoPage() {
               }}
             >
               <span style={{ fontSize: "13px", fontWeight: 700 }}>REVERSÃO HTF</span>
-              <span style={{ fontSize: "10px", opacity: 0.7 }}>7 KILLs · 6 PONTOS</span>
+              <span style={{ fontSize: "11px", opacity: 0.7 }}>7 KILLs · 6 PONTOS</span>
             </button>
 
             <button
@@ -542,7 +572,7 @@ export default function PreSessaoPage() {
               }}
             >
               <span style={{ fontSize: "13px", fontWeight: 700 }}>CONTINUIDADE DE TENDÊNCIA</span>
-              <span style={{ fontSize: "10px", opacity: 0.7 }}>6 KILLs · 6 PONTOS</span>
+              <span style={{ fontSize: "11px", opacity: 0.7 }}>6 KILLs · 6 PONTOS</span>
             </button>
 
             <button
@@ -560,7 +590,7 @@ export default function PreSessaoPage() {
               }}
             >
               <span style={{ fontSize: "13px", fontWeight: 700 }}>VARRIDA DA BARRA DAS 10</span>
-              <span style={{ fontSize: "10px", opacity: 0.7 }}>7 KILLs · 5 PONTOS · EM TESTE</span>
+              <span style={{ fontSize: "11px", opacity: 0.7 }}>7 KILLs · 5 PONTOS · EM TESTE</span>
             </button>
 
             <button
@@ -578,7 +608,7 @@ export default function PreSessaoPage() {
               }}
             >
               <span style={{ fontSize: "13px", fontWeight: 700 }}>NENHUM (NÃO OPERAR)</span>
-              <span style={{ fontSize: "10px", opacity: 0.7 }}>Preservação de Capital</span>
+              <span style={{ fontSize: "11px", opacity: 0.7 }}>Preservação de Capital</span>
             </button>
           </div>
 
@@ -590,7 +620,7 @@ export default function PreSessaoPage() {
                 color: "var(--inst-dim)",
                 background: "var(--inst-panel-2)",
                 border: "1px solid var(--inst-line-2)",
-                borderRadius: "3px",
+                borderRadius: "10px",
                 padding: "10px 14px",
                 lineHeight: 1.5,
               }}
@@ -658,7 +688,7 @@ export default function PreSessaoPage() {
                   background: "var(--inst-panel-2)",
                   border: "1px solid var(--inst-line)",
                   color: "var(--inst-text)",
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   padding: "4px 10px",
                   fontSize: "11px",
                   cursor: "pointer",
@@ -843,7 +873,7 @@ export default function PreSessaoPage() {
                     border: "1px solid var(--inst-line)",
                     color: "var(--inst-faint)",
                     padding: "10px 20px",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     fontSize: "12px",
                     fontWeight: 700,
                     cursor: "not-allowed",
@@ -870,9 +900,9 @@ export default function PreSessaoPage() {
                   style={{
                     background: "var(--inst-ok)",
                     border: "1px solid var(--inst-ok)",
-                    color: "#08150F",
+                    color: "var(--onac)",
                     padding: "10px 24px",
-                    borderRadius: "3px",
+                    borderRadius: "10px",
                     fontSize: "12px",
                     fontWeight: 700,
                     cursor: fechando ? "not-allowed" : "pointer",
@@ -909,7 +939,7 @@ export default function PreSessaoPage() {
             style={{
               background: "var(--inst-panel)",
               border: "1px solid var(--inst-line)",
-              borderRadius: "3px",
+              borderRadius: "10px",
               padding: "20px",
               maxWidth: "480px",
               width: "100%",
@@ -958,7 +988,7 @@ export default function PreSessaoPage() {
                   border: "1px solid var(--inst-line)",
                   color: "var(--inst-dim)",
                   padding: "6px 14px",
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   fontSize: "11px",
                   cursor: "pointer",
                 }}
@@ -973,9 +1003,9 @@ export default function PreSessaoPage() {
                 style={{
                   background: "var(--inst-ok)",
                   border: "1px solid var(--inst-ok)",
-                  color: "#08150F",
+                  color: "var(--onac)",
                   padding: "6px 16px",
-                  borderRadius: "3px",
+                  borderRadius: "10px",
                   fontSize: "11px",
                   fontWeight: 700,
                   cursor: reabrindo || !motivoReabrir.trim() ? "not-allowed" : "pointer",
@@ -988,6 +1018,6 @@ export default function PreSessaoPage() {
           </div>
         </div>
       )}
-    </InstPage>
+    </div>
   );
 }

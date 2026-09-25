@@ -26,10 +26,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <BrainCircuit className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">ICT Cockpit</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  Cognitive Trading
-                </span>
+                <span className="truncate font-semibold">Cognitive Trading</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -43,7 +40,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-2 text-xs text-muted-foreground">Top-Down v2 · MVP</div>
+        <div className="p-2 text-xs text-muted-foreground">WIN · 10:00–11:30</div>
       </SidebarFooter>
 
       <SidebarRail />

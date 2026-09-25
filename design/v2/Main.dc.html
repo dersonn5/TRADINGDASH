@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Visão Geral</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1860px; display: flex; background: var(--bg); color: var(--tx); font-family: Sora, system-ui, sans-serif; font-variant-numeric: tabular-nums; {{vars}}">
+
+  <nav aria-label="Principal" style="width: 232px; flex-shrink: 0; box-sizing: border-box; padding: 28px 16px 24px; border-right: 1px solid var(--bd); display: flex; flex-direction: column; gap: 32px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="0.5" y="0.5" width="29" height="29" rx="8" style="fill: var(--acs); stroke: var(--ac); stroke-opacity: 0.45"></rect><path d="M6 17h4l3-7 4 12 3-7h4" style="fill: none; stroke: var(--ac); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em">Cognitive Trading</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="padding: 0 12px 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx3)">Pregão</span>
+      <a href="Main.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 500; text-decoration: none; background: var(--acs); color: var(--actx)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M4 20V11M10 20V5M16 20v-6M21 20H3"></path></svg>
+        Visão Geral
+      </a>
+      <a href="PreSessao.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3v3M5 9l2 2M19 9l-2 2M3 18h18M7 18a5 5 0 0 1 10 0"></path></svg>
+        Pré-Sessão
+      </a>
+      <a href="Checklist.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg>
+        Checklist
+      </a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="padding: 0 12px 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx3)">Registro</span>
+      <a href="Historico.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v4h4"></path><path d="M12 7v5l3 2"></path></svg>
+        Histórico
+      </a>
+      <a href="Estrategias.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; text-decoration: none; color: var(--tx2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="M12 3l9 5-9 5-9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>
+        Estratégias
+      </a>
+    </div>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 16px">
+      <div style="padding: 16px; border-radius: 14px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx3)">Janela de entrada</span>
+        <span style="font-size: 18px; font-weight: 600">10:00 – 11:30</span>
+        <span style="font-size: 12px; color: var(--tx2)">Só WIN · tela até 12:00</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+        <span style="width: 32px; height: 32px; border-radius: 50%; background: var(--acs); color: var(--actx); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">AN</span>
+        <span style="font-size: 13px; color: var(--tx2)">Anderson</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px 40px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; color: var(--tx3)">Setembro 2026 · atualizado 25/09, 12:04</span>
+        <h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.02em">Visão Geral</h1>
+      </div>
+      <div role="group" aria-label="Mês" style="display: flex; gap: 4px; padding: 4px; background: var(--s1); border: 1px solid var(--bd); border-radius: 12px">
+        <button type="button" style="height: 36px; padding: 0 16px; border: 0; border-radius: 8px; background: transparent; color: var(--tx2); font-family: inherit; font-size: 13px; cursor: pointer">Julho</button>
+        <button type="button" style="height: 36px; padding: 0 16px; border: 0; border-radius: 8px; background: transparent; color: var(--tx2); font-family: inherit; font-size: 13px; cursor: pointer">Agosto</button>
+        <button type="button" aria-pressed="true" style="height: 36px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--ac); color: var(--onac); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Setembro</button>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 14px; background: var(--acs); border: 1px solid var(--bd)">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink: 0; fill: none; stroke: var(--actx); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+      <span style="font-size: 15px; line-height: 1.5; color: var(--tx)">{{resumo}}</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
+        <div style="padding: 20px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">{{k.label}}</span>
+          <span style="font-size: 28px; font-weight: 600; letter-spacing: -0.02em; color: {{k.cor}}">{{k.valor}}</span>
+          <span style="font-size: 13px; color: var(--tx2)">{{k.sub}}</span>
+          <span style="margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--bd); font-size: 12px; color: var(--tx3)">{{k.delta}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px">
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Curva de capital</span>
+            <span style="font-size: 16px; font-weight: 600">{{curva.frase}}</span>
+          </div>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: flex-end; font-size: 12px; color: var(--tx2)">
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--tx)"></span>Total</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--k1)"></span>Varrida das 10</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--k3)"></span>Continuidade</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--k2)"></span>Reversão HTF</span>
+          </div>
+        </div>
+        <svg width="688" height="250" viewBox="{{curva.vb}}" role="img" aria-label="Curva de capital do mês">
+          <rect x="{{curva.ddx}}" y="{{curva.ddy}}" width="{{curva.ddw}}" height="{{curva.ddh}}" rx="6" style="fill: var(--neg); fill-opacity: 0.14"></rect>
+          <text x="{{curva.ddlx}}" y="{{curva.ddty}}" text-anchor="middle" style="fill: var(--negtx); font-size: 11px; font-weight: 600">{{curva.ddTxt}}</text>
+          <sc-for list="{{curva.ticks}}" as="t" hint-placeholder-count="4">
+            <line x1="{{curva.x0}}" x2="{{curva.x1}}" y1="{{t.y}}" y2="{{t.y}}" style="stroke: var(--ln); stroke-width: 1"></line>
+            <text x="{{curva.lx}}" y="{{t.yt}}" text-anchor="end" style="fill: var(--tx3); font-size: 11px">{{t.label}}</text>
+          </sc-for>
+          <path d="{{curva.area}}" style="fill: var(--ac); fill-opacity: 0.08"></path>
+          <path d="{{curva.A}}" style="fill: none; stroke: var(--k2); stroke-width: 1.5; stroke-dasharray: 4 4"></path>
+          <path d="{{curva.B}}" style="fill: none; stroke: var(--k3); stroke-width: 1.5; stroke-dasharray: 2 3"></path>
+          <path d="{{curva.C}}" style="fill: none; stroke: var(--k1); stroke-width: 1.8"></path>
+          <path d="{{curva.d}}" style="fill: none; stroke: var(--tx); stroke-width: 2.4; stroke-linejoin: round"></path>
+          <circle cx="{{curva.endx}}" cy="{{curva.endy}}" r="5" style="fill: var(--bg); stroke: var(--tx); stroke-width: 2.4"></circle>
+          <sc-for list="{{curva.xl}}" as="x" hint-placeholder-count="5">
+            <text x="{{x.x}}" y="{{curva.xly}}" text-anchor="middle" style="fill: var(--tx3); font-size: 11px">{{x.label}}</text>
+          </sc-for>
+        </svg>
+      </section>
+
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Por estratégia</span>
+          <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{estrFrase}}</span>
+        </div>
+        <sc-for list="{{estr}}" as="e" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--bd)">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <span style="font-size: 14px; font-weight: 500">{{e.nome}}</span>
+              <span style="font-size: 15px; font-weight: 600; color: {{e.cor}}">{{e.pnlTxt}}</span>
+            </div>
+            <svg width="300" height="8" viewBox="0 0 300 8" aria-hidden="true"><rect x="0" y="0" width="300" height="8" rx="4" style="fill: var(--s2)"></rect><rect x="0" y="0" width="{{e.wN}}" height="8" rx="4" style="fill: var(--k1)"></rect></svg>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--tx2)">
+              <span>{{e.nTxt}} · {{e.acerto}} acerto</span>
+              <span style="color: {{e.rmCor}}">{{e.rm}} médio</span>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Por horário de entrada</span>
+            <span style="font-size: 16px; font-weight: 600">{{hora.frase}}</span>
+          </div>
+          <sc-if value="{{hora.pequena}}" hint-placeholder-val="{{true}}">
+            <span style="flex-shrink: 0; font-size: 11px; padding: 4px 10px; border-radius: 999px; background: var(--s2); border: 1px solid var(--bd); color: var(--tx3)">amostra pequena</span>
+          </sc-if>
+        </div>
+        <svg width="504" height="220" viewBox="0 0 504 220" role="img" aria-label="R médio por faixa de 15 minutos">
+          <line x1="36" x2="504" y1="{{hora.y0}}" y2="{{hora.y0}}" style="stroke: var(--bd); stroke-width: 1"></line>
+          <text x="30" y="{{hora.yTop}}" text-anchor="end" style="fill: var(--tx3); font-size: 11px">{{hora.topTxt}}</text>
+          <text x="30" y="{{hora.y0t}}" text-anchor="end" style="fill: var(--tx3); font-size: 11px">0</text>
+          <text x="30" y="{{hora.yBot}}" text-anchor="end" style="fill: var(--tx3); font-size: 11px">{{hora.botTxt}}</text>
+          <sc-for list="{{hora.bars}}" as="b" hint-placeholder-count="6">
+            <rect x="{{b.x}}" y="{{b.y}}" width="44" height="{{b.h}}" rx="6" style="fill: {{b.fill}}"></rect>
+            <text x="{{b.cx}}" y="{{b.vy}}" text-anchor="middle" style="fill: var(--tx); font-size: 12px; font-weight: 600">{{b.val}}</text>
+            <text x="{{b.cx}}" y="196" text-anchor="middle" style="fill: var(--tx2); font-size: 12px">{{b.f}}</text>
+            <text x="{{b.cx}}" y="213" text-anchor="middle" style="fill: var(--k1); font-size: 11px">{{b.nTxt}}</text>
+          </sc-for>
+        </svg>
+      </section>
+
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Gatilhos</span>
+          <span style="font-size: 16px; font-weight: 600">{{gat.frase}}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 32px">
+          <svg width="184" height="184" viewBox="0 0 184 184" role="img" aria-label="Distribuição dos gatilhos">
+            <circle cx="92" cy="92" r="66" style="fill: none; stroke: var(--s2); stroke-width: 20"></circle>
+            <sc-for list="{{gat.itens}}" as="g" hint-placeholder-count="4">
+              <circle cx="92" cy="92" r="66" transform="rotate(-90 92 92)" stroke-dasharray="{{g.dash}}" stroke-dashoffset="{{g.off}}" style="fill: none; stroke: {{g.cor}}; stroke-width: 20"></circle>
+            </sc-for>
+            <text x="92" y="90" text-anchor="middle" style="fill: var(--tx); font-size: 30px; font-weight: 600">{{gat.n}}</text>
+            <text x="92" y="112" text-anchor="middle" style="fill: var(--tx3); font-size: 12px">trades</text>
+          </svg>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{gat.itens}}" as="g" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 13px">
+                <span style="width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; background: {{g.cor}}"></span>
+                <span style="flex-grow: 1">{{g.nome}}</span>
+                <span style="width: 56px; text-align: right; color: var(--tx2)">{{g.n}} · {{g.pct}}</span>
+                <span style="width: 64px; text-align: right; font-weight: 600; color: {{g.rmCor}}">{{g.rmTxt}}</span>
+              </div>
+            </sc-for>
+            <span style="font-size: 11px; color: var(--tx3); text-align: right">quantidade · R médio</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 20px">
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Estratégias no mês</span>
+          <span style="font-size: 16px; font-weight: 600">{{tabFrase}}</span>
+        </div>
+        <div role="table" aria-label="Estratégias no mês" style="display: flex; flex-direction: column; font-size: 13px">
+          <div role="row" style="display: grid; grid-template-columns: 1.7fr repeat(6, minmax(0, 1fr)); gap: 8px; align-items: center; padding-bottom: 10px; color: var(--tx3); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase">
+            <span role="columnheader">Estratégia</span>
+            <span role="columnheader" style="text-align: right">Trades</span>
+            <span role="columnheader" style="text-align: right">Acerto</span>
+            <span role="columnheader" style="text-align: right">R médio</span>
+            <span role="columnheader" style="text-align: right">Resultado</span>
+            <span role="columnheader" style="text-align: right">DD máx</span>
+            <span role="columnheader" style="text-align: right">Stop med.</span>
+          </div>
+          <sc-for list="{{estr}}" as="e" hint-placeholder-count="3">
+            <div role="row" style="display: grid; grid-template-columns: 1.7fr repeat(6, minmax(0, 1fr)); gap: 8px; align-items: center; padding: 14px 0; border-top: 1px solid var(--bd)">
+              <span role="cell" style="font-weight: 500">{{e.nome}}</span>
+              <span role="cell" style="text-align: right">{{e.n}}</span>
+              <span role="cell" style="text-align: right; color: var(--tx2)">{{e.acerto}}</span>
+              <span role="cell" style="text-align: right; color: {{e.rmCor}}">{{e.rm}}</span>
+              <span role="cell" style="text-align: right; font-weight: 600; color: {{e.cor}}">{{e.pnlTxt}}</span>
+              <span role="cell" style="text-align: right; color: var(--negtx)">{{e.dd}}</span>
+              <span role="cell" style="text-align: right; color: var(--tx2)">{{e.stop}}</span>
+            </div>
+          </sc-for>
+          <div role="row" style="display: grid; grid-template-columns: 1.7fr repeat(6, minmax(0, 1fr)); gap: 8px; align-items: center; padding: 14px 0; border-top: 1px solid var(--bd); color: var(--tx2)">
+            <span role="cell" style="font-weight: 600; color: var(--tx)">Total</span>
+            <span role="cell" style="text-align: right">{{tot.n}}</span>
+            <span role="cell" style="text-align: right">{{tot.acerto}}</span>
+            <span role="cell" style="text-align: right; color: {{tot.rmCor}}">{{tot.rm}}</span>
+            <span role="cell" style="text-align: right; font-weight: 600; color: {{tot.cor}}">{{tot.pnl}}</span>
+            <span role="cell" style="text-align: right; color: var(--negtx)">{{tot.dd}}</span>
+            <span role="cell" style="text-align: right">{{tot.stop}}</span>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Tamanho do stop</span>
+          <span style="font-size: 16px; font-weight: 600">{{stops.frase}}</span>
+        </div>
+        <svg width="392" height="200" viewBox="0 0 392 200" role="img" aria-label="Distribuição do tamanho dos stops em pontos">
+          <line x1="0" x2="392" y1="160" y2="160" style="stroke: var(--bd); stroke-width: 1"></line>
+          <sc-for list="{{stops.bars}}" as="b" hint-placeholder-count="5">
+            <rect x="{{b.x}}" y="{{b.y}}" width="52" height="{{b.h}}" rx="6" style="fill: {{b.fill}}"></rect>
+            <text x="{{b.cx}}" y="{{b.vy}}" text-anchor="middle" style="fill: var(--tx); font-size: 12px; font-weight: 600">{{b.n}}</text>
+            <text x="{{b.cx}}" y="180" text-anchor="middle" style="fill: var(--tx2); font-size: 11px">{{b.l}}</text>
+          </sc-for>
+          <text x="392" y="198" text-anchor="end" style="fill: var(--tx3); font-size: 11px">pontos</text>
+        </svg>
+      </section>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 20px">
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Calendário</span>
+          <span style="font-size: 16px; font-weight: 600">{{cal.frase}}</span>
+        </div>
+        <svg width="380" height="262" viewBox="0 0 380 262" role="img" aria-label="Resultado por dia de setembro">
+          <sc-for list="{{cal.dow}}" as="w" hint-placeholder-count="5">
+            <text x="{{w.x}}" y="12" text-anchor="middle" style="fill: var(--tx3); font-size: 11px">{{w.l}}</text>
+          </sc-for>
+          <sc-for list="{{cal.cells}}" as="c" hint-placeholder-count="25">
+            <rect x="{{c.x}}" y="{{c.y}}" width="70" height="42" rx="8" style="fill: {{c.fill}}; fill-opacity: {{c.op}}; stroke: var(--bd); stroke-opacity: {{c.so}}"></rect>
+            <text x="{{c.tx}}" y="{{c.ty}}" style="fill: {{c.dcor}}; font-size: 11px">{{c.d}}</text>
+            <text x="{{c.vx}}" y="{{c.vy}}" text-anchor="end" style="fill: var(--tx); font-size: 11px; font-weight: 600">{{c.v}}</text>
+          </sc-for>
+        </svg>
+      </section>
+
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Disciplina</span>
+          <span style="font-size: 16px; font-weight: 600">{{disc.frase}}</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="font-size: 40px; font-weight: 600; letter-spacing: -0.02em; color: var(--actx)">{{disc.pct}}</span>
+          <span style="font-size: 13px; color: var(--tx2)">{{disc.sub}}</span>
+        </div>
+        <svg width="280" height="10" viewBox="0 0 280 10" aria-hidden="true"><rect x="0" y="0" width="280" height="10" rx="5" style="fill: var(--neg); fill-opacity: 0.35"></rect><rect x="0" y="0" width="{{disc.w}}" height="10" rx="5" style="fill: var(--ac)"></rect></svg>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--bd)">
+          <span style="font-size: 12px; color: var(--tx3)">Desvios do plano</span>
+          <sc-for list="{{disc.itens}}" as="d" hint-placeholder-count="3">
+            <div style="display: flex; justify-content: space-between; font-size: 13px">
+              <span style="color: var(--tx2)">{{d.data}} · {{d.tipo}}</span>
+              <span style="color: var(--negtx); font-weight: 600">{{d.custo}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="padding: 24px; border-radius: 16px; background: var(--s1); border: 1px solid var(--bd); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Setup C e contexto</span>
+            <span style="font-size: 16px; font-weight: 600">{{sc.frase}}</span>
+          </div>
+          <span style="flex-shrink: 0; font-size: 11px; padding: 4px 10px; border-radius: 999px; background: var(--s2); border: 1px solid var(--bd); color: var(--tx3)">amostra pequena</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 12px; color: var(--tx3); padding-bottom: 4px">Modo (Varrida das 10)</span>
+          <sc-for list="{{sc.modos}}" as="m" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--bd); font-size: 13px">
+              <span style="width: 28px; font-weight: 600">{{m.nome}}</span>
+              <span style="flex-grow: 1; color: var(--tx2)">{{m.n}} trades · {{m.acerto}}</span>
+              <span style="font-weight: 600; color: {{m.cor}}">{{m.rm}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 12px; color: var(--tx3); padding-bottom: 4px">Contexto da 1ª hora (todos os setups)</span>
+          <sc-for list="{{sc.ctx}}" as="m" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--bd); font-size: 13px">
+              <span style="flex-grow: 1">{{m.nome}}</span>
+              <span style="color: var(--tx2)">{{m.n}} trades</span>
+              <span style="width: 64px; text-align: right; font-weight: 600; color: {{m.cor}}">{{m.rm}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["dark","light"],"default":"dark","section":"Tema"},"perdaVermelha":{"editor":"boolean","default":false,"section":"Tema"},"$preview":{"width":1440,"height":1860}}'>
+class Component extends DCLogic {
+  vars() {
+    const red = this.props.perdaVermelha ?? false;
+    const D = { bg: '#000000', s1: '#0A0E10', s2: '#121A1E', bd: '#1B252A', ln: '#141C20', tx: '#EAF7FA', tx2: '#9DB2B9', tx3: '#657A81', ac: '#22D3EE', acs: 'rgba(34,211,238,0.10)', actx: '#67E8F9', onac: '#00191F', k1: '#22D3EE', k2: '#0891B2', k3: '#A5F3FC', k4: '#155E75', k5: '#67E8F9', neg: red ? '#F2625E' : '#4F6E78', negtx: red ? '#F2625E' : '#8FA7AF' };
+    const L = { bg: '#FFFFFF', s1: '#F4F9FA', s2: '#E7F1F4', bd: '#DCE8EB', ln: '#EBF2F4', tx: '#06181D', tx2: '#48626A', tx3: '#728C94', ac: '#0891B2', acs: 'rgba(8,145,178,0.08)', actx: '#0E7490', onac: '#FFFFFF', k1: '#0891B2', k2: '#164E63', k3: '#22D3EE', k4: '#67E8F9', k5: '#0E7490', neg: red ? '#D63B3F' : '#A9BDC3', negtx: red ? '#C2363A' : '#5E777F' };
+    const c = (this.props.tema ?? 'dark') === 'light' ? L : D;
+    return Object.keys(c).map((k) => '--' + k + ': ' + c[k]).join('; ');
+  }
+
+  renderVals() {
+    const T = [
+      [1, '10:07', 'C', 210, 2.4, 'MSS_FVG', 'REVERSAO', 'C1', 0, ''],
+      [2, '10:22', 'A', 180, -1, 'MSS_FVG', 'REVERSAO', '', 0, ''],
+      [3, '10:41', 'B', 150, 1.6, 'FVG_POS_SWING', 'CONTINUACAO', '', 0, ''],
+      [4, '10:18', 'C', 230, -1, 'MSS_OB', 'LATERAL', 'C2', 0, ''],
+      [8, '10:33', 'C', 200, 4.1, 'MSS_FVG', 'REVERSAO', 'C1', 0, ''],
+      [9, '11:05', 'A', 260, -1, 'BPR', 'REVERSAO', '', 90, 'Antecipou o stop'],
+      [10, '10:12', 'B', 140, 0.8, 'MSS_FVG', 'CONTINUACAO', '', 0, ''],
+      [11, '10:47', 'C', 190, 1.8, 'MSS_FVG', 'CONTINUACAO', 'C2', 0, ''],
+      [15, '10:26', 'C', 220, 2.9, 'MSS_OB', 'REVERSAO', 'C1', 0, ''],
+      [16, '11:18', 'A', 300, -1, 'RISK_ENTRY', 'LATERAL', '', 120, 'Mudou o alvo'],
+      [17, '10:09', 'B', 160, 2.0, 'FVG_POS_SWING', 'CONTINUACAO', '', 0, ''],
+      [18, '10:38', 'C', 210, -1, 'MSS_FVG', 'LATERAL', 'C2', 0, ''],
+      [22, '10:15', 'C', 180, 5.2, 'MSS_FVG', 'REVERSAO', 'C1', 0, ''],
+      [23, '10:52', 'A', 240, 1.3, 'BPR', 'REVERSAO', '', 0, ''],
+      [24, '10:29', 'C', 200, -1, 'MSS_OB', 'CONTINUACAO', 'C2', 150, 'Parcial emocional'],
+      [25, '10:03', 'B', 170, -1, 'MSS_FVG', 'CONTINUACAO', '', 0, ''],
+    ].map((a) => ({ dia: a[0], h: a[1], est: a[2], risco: a[3], r: a[4], gat: a[5], ctx: a[6], modo: a[7], custo: a[8], desvio: a[9], pnl: Math.round(a[4] * a[3] * 0.6) }));
+    const n = T.length;
+    const EST = { C: 'Varrida das 10', B: 'Continuidade', A: 'Reversão HTF' };
+    const GAT = { MSS_FVG: 'MSS + FVG', MSS_OB: 'MSS + OB', BPR: 'BPR', FVG_POS_SWING: 'FVG após swing', RISK_ENTRY: 'Risk entry' };
+    const CTX = { REVERSAO: 'Reversão', CONTINUACAO: 'Continuação', LATERAL: 'Lateral' };
+
+    const sum = (a) => a.reduce((s, x) => s + x, 0);
+    const mean = (a) => (a.length ? sum(a) / a.length : 0);
+    const sinal = (x) => (x > 0 ? '+' : x < 0 ? '−' : '');
+    const brl = (x, s) => (s === false ? '' : sinal(x)) + 'R$ ' + Math.abs(Math.round(x)).toLocaleString('pt-BR');
+    const rr = (x) => sinal(x) + Math.abs(x).toFixed(2).replace('.', ',') + 'R';
+    const pct = (x) => Math.round(x * 100) + '%';
+    const cor = (x) => (x >= 0 ? 'var(--actx)' : 'var(--negtx)');
+    const fill = (x) => (x >= 0 ? 'var(--ac)' : 'var(--neg)');
+    const dia = (d) => String(d).padStart(2, '0') + '/09';
+    const median = (a) => { const s = [...a].sort((x, y) => x - y); const h = Math.floor(s.length / 2); return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+    const dd = (vals) => { let c = 0, pk = 0, m = 0, pi = 0, ti = 0, cp = 0; vals.forEach((v, i) => { c += v; if (c > pk) { pk = c; cp = i + 1; } if (pk - c > m) { m = pk - c; pi = cp; ti = i + 1; } }); return { m, pi, ti }; };
+
+    const total = sum(T.map((t) => t.pnl));
+    const totalR = sum(T.map((t) => t.r));
+    const wins = T.filter((t) => t.pnl > 0);
+    const losses = T.filter((t) => t.pnl < 0);
+    const ganhos = sum(wins.map((t) => t.pnl));
+    const perdas = -sum(losses.map((t) => t.pnl));
+    const D = dd(T.map((t) => t.pnl));
+    const DR = dd(T.map((t) => t.r));
+    const payoff = mean(wins.map((t) => t.pnl)) / Math.abs(mean(losses.map((t) => t.pnl)));
+    const AGO = { pnl: 1180, n: 19, acerto: 0.37, exp: 0.17, pf: 1.31, dd: 640 };
+    const kpis = [
+      { label: 'Resultado', valor: brl(total), cor: cor(total), sub: rr(totalR) + ' no mês', delta: brl(total - AGO.pnl) + ' contra agosto' },
+      { label: 'Trades', valor: String(n), cor: 'var(--tx)', sub: pct(wins.length / n) + ' de acerto', delta: 'agosto: ' + AGO.n + ' trades · ' + pct(AGO.acerto) },
+      { label: 'Expectativa', valor: rr(totalR / n), cor: cor(totalR), sub: 'por trade · payoff ' + payoff.toFixed(2).replace('.', ','), delta: 'agosto: ' + rr(AGO.exp) },
+      { label: 'Profit factor', valor: (ganhos / perdas).toFixed(2).replace('.', ','), cor: 'var(--tx)', sub: brl(ganhos, false) + ' ganhos · ' + brl(perdas, false) + ' perdas', delta: 'agosto: ' + AGO.pf.toFixed(2).replace('.', ',') },
+      { label: 'Drawdown máximo', valor: brl(-D.m), cor: 'var(--negtx)', sub: rr(-DR.m) + ' no pior trecho', delta: 'agosto: ' + brl(-AGO.dd) },
+    ];
+
+    // Curva de capital
+    const W = 688, H = 250, pl = 64, pr = 12, pt = 24, pb = 30;
+    const acum = (f) => { const a = [0]; T.forEach((t) => a.push(a[a.length - 1] + (f(t) ? t.pnl : 0))); return a; };
+    const cum = acum(() => true);
+    const sA = acum((t) => t.est === 'A'), sB = acum((t) => t.est === 'B'), sC = acum((t) => t.est === 'C');
+    const todos = [...cum, ...sA, ...sB, ...sC];
+    const top = Math.ceil(Math.max(...todos) / 500) * 500;
+    const bot = Math.floor(Math.min(0, ...todos) / 500) * 500;
+    const X = (i) => pl + (i * (W - pl - pr)) / n;
+    const Y = (v) => pt + ((top - v) / (top - bot)) * (H - pt - pb);
+    const path = (a) => a.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+    const ticks = [];
+    for (let v = bot; v <= top; v += 500) ticks.push({ y: Y(v).toFixed(1), yt: (Y(v) + 4).toFixed(1), label: v === 0 ? '0' : brl(v, false) });
+    const pico = Math.max(...cum);
+    const iPico = cum.indexOf(pico);
+    const curva = {
+      vb: '0 0 ' + W + ' ' + H, x0: pl, x1: W - pr, lx: pl - 10,
+      d: path(cum), A: path(sA), B: path(sB), C: path(sC),
+      area: path(cum) + ' L' + X(n).toFixed(1) + ' ' + Y(0).toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + Y(0).toFixed(1) + ' Z',
+      ddx: X(D.pi).toFixed(1), ddw: (X(D.ti) - X(D.pi)).toFixed(1), ddy: 4, ddh: H - pb - 4,
+      ddlx: ((X(D.pi) + X(D.ti)) / 2).toFixed(1), ddty: 16, ddTxt: brl(-D.m),
+      ticks, xly: H - 8,
+      xl: [1, 5, 9, 13, 16].map((i) => ({ x: X(i).toFixed(1), label: dia(T[i - 1].dia) })),
+      endx: X(n).toFixed(1), endy: Y(cum[n]).toFixed(1),
+      frase: 'Pico de ' + brl(pico) + ' em ' + dia(T[iPico - 1].dia) + ' · pior trecho ' + brl(-D.m) + ' (' + dia(T[D.pi - 1].dia) + ' → ' + dia(T[D.ti - 1].dia) + ')',
+    };
+
+    // Por estrategia
+    const estr = ['C', 'B', 'A'].map((k) => {
+      const ts = T.filter((t) => t.est === k);
+      const p = sum(ts.map((t) => t.pnl));
+      const rm = mean(ts.map((t) => t.r));
+      return { k, nome: EST[k], n: ts.length, pnl: p, pnlTxt: brl(p), cor: cor(p), rm: rr(rm), rmCor: cor(rm), acerto: pct(ts.filter((t) => t.pnl > 0).length / ts.length), dd: brl(-dd(ts.map((t) => t.pnl)).m), stop: median(ts.map((t) => t.risco)) + ' pts' };
+    });
+    const maxN = Math.max(...estr.map((e) => e.n));
+    estr.forEach((e) => { e.wN = Math.round((e.n / maxN) * 300); e.nTxt = e.n + (e.n === 1 ? ' trade' : ' trades'); });
+    const maisN = [...estr].sort((a, b) => b.n - a.n)[0];
+    const maisP = [...estr].sort((a, b) => b.pnl - a.pnl)[0];
+    const pior = [...estr].sort((a, b) => a.pnl - b.pnl)[0];
+    const estrFrase = 'Mais trades: ' + maisN.nome + ' (' + maisN.n + ') · mais resultado: ' + maisP.nome;
+    const tabFrase = maisP.nome + ' carrega o mês com ' + maisP.pnlTxt + '; ' + pior.nome + (pior.pnl < 0 ? ' está negativa: ' : ' tem o menor resultado: ') + pior.pnlTxt;
+    const tot = { n, acerto: pct(wins.length / n), rm: rr(totalR / n), rmCor: cor(totalR), pnl: brl(total), cor: cor(total), dd: brl(-D.m), stop: median(T.map((t) => t.risco)) + ' pts' };
+
+    // Por horario (faixas de 15 min)
+    const faixas = ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15'];
+    const faixaDe = (h) => { const p = h.split(':').map(Number); const m = Math.floor((p[0] * 60 + p[1]) / 15) * 15; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+    const fimDe = (f) => { const p = f.split(':').map(Number); const m = p[0] * 60 + p[1] + 14; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+    const hb = faixas.map((f) => { const ts = T.filter((t) => faixaDe(t.h) === f); return { f, n: ts.length, rm: ts.length ? mean(ts.map((t) => t.r)) : 0 }; });
+    const hmax = Math.max(1, Math.ceil(Math.max(...hb.map((b) => Math.abs(b.rm))) * 2) / 2);
+    const hpt = 20, hpb = 50, plotH = 220 - hpt - hpb, y0 = hpt + plotH / 2, slot = (504 - 36) / 6;
+    const bars = hb.map((b, i) => {
+      const h = (Math.abs(b.rm) / hmax) * (plotH / 2);
+      const cx = 36 + i * slot + slot / 2;
+      return { f: b.f, cx: cx.toFixed(1), x: (cx - 22).toFixed(1), y: (b.rm >= 0 ? y0 - h : y0).toFixed(1), h: Math.max(h, b.n ? 2 : 0).toFixed(1), fill: fill(b.rm), val: b.n ? rr(b.rm) : '—', vy: (b.rm >= 0 ? y0 - h - 6 : y0 + h + 14).toFixed(1), nTxt: b.n + (b.n === 1 ? ' trade' : ' trades') };
+    });
+    const melhor = [...hb].filter((b) => b.n).sort((a, b) => b.rm - a.rm)[0];
+    const hora = {
+      bars, y0: y0.toFixed(1), y0t: (y0 + 4).toFixed(1), yTop: hpt + 4, yBot: (hpt + plotH + 4).toFixed(1),
+      topTxt: '+' + String(hmax).replace('.', ',') + 'R', botTxt: '−' + String(hmax).replace('.', ',') + 'R',
+      frase: 'Melhor faixa: ' + melhor.f + '–' + fimDe(melhor.f) + ' · ' + rr(melhor.rm) + ' médio · ' + melhor.n + ' trades',
+      pequena: melhor.n < 10,
+    };
+
+    // Gatilhos
+    const coresK = ['var(--k1)', 'var(--k2)', 'var(--k3)', 'var(--k4)', 'var(--k5)'];
+    const gk = Object.keys(GAT).map((k) => { const ts = T.filter((t) => t.gat === k); return { nome: GAT[k], n: ts.length, rm: mean(ts.map((t) => t.r)) }; }).filter((g) => g.n).sort((a, b) => b.n - a.n);
+    const circ = 2 * Math.PI * 66;
+    let acc = 0;
+    gk.forEach((g, i) => {
+      const len = (g.n / n) * circ;
+      const seg = Math.max(len - 3, 0);
+      g.dash = seg.toFixed(1) + ' ' + (circ - seg).toFixed(1);
+      g.off = (-acc).toFixed(1);
+      acc += len;
+      g.cor = coresK[i];
+      g.pct = pct(g.n / n);
+      g.rmTxt = rr(g.rm);
+      g.rmCor = cor(g.rm);
+    });
+    const melhorG = [...gk].filter((g) => g.n >= 2).sort((a, b) => b.rm - a.rm)[0];
+    const gat = { n, itens: gk, frase: 'Mais usado: ' + gk[0].nome + ' (' + gk[0].n + ' de ' + n + ') · paga mais: ' + melhorG.nome + ' ' + rr(melhorG.rm) };
+
+    // Stops
+    const SB = [{ l: '< 150', a: 0, b: 150 }, { l: '150–199', a: 150, b: 200 }, { l: '200–249', a: 200, b: 250 }, { l: '250–299', a: 250, b: 300 }, { l: '300+', a: 300, b: 1e9 }];
+    const med = median(T.map((t) => t.risco));
+    const cont = SB.map((s) => T.filter((t) => t.risco >= s.a && t.risco < s.b).length);
+    const cmax = Math.max(...cont);
+    const sslot = 392 / 5;
+    const stops = {
+      bars: SB.map((s, i) => { const h = (cont[i] / cmax) * 120; const cx = i * sslot + sslot / 2; return { l: s.l, n: cont[i], cx: cx.toFixed(1), x: (cx - 26).toFixed(1), y: (160 - h).toFixed(1), h: Math.max(h, 2).toFixed(1), vy: (160 - h - 8).toFixed(1), fill: med >= s.a && med < s.b ? 'var(--k1)' : 'var(--k4)' }; }),
+      frase: 'Stop mediano ' + med + ' pts · ' + T.filter((t) => t.risco >= 250).length + ' stops de 250 pts ou mais',
+    };
+
+    // Calendario
+    const semanas = [[31, 1, 2, 3, 4], [7, 8, 9, 10, 11], [14, 15, 16, 17, 18], [21, 22, 23, 24, 25], [28, 29, 30, 1, 2]];
+    const porDia = {};
+    T.forEach((t) => { porDia[t.dia] = (porDia[t.dia] || 0) + t.pnl; });
+    const vmax = Math.max(...Object.values(porDia).map(Math.abs));
+    const cells = [];
+    semanas.forEach((sem, r) => sem.forEach((d, c) => {
+      const fora = (r === 0 && c === 0) || (r === 4 && c >= 3);
+      const futuro = r === 4 && c < 3;
+      const v = fora ? undefined : porDia[d];
+      const x = c * 76, y = 22 + r * 48;
+      let vTxt = '';
+      if (v !== undefined) vTxt = sinal(v) + Math.abs(v).toLocaleString('pt-BR');
+      else if (d === 7 && r === 1) vTxt = 'feriado';
+      cells.push({
+        x, y, tx: x + 8, ty: y + 16, vx: x + 62, vy: y + 34, d: String(d),
+        dcor: fora ? 'var(--tx3)' : 'var(--tx2)', v: vTxt,
+        fill: v === undefined ? 'var(--s2)' : fill(v),
+        op: v === undefined ? (fora || futuro ? 0.35 : 1) : (0.18 + 0.42 * (Math.abs(v) / vmax)).toFixed(2),
+        so: fora || futuro ? 0 : 1,
+      });
+    }));
+    const diasOp = Object.keys(porDia).length;
+    const diasPos = Object.values(porDia).filter((v) => v > 0).length;
+    const melhorDia = Object.keys(porDia).sort((a, b) => porDia[b] - porDia[a])[0];
+    const cal = {
+      dow: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'].map((l, i) => ({ l, x: i * 76 + 35 })),
+      cells,
+      frase: diasPos + ' de ' + diasOp + ' dias positivos · melhor: ' + dia(melhorDia) + ' ' + brl(porDia[melhorDia]),
+    };
+
+    // Disciplina
+    const desv = T.filter((t) => t.custo > 0);
+    const noPlano = n - desv.length;
+    const custo = sum(desv.map((t) => t.custo));
+    const disc = {
+      pct: pct(noPlano / n), sub: noPlano + ' de ' + n + ' trades no plano', w: Math.round((noPlano / n) * 280),
+      frase: 'Desvios custaram ' + brl(custo, false) + ' no mês',
+      itens: desv.map((t) => ({ data: dia(t.dia), tipo: t.desvio, custo: brl(-t.custo) })),
+    };
+
+    // Setup C e contexto
+    const grupo = (ts, nome) => { const rm = mean(ts.map((t) => t.r)); return { nome, n: ts.length, acerto: pct(ts.filter((t) => t.pnl > 0).length / (ts.length || 1)) + ' acerto', rm: rr(rm), cor: cor(rm) }; };
+    const modos = ['C1', 'C2'].map((m) => grupo(T.filter((t) => t.modo === m), m));
+    const ctx = Object.keys(CTX).map((k) => grupo(T.filter((t) => t.ctx === k), CTX[k]));
+    const sc = { modos, ctx, frase: 'C1 ' + modos[0].rm + ' × C2 ' + modos[1].rm + ' por trade' };
+
+    const resumo = 'Setembro está em ' + brl(total) + ' com ' + n + ' trades (' + rr(totalR) + '). ' + maisP.nome + ' carrega o mês; o melhor horário é ' + melhor.f + '–' + fimDe(melhor.f) + '.';
+
+    return { vars: this.vars(), resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, sc };
+  }
+}
+</script>
+</body>
+</html>

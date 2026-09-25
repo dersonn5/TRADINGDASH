@@ -43,12 +43,13 @@ export interface InstLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
 export function InstLabel({ children, className = "", style, ...props }: InstLabelProps) {
   return (
     <span
-      className={`mono uppercase select-none ${className}`}
+      className={`uppercase select-none ${className}`}
       style={{
-        fontSize: "10px",
-        letterSpacing: "0.16em",
-        color: "var(--inst-faint)",
-        lineHeight: 1.2,
+        fontSize: "12px",
+        fontWeight: 500,
+        letterSpacing: "0.06em",
+        color: "var(--tx3)",
+        lineHeight: 1.3,
         ...style,
       }}
       {...props}
@@ -81,35 +82,39 @@ export function InstPage({ eyebrow, title, right, children, className = "", styl
     >
       <div
         style={{
-          padding: "24px 28px 18px 28px",
-          borderBottom: "1px solid var(--inst-line-2)",
+          padding: "32px 40px 4px 40px",
           display: "flex",
           flexDirection: "column",
           gap: "6px",
-          background: "var(--inst-bg)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            {eyebrow ? (typeof eyebrow === "string" ? <InstLabel>{eyebrow}</InstLabel> : eyebrow) : null}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {eyebrow ? (
+              typeof eyebrow === "string" ? (
+                <span style={{ fontSize: "13px", color: "var(--tx3)" }}>{eyebrow}</span>
+              ) : (
+                eyebrow
+              )
+            ) : null}
             <h1
               style={{
                 margin: 0,
-                fontSize: "23px",
+                fontSize: "30px",
                 fontWeight: 600,
-                letterSpacing: "-0.015em",
-                color: "var(--inst-text)",
+                letterSpacing: "-0.02em",
+                color: "var(--tx)",
               }}
             >
               {title}
             </h1>
           </div>
-          {right && <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>{right}</div>}
+          {right && <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>{right}</div>}
         </div>
       </div>
       <div
         style={{
-          padding: "24px 28px 32px 28px",
+          padding: "20px 40px 40px 40px",
           display: "flex",
           flexDirection: "column",
           gap: "20px",
@@ -135,10 +140,8 @@ export function InstBar({ children, className = "", style, ...props }: InstBarPr
       style={{
         display: "flex",
         alignItems: "stretch",
-        borderBottom: "1px solid var(--inst-line-2)",
-        background: "var(--inst-panel)",
+        gap: "12px",
         flexWrap: "wrap",
-        margin: "-24px -28px 0 -28px",
         ...style,
       }}
       {...props}
@@ -160,21 +163,24 @@ export function InstBarCell({ label, value, tom, sub, className = "", style, ...
     <div
       className={className}
       style={{
-        padding: "14px 24px",
-        borderRight: "1px solid var(--inst-line-2)",
+        padding: "16px 18px",
+        borderRadius: "14px",
+        border: "1px solid var(--bd)",
+        background: "var(--s1)",
         display: "flex",
         flexDirection: "column",
-        gap: "3px",
+        gap: "6px",
         minWidth: "140px",
+        flex: "1 1 140px",
         ...style,
       }}
       {...props}
     >
       {typeof label === "string" ? <InstLabel>{label}</InstLabel> : label}
-      <div className="mono tabular" style={{ fontSize: "15px", fontWeight: 600, color }}>
+      <div className="tabular" style={{ fontSize: "20px", fontWeight: 600, color }}>
         {value}
       </div>
-      {sub && <div style={{ fontSize: "11px", color: "var(--inst-faint)" }}>{sub}</div>}
+      {sub && <div style={{ fontSize: "12px", color: "var(--tx3)" }}>{sub}</div>}
     </div>
   );
 }
@@ -192,13 +198,13 @@ export function InstCard({ label, right, children, className = "", style, ...pro
     <div
       className={className}
       style={{
-        border: "1px solid var(--inst-line)",
-        background: "var(--inst-panel)",
-        borderRadius: "3px",
-        padding: "20px 22px",
+        border: "1px solid var(--bd)",
+        background: "var(--s1)",
+        borderRadius: "16px",
+        padding: "24px",
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        gap: "16px",
         ...style,
       }}
       {...props}
@@ -236,7 +242,7 @@ export function InstNum({ value, tom, size = "md", className = "", style, ...pro
 
   return (
     <span
-      className={`tabular mono ${className}`}
+      className={`tabular ${className}`}
       style={{
         fontSize,
         fontWeight,
@@ -263,12 +269,13 @@ export function InstBadge({ tom = "neutro", children, className = "", style, ...
   const t = TOM_MAP[tom];
   return (
     <span
-      className={`mono tabular uppercase ${className}`}
+      className={`tabular uppercase ${className}`}
       style={{
-        fontSize: "9px",
-        letterSpacing: "0.1em",
-        padding: "3px 9px",
-        borderRadius: "2px",
+        fontSize: "11px",
+        fontWeight: 600,
+        letterSpacing: "0.04em",
+        padding: "4px 10px",
+        borderRadius: "999px",
         border: `1px solid ${t.border}`,
         background: t.bg,
         color: t.text,
@@ -300,13 +307,10 @@ export function InstBand({ tom = "neutro", titulo, linhas, acao, className = "",
     <div
       className={className}
       style={{
-        borderLeft: `3px solid ${t.text}`,
-        borderTop: `1px solid ${t.border}`,
-        borderRight: `1px solid ${t.border}`,
-        borderBottom: `1px solid ${t.border}`,
+        border: `1px solid ${t.border}`,
         background: t.bg,
-        borderRadius: "3px",
-        padding: "17px 22px",
+        borderRadius: "14px",
+        padding: "18px 22px",
         display: "flex",
         flexDirection: "column",
         gap: "10px",
@@ -316,12 +320,10 @@ export function InstBand({ tom = "neutro", titulo, linhas, acao, className = "",
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
         <span
-          className="mono tabular"
           style={{
-            fontSize: "17px",
+            fontSize: "16px",
             fontWeight: 600,
             color: t.text,
-            letterSpacing: "0.02em",
           }}
         >
           {titulo}
@@ -332,10 +334,10 @@ export function InstBand({ tom = "neutro", titulo, linhas, acao, className = "",
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
           {linhas.map((linha, idx) => (
             <div key={idx} style={{ display: "grid", gridTemplateColumns: "14px 1fr", gap: "8px", alignItems: "start" }}>
-              <span className="mono tabular" style={{ fontSize: "12px", color: t.text, lineHeight: 1.4 }}>
-                —
+              <span style={{ fontSize: "13px", color: t.text, lineHeight: 1.5 }}>
+                ·
               </span>
-              <span style={{ fontSize: "12px", color: "var(--inst-text-2)", lineHeight: 1.4 }}>
+              <span style={{ fontSize: "13px", color: "var(--tx2)", lineHeight: 1.5 }}>
                 {linha}
               </span>
             </div>
@@ -359,9 +361,9 @@ export function InstTable({ colunas, children, className = "", style, ...props }
       style={{
         width: "100%",
         overflowX: "auto",
-        border: "1px solid var(--inst-line)",
-        borderRadius: "3px",
-        background: "var(--inst-panel)",
+        border: "1px solid var(--bd)",
+        borderRadius: "16px",
+        background: "var(--s1)",
       }}
     >
       <table
@@ -377,8 +379,7 @@ export function InstTable({ colunas, children, className = "", style, ...props }
         <thead>
           <tr
             style={{
-              background: "var(--inst-bg)",
-              borderBottom: "1px solid var(--inst-line)",
+              borderBottom: "1px solid var(--bd)",
             }}
           >
             {colunas.map((col, idx) => {
@@ -412,13 +413,11 @@ export interface InstRowProps extends React.HTMLAttributes<HTMLTableRowElement> 
   children: React.ReactNode;
 }
 export function InstRow({ tom, children, className = "", style, ...props }: InstRowProps) {
-  const borderLeft = tom ? `2px solid ${TOM_MAP[tom].text}` : undefined;
   return (
     <tr
       className={`hover:bg-[var(--inst-hover)] transition-colors ${className}`}
       style={{
-        borderBottom: "1px solid var(--inst-line-soft)",
-        borderLeft,
+        borderBottom: "1px solid var(--bd)",
         ...style,
       }}
       {...props}
@@ -439,9 +438,9 @@ export function InstCell({
     <td
       className={className}
       style={{
-        padding: "12px 16px",
+        padding: "14px 16px",
         fontSize: "13px",
-        color: "var(--inst-text)",
+        color: "var(--tx)",
         textAlign: align,
         ...style,
       }}
@@ -463,16 +462,16 @@ export function InstEmpty({ children, className = "", style, ...props }: InstEmp
     <div
       className={className}
       style={{
-        border: "1px dashed var(--inst-line-2)",
-        borderRadius: "3px",
+        border: "1px dashed var(--bd)",
+        borderRadius: "14px",
         padding: "32px 24px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        color: "var(--inst-faint)",
-        fontSize: "12px",
+        color: "var(--tx3)",
+        fontSize: "13px",
         lineHeight: 1.5,
         gap: "6px",
         ...style,

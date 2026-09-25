@@ -1,6 +1,10 @@
 import { supabase } from "./supabase";
 import { mercadoPermitido } from "./gate";
 
+export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "BPR" | "RISK_ENTRY" | "FVG_POS_SWING";
+export type Contexto1h = "CONTINUACAO" | "REVERSAO" | "LATERAL";
+export type SetupCModo = "C1" | "C2";
+
 export interface TradeInput {
   strategy_id: string;
   mercado: "WIN" | "WDO";
@@ -17,6 +21,42 @@ export interface TradeInput {
   itens: Array<{ item_id: string; tipo: "KILL" | "PONTO"; checked: boolean; peso_no_momento: number }>;
   notas?: string;
   screenshot_path?: string | null;
+  gatilho?: GatilhoTrade | string | null;
+  contexto_1h?: Contexto1h | string | null;
+  setup_c_modo?: SetupCModo | string | null;
+}
+
+export function validarCamposNovosTrade(input: {
+  strategy_id: string;
+  gatilho?: string | null;
+  contexto_1h?: string | null;
+  setup_c_modo?: string | null;
+}): void {
+  if (!input.gatilho) {
+    throw new Error("gatilho é obrigatório para registrar o trade");
+  }
+  const GATILHOS_VALIDOS: GatilhoTrade[] = ["MSS_FVG", "MSS_OB", "BPR", "RISK_ENTRY", "FVG_POS_SWING"];
+  if (!GATILHOS_VALIDOS.includes(input.gatilho as GatilhoTrade)) {
+    throw new Error(`gatilho inválido: ${input.gatilho}`);
+  }
+
+  if (!input.contexto_1h) {
+    throw new Error("contexto da 1ª hora é obrigatório para registrar o trade");
+  }
+  const CONTEXTOS_VALIDOS: Contexto1h[] = ["CONTINUACAO", "REVERSAO", "LATERAL"];
+  if (!CONTEXTOS_VALIDOS.includes(input.contexto_1h as Contexto1h)) {
+    throw new Error(`contexto da 1ª hora inválido: ${input.contexto_1h}`);
+  }
+
+  if (input.strategy_id === "varrida_barra_10") {
+    if (!input.setup_c_modo) {
+      throw new Error("modo do Setup C (C1 ou C2) é obrigatório para a estratégia varrida_barra_10");
+    }
+    const MODOS_VALIDOS: SetupCModo[] = ["C1", "C2"];
+    if (!MODOS_VALIDOS.includes(input.setup_c_modo as SetupCModo)) {
+      throw new Error(`modo do Setup C inválido: ${input.setup_c_modo}`);
+    }
+  }
 }
 
 export interface ResumoDoDia {
@@ -216,6 +256,107 @@ export async function getTrade(id: string) {
   return data;
 }
 
+export interface TradeHistorico {
+  id: string;
+  data: string;
+  strategy_id: string;
+  mercado: string;
+  direcao: "COMPRA" | "VENDA";
+  janela: string;
+  status: "ABERTO" | "FECHADO";
+  hora_entrada: string;
+  hora_saida: string | null;
+  score: number;
+  grade: string;
+  entrada: number;
+  stop: number;
+  alvo: number;
+  contratos: number;
+  rr_planejado: number;
+  saida: number | null;
+  motivo_saida: string | null;
+  pontos_real: number | null;
+  pnl_real: number | null;
+  pnl_plano: number | null;
+  respeitou_plano: boolean | null;
+  antecipou_stop: boolean | null;
+  parcial_emocional: boolean | null;
+  mudou_alvo: boolean | null;
+  notas: string | null;
+  gatilho?: GatilhoTrade | null;
+  contexto_1h?: Contexto1h | null;
+  setup_c_modo?: SetupCModo | null;
+}
+
+/**
+ * Todos os trades registrados pelo checklist, do mais recente para o mais antigo.
+ */
+export async function listarTrades(): Promise<TradeHistorico[]> {
+  const { data, error } = await supabase
+    .from("copa_trades")
+    .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
+    .order("hora_entrada", { ascending: false });
+
+  if (error) {
+    throw new Error(`Erro ao buscar trades: ${error.message}`);
+  }
+
+  return (data || []).map((t: any) => ({
+    ...t,
+    data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
+    strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
+  }));
+}
+
+/**
+ * Trades fechados do mês especificado (ano, mês 1..12), ordenados por hora_saida ASC.
+ * Filtra pela data da sessão (copa_sessions.data) entre o primeiro e o último dia do mês.
+ */
+export async function listarTradesDoMes(
+  ano: number,
+  mes: number
+): Promise<TradeHistorico[]> {
+  const mesStr = String(mes).padStart(2, "0");
+  const dataInicio = `${ano}-${mesStr}-01`;
+  const ultimoDia = new Date(ano, mes, 0).getDate();
+  const dataFim = `${ano}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`;
+
+  const { data, error } = await supabase
+    .from("copa_trades")
+    .select("*, copa_sessions!inner(data), copa_strategy_versions(strategy_id)")
+    .eq("status", "FECHADO")
+    .gte("copa_sessions.data", dataInicio)
+    .lte("copa_sessions.data", dataFim)
+    .order("hora_saida", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    // Fallback caso o filtro em join dê erro na sintaxe
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from("copa_trades")
+      .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
+      .eq("status", "FECHADO")
+      .order("hora_saida", { ascending: true, nullsFirst: false });
+
+    if (fallbackError) {
+      throw new Error(`Erro ao buscar trades do mês: ${fallbackError.message}`);
+    }
+
+    return (fallbackData || [])
+      .map((t: any) => ({
+        ...t,
+        data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
+        strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
+      }))
+      .filter((t: any) => t.data >= dataInicio && t.data <= dataFim);
+  }
+
+  return (data || []).map((t: any) => ({
+    ...t,
+    data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
+    strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
+  }));
+}
+
 /**
  * Registra a abertura de um trade em duas etapas:
  * 1. insere em copa_trades
@@ -228,6 +369,9 @@ export async function registrarTrade(input: TradeInput): Promise<string> {
   if (!mercadoPermitido(input.mercado)) {
     throw new Error(`${input.mercado} fora do operacional: so WIN`);
   }
+
+  // Trava na gravação para os novos campos obrigatórios (FR-005)
+  validarCamposNovosTrade(input);
 
   const sessionId = await getSessaoFechadaDoDia();
   const versionId = await getVersaoVigente(input.strategy_id);
@@ -256,6 +400,9 @@ export async function registrarTrade(input: TradeInput): Promise<string> {
       status: "ABERTO",
       notas: input.notas || "",
       screenshot_path: input.screenshot_path || null,
+      gatilho: input.gatilho,
+      contexto_1h: input.contexto_1h,
+      setup_c_modo: input.setup_c_modo || null,
     })
     .select("id")
     .single();
@@ -505,22 +652,10 @@ export async function salvarPreSessao(p: Partial<PreSessao>): Promise<string> {
     return existing.id;
   }
 
-  let phaseId = p.phase_id;
-  if (!phaseId) {
-    const { data: phases } = await supabase
-      .from("copa_phases")
-      .select("id")
-      .lte("data_inicio", hoje)
-      .gte("data_fim", hoje)
-      .maybeSingle();
-    phaseId = phases?.id || null;
-  }
-
   const { data: inserted, error: errInsert } = await supabase
     .from("copa_sessions")
     .insert({
       data: hoje,
-      phase_id: phaseId,
       ...payload,
     })
     .select("id")
