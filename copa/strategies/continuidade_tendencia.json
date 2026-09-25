@@ -1,17 +1,17 @@
 {
   "id": "continuidade_tendencia",
   "ordem": 2,
-  "nome": "Continuidade de Tendencia",
-  "mercado": ["WIN", "WDO"],
-  "descricao": "Opera A FAVOR da tendencia, entrando na correcao. Em alta: espera o mercado criar um swing high e capturar o FUNDO desse swing, entra em FVG ou bloco de ordem. Em baixa: espera criar um swing low e capturar o ULTIMO TOPO, entra em bloco de ordem ou FVG. A captura do extremo oposto do swing e o mesmo mecanismo do sweep, em escala menor.",
+  "nome": "Continuidade de Tendência",
+  "mercado": [
+    "WIN"
+  ],
+  "descricao": "Opera a favor da tendência, entrando na correção: o mercado forma um swing, captura o extremo oposto dele e a entrada é no array (FVG ou bloco de ordem) da retomada.",
   "score_minimo": 65,
-
   "calibracao": {
     "status": "NAO_CALIBRADO",
-    "observacao": "Pesos e score minimo sao ESTIMADO. Nenhum medido em backtest de WIN. Definido pelo operador em 2026-09-15.",
+    "observacao": "Sem amostra suficiente para calibrar. Pesos estimados.",
     "atualizado_em": "2026-09-15"
   },
-
   "ambiente_favoravel": [
     "Tendencia clara e definida no HTF (60m / 15m)",
     "Estrutura progressiva: altas e fundos mais altos, ou topos e fundos mais baixos",
@@ -23,85 +23,159 @@
     "Preco longe de qualquer array da tendencia",
     "Operador em tilt"
   ],
-  "horarios_validos": [{"inicio": "10:00", "fim": "11:30"}],
-
-  "regras_ambiente": [
-    {"campo": "contexto", "op": "=", "valor": "TENDENCIA", "efeito": "FAVORAVEL", "motivo": "e o unico ambiente onde este setup existe"},
-    {"campo": "contexto", "op": "=", "valor": "RANGE", "efeito": "DESFAVORAVEL", "motivo": "sem tendencia nao ha continuidade a operar - o dia e de reversao"},
-    {"campo": "contexto", "op": "=", "valor": "INDEFINIDO", "efeito": "DESFAVORAVEL", "motivo": "tendencia precisa estar clara, nao suposta"},
-    {"campo": "bias_h1", "op": "=", "valor": "INDEFINIDO", "efeito": "DESFAVORAVEL", "motivo": "sem direcao definida no HTF nao ha lado para seguir"},
-    {"campo": "niveis_marcados", "op": ">=", "valor": 2, "efeito": "FAVORAVEL", "motivo": "arrays da tendencia ja mapeados na pre-sessao"},
-    {"campo": "tilt", "op": ">=", "valor": 3, "efeito": "DESFAVORAVEL", "motivo": "tilt alto: risco de romper o plano"},
-    {"campo": "sono", "op": "<=", "valor": 2, "efeito": "DESFAVORAVEL", "motivo": "sono baixo degrada leitura"},
-    {"campo": "tem_noticia_alta", "op": "=", "valor": true, "efeito": "NEUTRA", "motivo": "noticia de alto impacto no dia: reduzir tamanho, nao a leitura"}
+  "horarios_validos": [
+    {
+      "inicio": "10:00",
+      "fim": "11:30"
+    }
   ],
-
+  "regras_ambiente": [
+    {
+      "campo": "contexto",
+      "op": "=",
+      "valor": "TENDENCIA",
+      "efeito": "FAVORAVEL",
+      "motivo": "e o unico ambiente onde este setup existe"
+    },
+    {
+      "campo": "contexto",
+      "op": "=",
+      "valor": "RANGE",
+      "efeito": "DESFAVORAVEL",
+      "motivo": "sem tendencia nao ha continuidade a operar - o dia e de reversao"
+    },
+    {
+      "campo": "contexto",
+      "op": "=",
+      "valor": "INDEFINIDO",
+      "efeito": "DESFAVORAVEL",
+      "motivo": "tendencia precisa estar clara, nao suposta"
+    },
+    {
+      "campo": "bias_h1",
+      "op": "=",
+      "valor": "INDEFINIDO",
+      "efeito": "DESFAVORAVEL",
+      "motivo": "sem direcao definida no HTF nao ha lado para seguir"
+    },
+    {
+      "campo": "niveis_marcados",
+      "op": ">=",
+      "valor": 2,
+      "efeito": "FAVORAVEL",
+      "motivo": "arrays da tendencia ja mapeados na pre-sessao"
+    },
+    {
+      "campo": "tilt",
+      "op": ">=",
+      "valor": 3,
+      "efeito": "DESFAVORAVEL",
+      "motivo": "tilt alto: risco de romper o plano"
+    },
+    {
+      "campo": "sono",
+      "op": "<=",
+      "valor": 2,
+      "efeito": "DESFAVORAVEL",
+      "motivo": "sono baixo degrada leitura"
+    },
+    {
+      "campo": "tem_noticia_alta",
+      "op": "=",
+      "valor": true,
+      "efeito": "NEUTRA",
+      "motivo": "noticia de alto impacto no dia: reduzir tamanho, nao a leitura"
+    }
+  ],
   "checklist": [
     {
-      "id": "k1", "tipo": "KILL", "peso": 0,
-      "label": "Tendencia CLARA no HTF (60m / 15m), com estrutura progressiva",
-      "ajuda": "Alta: topos e fundos mais altos. Baixa: topos e fundos mais baixos. Clara, nao suposta. HTF e 60m e 15m - nao e o diario."
+      "id": "k1",
+      "tipo": "KILL",
+      "peso": 0,
+      "label": "Tendência clara no HTF (60m / 15m), com estrutura progressiva",
+      "ajuda": "Alta: topos e fundos mais altos. Baixa: topos e fundos mais baixos. Clara, não suposta."
     },
     {
-      "id": "k2", "tipo": "KILL", "peso": 0,
-      "label": "Swing formado na direcao da tendencia",
-      "ajuda": "Em alta, um swing high. Em baixa, um swing low. E ele que cria a liquidez a ser capturada."
+      "id": "k2",
+      "tipo": "KILL",
+      "peso": 0,
+      "label": "Swing formado na direção da tendência",
+      "ajuda": "Em alta, um swing high. Em baixa, um swing low. É ele que cria a liquidez a ser capturada."
     },
     {
-      "id": "k3", "tipo": "KILL", "peso": 0,
-      "label": "Preco CAPTUROU o extremo oposto desse swing",
-      "ajuda": "Em alta: capturou o FUNDO do swing high. Em baixa: capturou o ULTIMO TOPO. E o sweep em escala menor - pega quem entrou na correcao."
+      "id": "k3",
+      "tipo": "KILL",
+      "peso": 0,
+      "label": "Preço capturou o extremo oposto desse swing",
+      "ajuda": "Em alta: o fundo do swing high. Em baixa: o último topo. É o sweep em escala menor."
     },
     {
-      "id": "k4", "tipo": "KILL", "peso": 0,
-      "label": "FVG ou bloco de ordem na regiao da captura, ou na retomada da proxima perna",
-      "ajuda": "E o ponto de entrada. Sem array nao ha onde entrar."
+      "id": "k4",
+      "tipo": "KILL",
+      "peso": 0,
+      "label": "FVG ou bloco de ordem na região da captura, ou na retomada",
+      "ajuda": "É o ponto de entrada. Sem array, não há onde entrar."
     },
     {
-      "id": "k5", "tipo": "KILL", "peso": 0,
-      "label": "Entrada no RETESTE desse array",
-      "ajuda": "Nao perseguir preco. Espera o retorno na regiao."
+      "id": "k5",
+      "tipo": "KILL",
+      "peso": 0,
+      "label": "Entrada no reteste desse array",
+      "ajuda": "Não perseguir preço. Esperar o retorno na região."
     },
     {
-      "id": "k6", "tipo": "KILL", "peso": 0,
-      "label": "Stop alem do extremo capturado · alvo em liquidez · RR >= 2",
-      "ajuda": "Se o preco volta alem do extremo que acabou de capturar, a ideia morreu. Alvo em liquidez identificada, nunca numero arbitrario."
+      "id": "k6",
+      "tipo": "KILL",
+      "peso": 0,
+      "label": "Stop além do extremo capturado · alvo em liquidez · RR ≥ 2",
+      "ajuda": "Se o preço volta além do extremo que acabou de capturar, a ideia morreu."
     },
-
     {
-      "id": "p1", "tipo": "PONTO", "peso": 20,
-      "label": "A captura foi por PAVIO - preco nao fechou alem do extremo",
-      "ajuda": "Fechamento alem do extremo capturado sugere quebra de estrutura, nao captura de liquidez.",
+      "id": "p1",
+      "tipo": "PONTO",
+      "peso": 20,
+      "label": "Captura por pavio — não fechou além do extremo",
+      "ajuda": "Fechamento além do extremo sugere quebra de estrutura, não captura de liquidez.",
       "origem": "ESTIMADO"
     },
     {
-      "id": "p2", "tipo": "PONTO", "peso": 20,
-      "label": "Retomada com barras GRANDES e CONSECUTIVAS",
-      "ajuda": "A perna que retoma a tendencia precisa ter conviccao. Retomada arrastada enfraquece.",
+      "id": "p2",
+      "tipo": "PONTO",
+      "peso": 20,
+      "label": "Retomada com barras grandes e consecutivas",
+      "ajuda": "A perna que retoma a tendência precisa ter convicção.",
       "origem": "ESTIMADO"
     },
     {
-      "id": "p3", "tipo": "PONTO", "peso": 15,
-      "label": "Confluencia de array: FVG + bloco de ordem sobrepostos",
-      "ajuda": "Duas razoes na mesma regiao valem mais que uma.",
+      "id": "p3",
+      "tipo": "PONTO",
+      "peso": 15,
+      "label": "Confluência: FVG + bloco de ordem sobrepostos",
+      "ajuda": "Duas razões na mesma região valem mais que uma.",
       "origem": "ESTIMADO"
     },
     {
-      "id": "p4", "tipo": "PONTO", "peso": 15,
-      "label": "Tendencia com pelo menos 2 pernas confirmadas antes desta",
-      "ajuda": "Primeira perna ainda nao e tendencia. Terceira ja pode ser exaustao - julgue.",
+      "id": "p4",
+      "tipo": "PONTO",
+      "peso": 15,
+      "label": "Tendência com 2 pernas confirmadas antes",
+      "ajuda": "A primeira perna ainda não é tendência; a terceira já pode ser exaustão.",
       "origem": "ESTIMADO"
     },
     {
-      "id": "p5", "tipo": "PONTO", "peso": 15,
-      "label": "Array ainda nao mitigado (fresco)",
-      "ajuda": "Array virgem reage melhor que array ja trabalhado varias vezes.",
+      "id": "p5",
+      "tipo": "PONTO",
+      "peso": 15,
+      "label": "Array ainda não mitigado",
+      "ajuda": "Array virgem reage melhor que array já trabalhado.",
       "origem": "ESTIMADO"
     },
     {
-      "id": "p6", "tipo": "PONTO", "peso": 15,
-      "label": "Entrada em discount da perna (compra) ou premium (venda)",
-      "ajuda": "Entrar na metade favoravel da correcao, nao no topo dela.",
+      "id": "p6",
+      "tipo": "PONTO",
+      "peso": 15,
+      "label": "Entrada em discount (compra) ou premium (venda)",
+      "ajuda": "Entrar na metade favorável da correção, não no topo dela.",
       "origem": "ESTIMADO"
     }
   ]

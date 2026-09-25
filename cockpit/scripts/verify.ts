@@ -1,4 +1,6 @@
 import fs from "fs";
+import { montarVisaoGeral } from "../lib/visao-geral";
+import { TRADES_DESIGN } from "./fixture-design";
 import path from "path";
 import {
   classificarJanela,
@@ -343,7 +345,7 @@ report(
 const lim3 = avaliarLimitesDia(3, 3, null, baseTime);
 report(
   "Limites Caso 3: 3 perdas -> bloqueado, motivo cita pregao encerrado",
-  lim3.bloqueado && lim3.motivos.some((m) => m.includes("pregao encerrado")),
+  lim3.bloqueado && lim3.motivos.some((m) => m.includes("pregão encerrado")),
   JSON.stringify(lim3.motivos)
 );
 
@@ -351,7 +353,7 @@ report(
 const lim4 = avaliarLimitesDia(0, 5, null, baseTime);
 report(
   "Limites Caso 4: 5 operacoes -> bloqueado, motivo cita limite de operacoes",
-  lim4.bloqueado && lim4.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operacoes")),
+  lim4.bloqueado && lim4.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operações")),
   JSON.stringify(lim4.motivos)
 );
 
@@ -384,8 +386,8 @@ report(
 
 // Caso 8: 3 perdas e 5 operações -> bloqueado com os dois motivos
 const lim8 = avaliarLimitesDia(3, 5, null, baseTime);
-const citaPregao = lim8.motivos.some((m) => m.includes("pregao encerrado"));
-const citaOps = lim8.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operacoes"));
+const citaPregao = lim8.motivos.some((m) => m.includes("pregão encerrado"));
+const citaOps = lim8.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operações"));
 report(
   "Limites Caso 8: 3 perdas e 5 operacoes -> bloqueado com os dois motivos",
   lim8.bloqueado && citaPregao && citaOps,
@@ -413,16 +415,16 @@ report(
 const gate10 = avaliarGate(itens80, "BULLISH", baseTime, 65, limLiberado, "trade-uuid-123");
 report(
   "Gate Integrado Caso 10: Mesmo caso com tradeAbertoId nao nulo -> bloqueado",
-  gate10.liberado === false && gate10.motivos.includes("ja existe trade aberto"),
+  gate10.liberado === false && gate10.motivos.includes("já existe trade aberto"),
   JSON.stringify(gate10.motivos)
 );
 
 // Caso 11: Mesmo caso com 3 perdas -> bloqueado citando o pregão encerrado
-const lim3Loss = { bloqueado: true, motivos: ["3 perdas no dia: pregao encerrado"] };
+const lim3Loss = { bloqueado: true, motivos: ["3 perdas no dia: pregão encerrado"] };
 const gate11 = avaliarGate(itens80, "BULLISH", baseTime, 65, lim3Loss, null);
 report(
   "Gate Integrado Caso 11: Mesmo caso com 3 perdas -> bloqueado citando o pregao encerrado",
-  gate11.liberado === false && gate11.motivos.some((m) => m.includes("pregao encerrado")),
+  gate11.liberado === false && gate11.motivos.some((m) => m.includes("pregão encerrado")),
   JSON.stringify(gate11.motivos)
 );
 
@@ -506,7 +508,7 @@ const preSessaoCompleta: PreSessao = {
 
 // 1. Objeto vazio -> 6 pendências, começando pelo print
 const pVazio = pendenciasDaPreSessao({} as PreSessao);
-const caso1Ok = pVazio.length === 6 && pVazio[0] === "print do grafico HTF nao anexado";
+const caso1Ok = pVazio.length === 6 && pVazio[0] === "print do gráfico HTF não anexado";
 report(
   "Pré-sessão Caso 1: Objeto vazio -> 6 pendências, começando pelo print",
   caso1Ok,
@@ -587,7 +589,7 @@ const gatePreSessaoAberta = avaliarGate(
 );
 const caso7Ok =
   gatePreSessaoAberta.liberado === false &&
-  gatePreSessaoAberta.motivos.some((m) => m.includes("pre-sessao do dia nao foi fechada"));
+  gatePreSessaoAberta.motivos.some((m) => m.includes("pré-sessão do dia não foi fechada"));
 report(
   "Gate Pré-sessão/Print Caso 7: preSessaoFechada false -> bloqueado citando pré-sessão",
   caso7Ok,
@@ -607,7 +609,7 @@ const gateSemPrint = avaliarGate(
 );
 const caso8Ok =
   gateSemPrint.liberado === false &&
-  gateSemPrint.motivos.some((m) => m.includes("print do trade nao anexado"));
+  gateSemPrint.motivos.some((m) => m.includes("print do trade não anexado"));
 report(
   "Gate Pré-sessão/Print Caso 8: temPrint false -> bloqueado citando o print",
   caso8Ok,
@@ -842,6 +844,21 @@ report(
   f1000 === "10:00" && f1015 === "10:15" && fForaAntes === "fora da janela" && fForaDepois === "fora da janela",
   `13:14Z=${f1000}, 13:15Z=${f1015}, 12:59Z=${fForaAntes}, 14:30Z=${fForaDepois}`
 );
+
+// Visão Geral: os 16 trades de exemplo do design/v2/Main.dc.html
+{
+  const trades = TRADES_DESIGN;
+  const vg = montarVisaoGeral(trades, [], 2026, 9, "2026-09-25");
+  const dias = vg.cal.cells.filter((c) => c.d === "1" || c.d === "31").map((c) => c.d).join(",");
+  report(
+    "Visão Geral: 16 trades do design (resultado +R$ 1.604, DD R$ 222, 13 de 16 no plano, calendário começa em 31/08)",
+    vg.kpis[0].valor === "+R$ 1.604" && vg.kpis[4].valor === "−R$ 222" && vg.disc.pct === "81%" &&
+      vg.estr[0].nome === "Varrida das 10" && vg.estr[0].n === 8 && dias.startsWith("31") && vg.cal.cells.length === 25,
+    `resultado=${vg.kpis[0].valor} dd=${vg.kpis[4].valor} disciplina=${vg.disc.pct} estr0=${vg.estr[0].nome}/${vg.estr[0].n} celulas=${vg.cal.cells.length} dias=${dias}`
+  );
+  const vazio = montarVisaoGeral([], [], 2026, 9, "2026-09-25");
+  report("Visão Geral: mês vazio não quebra", vazio.n === 0 && vazio.kpis.length === 5, `n=${vazio.n}`);
+}
 
 if (hasErrors) {
   console.error("\n❌ Verificação finalizou com ERROS.");

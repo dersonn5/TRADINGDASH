@@ -41,7 +41,8 @@ import {
   SetupCModo,
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
-import { InstBand } from "@/components/inst";
+import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, chip, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
+import { formatarBRL } from "@/lib/metricas";
 
 export default function ChecklistPage() {
   // Estratégia selecionada (padrão: REVERSAO_HTF)
@@ -609,1710 +610,400 @@ export default function ChecklistPage() {
     }
   }
 
+  const cabecalhoPagina = (
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate de entrada WIN</span>
+      <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
+    </div>
+  );
+
   if (loading || !checklist || preSessaoLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          color: "var(--tx)",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate operacional WIN</span>
-          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
-        </div>
-        <div style={{ padding: "14px 18px", borderRadius: "12px", background: "var(--s1)", border: "1px solid var(--bd)", fontSize: "13px", color: "var(--tx3)" }}>
-          Carregando instrumento...
-        </div>
-      </div>
+      <>
+        {cabecalhoPagina}
+        <div style={{ ...CARD, alignItems: "center", padding: "48px", color: "var(--tx3)", fontSize: "14px" }}>Carregando…</div>
+      </>
     );
   }
 
-  // 5a. Sem pré-sessão fechada, a tela não opera
-  if (!preSessao?.fechada_em) {
+  // Sem pré-sessão fechada, a tela não opera
+  if (!preSessao?.fechada_em || preSessao.setup_do_dia === "NENHUM") {
+    const naoOperar = preSessao?.fechada_em && preSessao.setup_do_dia === "NENHUM";
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate operacional WIN</span>
-          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            padding: "20px 24px",
-            borderRadius: "16px",
-            background: "var(--s1)",
-            border: "1px solid var(--bd)",
-          }}
-        >
-          <div style={{ flexGrow: 1 }}>
-            <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>Pré-sessão do dia não foi fechada</div>
-            <div style={{ fontSize: "13px", color: "var(--tx3)" }}>O gate operacional exige que o ritual de pré-sessão seja concluído antes de liberar qualquer operação.</div>
-            <ul style={{ margin: "10px 0 0", paddingLeft: "18px", fontSize: "13px", lineHeight: 1.6, color: "var(--tx2)" }}>
-              {(preSessao ? pendenciasDaPreSessao(preSessao) : ["pré-sessão não iniciada"]).map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </ul>
+      <>
+        {cabecalhoPagina}
+        <div style={{ ...CARD, flexDirection: "row", alignItems: "center", gap: "18px" }}>
+          <span style={{ width: "52px", height: "52px", flexShrink: 0, borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--s2)", color: "var(--tx3)" }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}>
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+          </span>
+          <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+            <span style={{ fontSize: "20px", fontWeight: 600 }}>{naoOperar ? "Hoje é dia de não operar" : "Pré-sessão do dia não foi fechada"}</span>
+            <span style={{ fontSize: "13px", color: "var(--tx2)", lineHeight: 1.5 }}>
+              {naoOperar
+                ? "Decidido na pré-sessão. Preservação de capital."
+                : `Falta: ${(preSessao ? pendenciasDaPreSessao(preSessao) : ["pré-sessão não iniciada"]).join(" · ")}`}
+            </span>
           </div>
-          <Link href="/pre-sessao">
-            <button
-              type="button"
-              style={{
-                height: "44px",
-                padding: "0 20px",
-                borderRadius: "12px",
-                border: "1px solid var(--bd)",
-                background: "transparent",
-                color: "var(--tx2)",
-                fontFamily: "inherit",
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
-            >
-              Ir para Pré-Sessão
-            </button>
+          <Link href="/pre-sessao" style={{ ...BOTAO_SECUNDARIO, height: "44px", display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
+            {naoOperar ? "Ver pré-sessão" : "Ir para a pré-sessão"}
           </Link>
         </div>
-      </div>
+      </>
     );
   }
 
+  const totalKills = killItems.length;
+  const trilhaFrase = feitos >= totalKills ? "Trilha completa" : `Agora: passo ${feitos + 1} de ${totalKills}`;
+  const tagSetup = selectedStrategy.id === "varrida_barra_10" ? "C" : selectedStrategy.id === "continuidade_tendencia" ? "B" : "A";
+  const minimoMarcador = gate.scoreMinimo === Infinity ? selectedStrategy.score_minimo || 65 : gate.scoreMinimo;
+  const janelaCard =
+    gate.janela === "PRIME"
+      ? { rot: "Janela · Prime", txt: `10:00–10:59 · mínimo ${gate.scoreMinimo}`, destaque: true }
+      : gate.janela === "VALIDA"
+        ? { rot: "Janela · Válida", txt: `11:00–11:29 · mínimo ${gate.scoreMinimo}`, destaque: true }
+        : { rot: "Fora da janela", txt: "entrada só 10:00–11:30", destaque: false };
+  const pnlDia = resumo?.pnl_dia ?? 0;
+  const podeRegistrar = gate.liberado && formularioValido && !submittingOrdem && !resumo?.trade_aberto_id;
+  const motivosGate = gate.motivos.map((m) => m.replace(/^falta obrigatório: .*/, "")).filter(Boolean);
+  const faltaPasso = feitos < totalKills ? [`passo ${feitos + 1} da trilha`] : [];
+  const gateMotivo = gate.liberado
+    ? `Trilha completa e score ${gate.score}. Registre antes de clicar no Profit.`
+    : `Falta: ${[...faltaPasso, ...motivosGate].join(" · ")}`;
+  const registroFrase = precosPreenchidos
+    ? `Risco ${metricasTrade.distStop} pts · RR 1 : ${metricasTrade.rr.toFixed(1).replace(".", ",")} · R$ ${Math.round(metricasTrade.riscoReais).toLocaleString("pt-BR")} em risco`
+    : "Preencha entrada, stop e alvo";
+  const contratosTravados = Boolean(preSessao?.contratos_declarados);
 
-  // 5b. Se setup_do_dia for NENHUM, hoje é dia de não operar
-  if (preSessao.setup_do_dia === "NENHUM") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Pregão · gate operacional WIN</span>
-          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Checklist</h1>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            padding: "20px 24px",
-            borderRadius: "16px",
-            background: "var(--s1)",
-            border: "1px solid var(--bd)",
-          }}
-        >
-          <div style={{ flexGrow: 1 }}>
-            <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>Hoje é dia de não operar</div>
-            <div style={{ fontSize: "13px", color: "var(--tx3)" }}>Decidido na pré-sessão do dia. Preservação de capital ativa.</div>
-          </div>
-          <Link href="/pre-sessao">
-            <button
-              type="button"
-              style={{
-                height: "44px",
-                padding: "0 20px",
-                borderRadius: "12px",
-                border: "1px solid var(--bd)",
-                background: "transparent",
-                color: "var(--tx2)",
-                fontFamily: "inherit",
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
-            >
-              Ver Pré-Sessão
-            </button>
-          </Link>
-        </div>
+  const statusCard = (rot: string, valor: React.ReactNode, opts?: { destaque?: boolean; pequeno?: boolean; cor?: string }) => (
+    <div style={{ padding: "16px 18px", borderRadius: "14px", background: opts?.destaque ? "var(--acs)" : "var(--s1)", border: "1px solid var(--bd)", display: "flex", flexDirection: "column", gap: "6px" }}>
+      <span style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: opts?.destaque ? "var(--actx)" : "var(--tx3)" }}>{rot}</span>
+      <span style={{ fontSize: opts?.pequeno ? "15px" : "22px", fontWeight: 600, color: opts?.cor ?? "var(--tx)" }}>{valor}</span>
+    </div>
+  );
+
+  const chips = <T extends string>(opcoes: Array<{ v: T; l: string }>, atual: string, setar: (v: T) => void) => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {opcoes.map((o) => (
+        <button key={o.v} type="button" aria-pressed={atual === o.v} onClick={() => setar(o.v)} style={chip(atual === o.v)}>
+          {o.l}
+        </button>
+      ))}
+    </div>
+  );
+
+  const campo = (rot: string, valor: string, setar: (v: string) => void, opts?: { disabled?: boolean; nota?: string }) => (
+    <label style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px", color: "var(--tx2)" }}>
+      {rot}
+      <input
+        type="text"
+        inputMode="decimal"
+        value={valor}
+        disabled={opts?.disabled}
+        onChange={(e) => setar(e.target.value)}
+        placeholder="0"
+        style={{ ...INPUT, opacity: opts?.disabled ? 0.6 : 1 }}
+      />
+      {opts?.nota && <span style={{ fontSize: "11px", color: "var(--tx3)" }}>{opts.nota}</span>}
+    </label>
+  );
+
+  const simNao = (rot: string, valor: boolean | null, setar: (v: boolean) => void) => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", fontSize: "13px" }}>
+      <span style={{ color: "var(--tx2)" }}>{rot}</span>
+      <div role="group" aria-label={rot} style={{ ...SEGMENTADO, width: "160px" }}>
+        {([true, false] as const).map((v) => (
+          <button key={String(v)} type="button" aria-pressed={valor === v} onClick={() => setar(v)} style={{ ...opcaoSegmentada(valor === v), height: "34px" }}>
+            {v ? "Sim" : "Não"}
+          </button>
+        ))}
       </div>
-    );
-  }
-
-  const restam = killItems.length - feitos;
-  const dica =
-    feitos === killItems.length
-      ? "Sequência completa. O trade agora termina no alvo ou no stop."
-      : `Só o passo ${feitos + 1} está clicável. Faltam ${restam} para a sequência fechar.`;
+    </div>
+  );
 
   return (
-    <div
-      className="-m-4 md:-m-6 px-6 md:px-10 pt-8 pb-10 flex flex-1 flex-col gap-4 min-h-[calc(100vh-4rem)]"
-      style={{ background: "var(--bg)", color: "var(--tx)" }}
-    >
-      {/* ============ 6a. SETUP DO DIA TRAVADO ============ */}
-      <div
-        style={{
-          padding: "16px 20px",
-          background: "var(--s1)",
-          border: "1px solid var(--bd)",
-          borderRadius: "14px",
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}
-      >
-        <span className="mono" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)", textTransform: "uppercase" }}>
-          SETUP DO DIA
-        </span>
-        <span style={{ color: "var(--inst-line-2)" }}>·</span>
-        <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-          {selectedStrategy.nome}
-        </span>
-        <span style={{ color: "var(--inst-line-2)" }}>·</span>
-        <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-dim)", fontStyle: "italic" }}>
-          declarado às {preSessao?.fechada_em ? new Date(preSessao.fechada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}
-        </span>
-        <Link href="/pre-sessao" style={{ marginLeft: "auto" }}>
-          <span className="mono tabular" style={{ fontSize: "10.5px", color: "var(--inst-faint)", textDecoration: "underline", cursor: "pointer" }}>
-            Ver Pré-Sessão
-          </span>
-        </Link>
+    <>
+      {cabecalhoPagina}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.3fr repeat(3, minmax(0, 1fr)) 1.3fr", gap: "12px" }}>
+        {statusCard("Pregão", spTimeStr)}
+        {statusCard(janelaCard.rot, janelaCard.txt, { destaque: janelaCard.destaque, pequeno: true })}
+        {statusCard("Perdas", <>{resumo?.perdas_hoje ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 3</span></>)}
+        {statusCard("Operações", <>{resumo?.operacoes_hoje ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 5</span></>)}
+        {statusCard("Dia", formatarBRL(pnlDia), { cor: pnlDia > 0 ? "var(--actx)" : pnlDia < 0 ? "var(--negtx)" : "var(--tx)" })}
+        {statusCard("Setup do dia", `${tagSetup} · ${NOME_CURTO[selectedStrategy.id] ?? selectedStrategy.nome}`, { pequeno: true })}
       </div>
 
-      {/* ============ 6b. BARRA DE ESTADO COM DADO REAL ============ */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "stretch",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}
-      >
-        {/* PREGÃO */}
-        <div
-          style={{
-            padding: "16px 18px",
-            borderRadius: "14px",
-            border: "1px solid var(--bd)",
-            background: "var(--s1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-            minWidth: "160px",
-          }}
-        >
-          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-            PREGÃO
-          </span>
-          <span className="mono tabular" style={{ fontSize: "18px", fontWeight: 600, letterSpacing: "-0.01em" }}>
-            {spTimeStr}
-          </span>
-        </div>
-
-        {/* JANELA */}
-        <div
-          style={{
-            padding: "16px 18px",
-            borderRadius: "14px",
-            border: "1px solid var(--bd)",
-            background: "var(--s1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-            flexGrow: 1,
-            minWidth: "240px",
-          }}
-        >
-          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-            JANELA
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <span
-              style={{
-                width: "7px",
-                height: "7px",
-                borderRadius: "50%",
-                background: janelaInfo.cor,
-              }}
-            />
-            <span
-              className="mono tabular"
-              style={{ fontSize: "12px", fontWeight: 600, color: janelaInfo.cor, letterSpacing: "0.02em" }}
-            >
-              {janelaInfo.texto}
-            </span>
-            <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
-              {janelaInfo.nota}
-            </span>
-          </div>
-        </div>
-
-        {/* OPERAÇÕES (operacoes_hoje / 5) */}
-        <div
-          style={{
-            padding: "16px 18px",
-            borderRadius: "14px",
-            border: "1px solid var(--bd)",
-            background: "var(--s1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-            minWidth: "130px",
-          }}
-        >
-          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-            OPERAÇÕES
-          </span>
-          <span
-            className="mono tabular"
-            style={{
-              fontSize: "20px",
-              fontWeight: 600,
-              color: resumoLoading || !resumo
-                ? "var(--inst-dim)"
-                : resumo.operacoes_hoje >= 5
-                ? "var(--inst-block)"
-                : resumo.operacoes_hoje === 4
-                ? "var(--inst-now)"
-                : "var(--inst-text)",
-            }}
-          >
-            {resumoLoading || !resumo ? "—" : `${resumo.operacoes_hoje} / 5`}
-          </span>
-        </div>
-
-        {/* PERDAS (perdas_hoje / 3) */}
-        <div
-          style={{
-            padding: "16px 18px",
-            borderRadius: "14px",
-            border: "1px solid var(--bd)",
-            background: "var(--s1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-            minWidth: "120px",
-          }}
-        >
-          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-            PERDAS
-          </span>
-          <span
-            className="mono tabular"
-            style={{
-              fontSize: "20px",
-              fontWeight: 600,
-              color: resumoLoading || !resumo
-                ? "var(--inst-dim)"
-                : resumo.perdas_hoje >= 3
-                ? "var(--inst-block)"
-                : resumo.perdas_hoje >= 1
-                ? "var(--inst-now)"
-                : "var(--inst-text)",
-            }}
-          >
-            {resumoLoading || !resumo ? "—" : `${resumo.perdas_hoje} / 3`}
-          </span>
-        </div>
-
-        {/* PNL DIA */}
-        <div
-          style={{
-            padding: "16px 18px",
-            borderRadius: "14px",
-            border: "1px solid var(--bd)",
-            background: "var(--s1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-            minWidth: "130px",
-          }}
-        >
-          <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-            PNL DIA
-          </span>
-          <span
-            className="mono tabular"
-            style={{
-              fontSize: "20px",
-              fontWeight: 600,
-              color: resumoLoading || !resumo
-                ? "var(--inst-dim)"
-                : resumo.pnl_dia > 0
-                ? "var(--inst-ok)"
-                : resumo.pnl_dia < 0
-                ? "var(--inst-block)"
-                : "var(--inst-dim)",
-            }}
-          >
-            {resumoLoading || !resumo
-              ? "—"
-              : `${resumo.pnl_dia >= 0 ? "+" : ""}R$ ${resumo.pnl_dia.toLocaleString("pt-BR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`}
-          </span>
-        </div>
-
-        {/* BOTÕES RESETAR E SALVAR */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginLeft: "auto",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleReset}
-            className="mono tabular hover:text-[var(--tx)] hover:border-[var(--ac)] transition-colors"
-            style={{
-              background: "transparent",
-              border: "1px solid var(--inst-line-2)",
-              borderRadius: "10px",
-              color: "var(--inst-dim)",
-              padding: "6px 12px",
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              cursor: "pointer",
-            }}
-          >
-            RESETAR
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="mono tabular hover:border-[var(--ac)] transition-colors"
-            style={{
-              background: saveSuccess ? "var(--inst-ok-bg)" : "var(--inst-line)",
-              border: `1px solid ${saveSuccess ? "var(--inst-ok-line)" : "var(--inst-line-2)"}`,
-              borderRadius: "10px",
-              color: saveSuccess ? "var(--inst-ok)" : "var(--inst-text)",
-              padding: "6px 14px",
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              cursor: saving ? "not-allowed" : "pointer",
-            }}
-          >
-            {saving ? "SALVANDO..." : saveSuccess ? "SALVO" : "SALVAR"}
-          </button>
-        </div>
-      </div>
-
-      {/* ============ 6e. FAIXA DE TRADE ABERTO ============ */}
       {resumo?.trade_aberto_id && (
-        <div
-          style={{
-            padding: "14px 20px",
-            background: "var(--acs)",
-            border: "1px solid var(--ac)",
-            borderRadius: "14px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-            <span
-              style={{
-                background: "var(--inst-now)",
-                color: "var(--onac)",
-                fontSize: "11px",
-                fontWeight: 700,
-                padding: "2px 6px",
-                borderRadius: "8px",
-                letterSpacing: "0.08em",
-              }}
-              className="mono tabular"
-            >
-              TRADE ABERTO
-            </span>
-            <span className="mono tabular" style={{ fontSize: "13px", fontWeight: 600, color: "var(--inst-text)" }}>
-              {tradeAberto
-                ? `${tradeAberto.mercado} ${tradeAberto.direcao} · Entrada: ${tradeAberto.entrada} · Stop: ${tradeAberto.stop} · Alvo: ${tradeAberto.alvo} · ${tradeAberto.contratos} ct (RR 1:${tradeAberto.rr_planejado})`
-                : `ID: ${resumo.trade_aberto_id}`}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setFechamentoError(null);
-              setModalFechamentoOpen(true);
-            }}
-            className="mono tabular transition-colors"
-            style={{
-              background: "var(--inst-now)",
-              color: "var(--onac)",
-              border: "none",
-              borderRadius: "10px",
-              padding: "7px 16px",
-              fontSize: "11px",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              cursor: "pointer",
-            }}
-          >
-            FECHAR TRADE
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", borderRadius: "14px", background: "var(--acs)", border: "1px solid var(--ac)" }}>
+          <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "var(--ac)", flexShrink: 0 }} />
+          <span style={{ flexGrow: 1, fontSize: "14px" }}>
+            <strong style={{ fontWeight: 600 }}>Trade aberto</strong>
+            {tradeAberto
+              ? ` · ${tradeAberto.direcao === "COMPRA" ? "compra" : "venda"} · entrada ${Number(tradeAberto.entrada).toLocaleString("pt-BR")}, stop ${Number(tradeAberto.stop).toLocaleString("pt-BR")}, alvo ${Number(tradeAberto.alvo).toLocaleString("pt-BR")} · ${tradeAberto.contratos} ct`
+              : ""}
+          </span>
+          <button type="button" onClick={() => { setFechamentoError(null); setModalFechamentoOpen(true); }} style={{ ...botaoPrimario(true), height: "40px" }}>
+            Fechar trade
           </button>
         </div>
       )}
 
-      {/* FEEDBACK DE SUCESSO OU ERRO NA ABERTURA DE ORDEM */}
       {ordemSuccess && (
-        <div
-          style={{
-            padding: "12px 20px",
-            background: "var(--inst-ok-bg)",
-            border: "1px solid var(--inst-ok-line)",
-            borderRadius: "14px",
-            color: "var(--inst-ok)",
-            fontSize: "12px",
-            fontWeight: 600,
-          }}
-          className="mono tabular"
-        >
-          ✓ {ordemSuccess}
-        </div>
+        <div style={{ padding: "14px 20px", borderRadius: "14px", background: "var(--acs)", border: "1px solid var(--bd)", color: "var(--actx)", fontSize: "14px", fontWeight: 600 }}>{ordemSuccess}</div>
       )}
       {ordemError && (
-        <div
-          style={{
-            padding: "12px 20px",
-            background: "var(--inst-block-bg)",
-            border: "1px solid var(--inst-block-line)",
-            borderRadius: "14px",
-            color: "var(--inst-block)",
-            fontSize: "12px",
-            fontWeight: 600,
-          }}
-          className="mono tabular"
-        >
-          ✕ ERRO AO ABRIR ORDEM: {ordemError}
-        </div>
+        <div style={{ padding: "14px 20px", borderRadius: "14px", background: "var(--s1)", border: "1px solid var(--neg)", color: "var(--negtx)", fontSize: "14px" }}>Erro ao registrar: {ordemError}</div>
       )}
 
-      <div
-        className="flex flex-col lg:flex-row flex-grow items-start gap-5"
-        style={{ minHeight: 0 }}
-      >
-        {/* ============ TRILHA (Coluna Principal) ============ */}
-        <div
-          className="flex-grow flex flex-col"
-          style={{
-            padding: "24px",
-            gap: "18px",
-            background: "var(--s1)",
-            border: "1px solid var(--bd)",
-            borderRadius: "16px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.16em", color: "var(--inst-faint)" }}>
-                  {selectedStrategy.nome.toUpperCase()} · {checklist.market || "WIN"}
-                </span>
-                <span style={{ color: "var(--inst-line-2)", fontSize: "11px" }}>·</span>
-                <div style={{ display: "inline-flex", gap: "4px" }}>
-                  {(["BULLISH", "BEARISH", "NEUTRO", "NAO_OPERAR"] as const).map((b) => {
-                    const active = checklist.bias === b;
-                    return (
-                      <button
-                        key={b}
-                        type="button"
-                        onClick={() => handleBiasChange(b)}
-                        className="mono tabular"
-                        style={{
-                          fontSize: "11px",
-                          letterSpacing: "0.08em",
-                          padding: "2px 6px",
-                          borderRadius: "8px",
-                          background: active
-                            ? b === "NAO_OPERAR"
-                              ? "var(--inst-block-bg)"
-                              : "var(--inst-now-bg)"
-                            : "transparent",
-                          color: active
-                            ? b === "NAO_OPERAR"
-                              ? "var(--inst-block)"
-                              : "var(--inst-now)"
-                            : "var(--inst-faint)",
-                          border: `1px solid ${
-                            active
-                              ? b === "NAO_OPERAR"
-                                ? "var(--inst-block-line)"
-                                : "var(--inst-now-line)"
-                              : "var(--inst-line-2)"
-                          }`,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {b === "NAO_OPERAR" ? "NÃO OPERAR" : b}
-                      </button>
-                    );
-                  })}
-                </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "start" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <section style={CARD}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={LBL}>Trilha do Setup {tagSetup} · obrigatórios</span>
+                <span style={H2}>{trilhaFrase}</span>
               </div>
-              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em" }}>
-                Trilha do setup ({selectedStrategy.nome})
-              </h1>
+              <span style={{ flexShrink: 0, fontSize: "13px", fontWeight: 600, color: "var(--actx)" }}>{feitos} / {totalKills}</span>
             </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <span
-                className="mono tabular"
-                style={{
-                  fontSize: "30px",
-                  fontWeight: 600,
-                  color: feitos === killItems.length ? "var(--inst-ok)" : "var(--inst-now)",
-                  lineHeight: 1,
-                }}
-              >
-                {feitos}
-              </span>
-              <span className="mono tabular" style={{ fontSize: "15px", color: "var(--inst-faint)" }}>
-                / {killItems.length}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {killItems.map((k, i) => {
-              const n = i + 1;
-              const estado = estadosKills[i] ?? "TRAVADO";
-              const done = estado === "CUMPRIDO";
-              const nowStep = estado === "AGORA";
-
-              const marca = done ? "var(--inst-ok)" : (nowStep ? "var(--inst-now)" : "var(--inst-lock)");
-              const borda = nowStep ? "var(--inst-now-line)" : "var(--inst-line)";
-              const fundo = nowStep ? "var(--inst-now-bg)" : (done ? "var(--inst-panel-2)" : "var(--s1)");
-              const corTexto = done ? "var(--inst-text-2)" : (nowStep ? "var(--inst-text)" : "var(--inst-ghost)");
-              const corAjuda = nowStep ? "var(--inst-dim)" : (done ? "var(--inst-ghost)" : "var(--tx3)");
-              const simbolo = done ? "✓" : String(n);
-              const isLive = done || nowStep;
-
-              return (
-                <div
-                  key={k.id}
-                  className={`step ${isLive ? "step-live" : ""}`}
-                  onClick={isLive ? () => handleToggleKill(k.id) : undefined}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "40px 1fr auto",
-                    gap: "16px",
-                    alignItems: "start",
-                    padding: "13px 16px",
-                    border: `1px solid ${borda}`,
-                    borderLeft: `3px solid ${marca}`,
-                    background: fundo,
-                    borderRadius: "10px",
-                    cursor: isLive ? "pointer" : "default",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "26px",
-                      height: "26px",
-                      border: `1px solid ${marca}`,
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <span className="mono tabular" style={{ fontSize: "12px", fontWeight: 600, color: marca }}>
-                      {simbolo}
-                    </span>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <span style={{ fontSize: "13.5px", fontWeight: 500, color: corTexto, lineHeight: 1.35 }}>
-                      {k.label}
-                    </span>
-                    {k.ajuda && (
-                      <span style={{ fontSize: "11.5px", color: corAjuda, lineHeight: 1.45, maxWidth: "62ch" }}>
-                        {k.ajuda}
-                      </span>
-                    )}
-                  </div>
-
-                  <span
-                    className="mono tabular"
-                    style={{
-                      fontSize: "11px",
-                      letterSpacing: "0.12em",
-                      color: marca,
-                      paddingTop: "5px",
-                    }}
-                  >
-                    {estado}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Dica de orientação */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "10px 14px",
-              border: "1px dashed var(--inst-line-2)",
-              borderRadius: "10px",
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--inst-faint)" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M12 8v5"></path>
-              <path d="M12 16.5v.01"></path>
-              <circle cx="12" cy="12" r="9"></circle>
+            <svg width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="0" width="100" height="6" rx="3" style={{ fill: "var(--s2)" }} />
+              <rect x="0" y="0" width={totalKills ? (feitos / totalKills) * 100 : 0} height="6" rx="3" style={{ fill: "var(--ac)" }} />
             </svg>
-            <span style={{ fontSize: "12px", color: "var(--inst-dim)" }}>
-              {dica}
-            </span>
-          </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {killItems.map((p, i) => {
+                const estado = estadosKills[i];
+                const feito = estado === "CUMPRIDO";
+                const agora = estado === "AGORA";
+                const travado = estado === "TRAVADO";
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    disabled={travado}
+                    onClick={() => handleToggleKill(p.id)}
+                    style={{
+                      textAlign: "left", width: "100%", padding: "14px 16px", borderRadius: "12px", fontFamily: "inherit", display: "flex", gap: "14px", alignItems: "flex-start",
+                      cursor: travado ? "not-allowed" : "pointer", background: agora ? "var(--acs)" : "var(--bg)", border: `1px solid ${agora ? "var(--ac)" : "var(--bd)"}`, color: "var(--tx)",
+                    }}
+                  >
+                    <span style={{ width: "28px", height: "28px", flexShrink: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 600, background: feito ? "var(--ac)" : "transparent", color: feito ? "var(--onac)" : agora ? "var(--actx)" : "var(--tx3)", border: `1.5px solid ${feito || agora ? "var(--ac)" : "var(--bd)"}` }}>
+                      {feito ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: "none", stroke: "currentColor", strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round" }}>
+                          <path d="M5 12.5l4.5 4.5L19 7.5" />
+                        </svg>
+                      ) : (
+                        i + 1
+                      )}
+                    </span>
+                    <span style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span style={{ fontSize: "14px", lineHeight: 1.4, color: travado ? "var(--tx3)" : "var(--tx)" }}>{p.label}</span>
+                      {agora && p.ajuda && <span style={{ fontSize: "12px", lineHeight: 1.45, color: "var(--tx2)" }}>{p.ajuda}</span>}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+              <button type="button" onClick={handleReset} style={{ ...BOTAO_SECUNDARIO, height: "36px", color: "var(--tx2)" }}>Zerar</button>
+              <button type="button" onClick={handleSave} disabled={saving} style={{ ...BOTAO_SECUNDARIO, height: "36px" }}>
+                {saving ? "Salvando…" : saveSuccess ? "Salvo" : "Salvar progresso"}
+              </button>
+            </div>
+          </section>
 
-          {/* Anotações da Sessão */}
-          <div style={{ marginTop: "auto", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-              ANOTAÇÕES DA SESSÃO
-            </span>
-            <textarea
-              value={checklist.notes || ""}
-              onChange={(e) => setChecklist({ ...checklist, notes: e.target.value })}
-              placeholder="Observações do pregão, contexto de mercado, comportamento dos players..."
-              rows={2}
-              style={{
-                width: "100%",
-                background: "var(--s1)",
-                border: "1px solid var(--inst-line-2)",
-                borderRadius: "10px",
-                color: "var(--inst-text)",
-                fontSize: "12px",
-                padding: "8px 12px",
-                resize: "vertical",
-                outline: "none",
-                fontFamily: "inherit",
-              }}
-              className="focus:border-[var(--ac)] transition-colors"
-            />
-          </div>
+          <section style={CARD}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={LBL}>Pontos de qualidade</span>
+              <span style={H2}>
+                Score {gate.score} de 100 · mínimo {minimoMarcador}
+                {gate.janela === "PRIME" ? " na prime" : gate.janela === "VALIDA" ? " depois das 11h" : ""}
+              </span>
+            </div>
+            <svg width="100%" height="28" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true">
+              <rect x="0" y="8" width="100" height="10" rx="5" style={{ fill: "var(--s2)" }} />
+              <rect x="0" y="8" width={Math.min(100, gate.score)} height="10" rx="5" style={{ fill: "var(--ac)" }} />
+              <rect x={Math.min(99.2, minimoMarcador - 0.4)} y="2" width="0.8" height="22" style={{ fill: "var(--tx)" }} />
+            </svg>
+            {pontoItems.map((p) => (
+              <label key={p.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", borderRadius: "12px", background: "var(--bg)", border: "1px solid var(--bd)", cursor: "pointer" }}>
+                <input type="checkbox" checked={p.checked} onChange={() => handleTogglePonto(p.id)} style={{ width: "18px", height: "18px", accentColor: "var(--ac)" }} />
+                <span style={{ flexGrow: 1, fontSize: "14px", lineHeight: 1.4 }}>{p.label}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: p.checked ? "var(--actx)" : "var(--tx3)" }}>+{p.weight}</span>
+              </label>
+            ))}
+          </section>
         </div>
 
-        {/* ============ CONFLUÊNCIA + GATE + FORMULÁRIO (Painel Lateral) ============ */}
-        <div
-          className="w-full lg:w-[460px] shrink-0 flex flex-col overflow-hidden"
-          style={{
-            border: "1px solid var(--bd)",
-            borderRadius: "16px",
-            background: "var(--s1)",
-          }}
-        >
-          {/* Cabeçalho de Score */}
-          <div
-            style={{
-              padding: "20px 24px 16px 24px",
-              borderBottom: "1px solid var(--bd)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-              <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.16em", color: "var(--inst-faint)" }}>
-                CONFLUÊNCIA
-              </span>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
-                <span
-                  className="mono tabular"
-                  style={{
-                    fontSize: "26px",
-                    fontWeight: 600,
-                    color: scoreOk && gate.janela !== "FORA" ? "var(--inst-ok)" : "var(--inst-now)",
-                    lineHeight: 1,
-                  }}
-                >
-                  {gate.score}
-                </span>
-                <span className="mono tabular" style={{ fontSize: "13px", color: "var(--inst-faint)" }}>
-                  / {gate.janela === "FORA" ? "—" : gate.scoreMinimo}
-                </span>
-              </div>
-            </div>
-
-            {/* Barra de Progresso com marcador vertical */}
-            <div
-              style={{
-                position: "relative",
-                height: "6px",
-                background: "var(--s2)",
-                borderRadius: "1px",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${Math.min(100, Math.max(0, gate.score))}%`,
-                  background: scoreOk && gate.janela !== "FORA" ? "var(--inst-ok)" : "var(--inst-now)",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "-3px",
-                  bottom: "-3px",
-                  left: `${
-                    gate.janela === "FORA"
-                      ? 100
-                      : gate.scoreMinimo === Number.POSITIVE_INFINITY
-                      ? 100
-                      : Math.min(100, gate.scoreMinimo)
-                  }%`,
-                  width: "1px",
-                  background: "var(--inst-dim)",
-                }}
-              />
-            </div>
-
-            <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", letterSpacing: "0.06em" }}>
-              {gate.janela === "PRIME"
-                ? `MÍNIMO ${selectedStrategy.score_minimo || 65} NA JANELA NOBRE`
-                : gate.janela === "VALIDA"
-                ? `MÍNIMO ${(selectedStrategy.score_minimo || 65) + 15} FORA DA JANELA NOBRE`
-                : "BLOQUEADO PELO HORÁRIO"}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <section style={{ padding: "24px", borderRadius: "16px", display: "flex", alignItems: "center", gap: "18px", background: gate.liberado ? "var(--acs)" : "var(--s1)", border: `1px solid ${gate.liberado ? "var(--ac)" : "var(--bd)"}` }}>
+            <span style={{ width: "52px", height: "52px", flexShrink: 0, borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", background: gate.liberado ? "var(--ac)" : "var(--s2)", color: gate.liberado ? "var(--onac)" : "var(--tx3)" }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}>
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d={gate.liberado ? "M8 11V7a4 4 0 0 1 7.5-2" : "M8 11V7a4 4 0 0 1 8 0v4"} />
+              </svg>
             </span>
-          </div>
-
-          {/* Lista compacta de Itens PONTO */}
-          <div
-            style={{
-              padding: "8px 12px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1px",
-              borderBottom: "1px solid var(--bd)",
-            }}
-          >
-            {pontoItems.map((p) => {
-              const on = p.checked;
-              return (
-                <div
-                  key={p.id}
-                  className="step step-live"
-                  onClick={() => handleTogglePonto(p.id)}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "16px 1fr auto",
-                    gap: "12px",
-                    alignItems: "start",
-                    padding: "8px 12px",
-                    borderRadius: "10px",
-                    background: on ? "var(--inst-ok-bg)" : "transparent",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "13px",
-                      height: "13px",
-                      border: `1px solid ${on ? "var(--inst-ok)" : "var(--inst-lock)"}`,
-                      background: on ? "var(--inst-ok)" : "transparent",
-                      borderRadius: "8px",
-                      marginTop: "2px",
-                    }}
-                  />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        color: on ? "var(--inst-text)" : "var(--tx3)",
-                        lineHeight: 1.35,
-                      }}
-                    >
-                      {p.label}
-                    </span>
-                  </div>
-                  <span
-                    className="mono tabular"
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 500,
-                      color: on ? "var(--inst-ok)" : "var(--inst-ghost)",
-                      paddingTop: "1px",
-                    }}
-                  >
-                    {p.weight}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ============ 6c. FORMULÁRIO DE TRADE ============ */}
-          <div
-            style={{
-              padding: "16px 20px",
-              borderBottom: "1px solid var(--bd)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              background: "var(--s1)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-                PARÂMETROS DA OPERAÇÃO
+            <span style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <span style={{ fontSize: "22px", fontWeight: 600, letterSpacing: "-0.01em", color: gate.liberado ? "var(--actx)" : "var(--tx)" }}>
+                {gate.liberado ? "Entrada liberada" : "Entrada bloqueada"}
               </span>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <button
-                  type="button"
-                  onClick={() => setMercado("WIN")}
-                  className="mono tabular"
-                  style={{
-                    padding: "3px 8px",
-                    fontSize: "11px",
-                    borderRadius: "8px",
-                    border: `1px solid ${mercado === "WIN" ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
-                    background: mercado === "WIN" ? "var(--inst-ok-bg)" : "transparent",
-                    color: mercado === "WIN" ? "var(--inst-ok)" : "var(--inst-faint)",
-                    cursor: "pointer",
-                  }}
-                >
-                  WIN
+              <span style={{ fontSize: "13px", color: "var(--tx2)", lineHeight: 1.45 }}>{gateMotivo}</span>
+            </span>
+          </section>
+
+          <section style={CARD}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={LBL}>Registrar trade · WIN</span>
+              <span style={H2}>{registroFrase}</span>
+            </div>
+            <div role="group" aria-label="Lado" style={SEGMENTADO}>
+              {(["COMPRA", "VENDA"] as const).map((d) => (
+                <button key={d} type="button" aria-pressed={direcao === d} onClick={() => setDirecao(d)} style={opcaoSegmentada(direcao === d)}>
+                  {d === "COMPRA" ? "Compra" : "Venda"}
                 </button>
-                {/* WDO removido: so WIN no operacional (ver MERCADOS_PERMITIDOS em lib/gate.ts). */}
-              </div>
-            </div>
-
-            {/* Direção */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-              <button
-                type="button"
-                onClick={() => setDirecao("COMPRA")}
-                className="mono tabular"
-                style={{
-                  padding: "8px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  borderRadius: "10px",
-                  border: `1px solid ${direcao === "COMPRA" ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
-                  background: direcao === "COMPRA" ? "var(--inst-ok-bg)" : "transparent",
-                  color: direcao === "COMPRA" ? "var(--inst-ok)" : "var(--inst-faint)",
-                  cursor: "pointer",
-                }}
-              >
-                COMPRA
-              </button>
-              <button
-                type="button"
-                onClick={() => setDirecao("VENDA")}
-                className="mono tabular"
-                style={{
-                  padding: "8px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  borderRadius: "10px",
-                  border: `1px solid ${direcao === "VENDA" ? "var(--inst-block)" : "var(--inst-line-2)"}`,
-                  background: direcao === "VENDA" ? "var(--inst-block-bg)" : "transparent",
-                  color: direcao === "VENDA" ? "var(--inst-block)" : "var(--inst-faint)",
-                  cursor: "pointer",
-                }}
-              >
-                VENDA
-              </button>
-            </div>
-
-            {/* Preços: Entrada, Stop, Alvo, Contratos */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-              <div>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
-                  ENTRADA
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={entrada}
-                  onChange={(e) => setEntrada(e.target.value)}
-                  placeholder="0.00"
-                  className="mono tabular"
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "8px",
-                    color: "var(--inst-text)",
-                    fontSize: "12px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
-                  STOP LOSS
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={stop}
-                  onChange={(e) => setStop(e.target.value)}
-                  placeholder="0.00"
-                  className="mono tabular"
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "8px",
-                    color: "var(--inst-text)",
-                    fontSize: "12px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
-                  ALVO (TAKE PROFIT)
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={alvo}
-                  onChange={(e) => setAlvo(e.target.value)}
-                  placeholder="0.00"
-                  className="mono tabular"
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "8px",
-                    color: "var(--inst-text)",
-                    fontSize: "12px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "3px" }}>
-                  CONTRATOS
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={contratos}
-                  disabled={true}
-                  className="mono tabular"
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "8px",
-                    color: "var(--inst-text)",
-                    fontSize: "12px",
-                    outline: "none",
-                    opacity: 0.8,
-                    cursor: "not-allowed",
-                  }}
-                />
-                <span className="mono" style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px", display: "block" }}>
-                  Declarado na pré-sessão. Alterar exige reabrir.
-                </span>
-              </div>
-            </div>
-
-            {/* Validação de Direção */}
-            {validacaoDirecao.erro && (
-              <div
-                className="mono tabular"
-                style={{
-                  fontSize: "11px",
-                  color: "var(--inst-block)",
-                  background: "var(--inst-block-bg)",
-                  padding: "6px 8px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--inst-block-line)",
-                }}
-              >
-                {validacaoDirecao.erro}
-              </div>
-            )}
-
-            {/* 3 Seletores de botão: Gatilho, Contexto da 1ª hora e Modo (FR-005) */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "4px" }}>
-              <div>
-                <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "6px" }}>
-                  GATILHO *
-                </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                  {[
-                    { val: "MSS_FVG", lbl: "MSS + FVG" },
-                    { val: "MSS_OB", lbl: "MSS + OB" },
-                    { val: "BPR", lbl: "BPR" },
-                    { val: "RISK_ENTRY", lbl: "Risk entry" },
-                    { val: "FVG_POS_SWING", lbl: "FVG após swing" },
-                  ].map((o) => {
-                    const sel = gatilho === o.val;
-                    return (
-                      <button
-                        key={o.val}
-                        type="button"
-                        onClick={() => setGatilho(o.val as GatilhoTrade)}
-                        style={{
-                          height: "34px",
-                          padding: "0 14px",
-                          borderRadius: "999px",
-                          fontFamily: "inherit",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                          background: sel ? "var(--ac)" : "transparent",
-                          color: sel ? "var(--onac)" : "var(--tx2)",
-                          border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
-                          fontWeight: sel ? 600 : 400,
-                          transition: "all 120ms ease",
-                        }}
-                      >
-                        {o.lbl}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: selectedStrategy.id === "varrida_barra_10" ? "1.6fr 1fr" : "1fr", gap: "12px" }}>
-                <div>
-                  <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "6px" }}>
-                    CONTEXTO DA 1ª HORA *
-                  </span>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                    {[
-                      { val: "CONTINUACAO", lbl: "Continuação" },
-                      { val: "REVERSAO", lbl: "Reversão" },
-                      { val: "LATERAL", lbl: "Lateral" },
-                    ].map((o) => {
-                      const sel = contexto1h === o.val;
-                      return (
-                        <button
-                          key={o.val}
-                          type="button"
-                          onClick={() => setContexto1h(o.val as Contexto1h)}
-                          style={{
-                            height: "34px",
-                            padding: "0 14px",
-                            borderRadius: "999px",
-                            fontFamily: "inherit",
-                            fontSize: "12px",
-                            cursor: "pointer",
-                            background: sel ? "var(--ac)" : "transparent",
-                            color: sel ? "var(--onac)" : "var(--tx2)",
-                            border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
-                            fontWeight: sel ? 600 : 400,
-                            transition: "all 120ms ease",
-                          }}
-                        >
-                          {o.lbl}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {selectedStrategy.id === "varrida_barra_10" && (
-                  <div>
-                    <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "6px" }}>
-                      MODO DO SETUP C *
-                    </span>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                      {[
-                        { val: "C1", lbl: "C1" },
-                        { val: "C2", lbl: "C2" },
-                      ].map((o) => {
-                        const sel = setupCModo === o.val;
-                        return (
-                          <button
-                            key={o.val}
-                            type="button"
-                            onClick={() => setSetupCModo(o.val as SetupCModo)}
-                            style={{
-                              height: "34px",
-                              padding: "0 16px",
-                              borderRadius: "999px",
-                              fontFamily: "inherit",
-                              fontSize: "12px",
-                              cursor: "pointer",
-                              background: sel ? "var(--ac)" : "transparent",
-                              color: sel ? "var(--onac)" : "var(--tx2)",
-                              border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
-                              fontWeight: sel ? 600 : 400,
-                              transition: "all 120ms ease",
-                            }}
-                          >
-                            {o.lbl}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Risco e RR em Tempo Real */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "6px",
-                background: "var(--bg)",
-                padding: "8px 10px",
-                borderRadius: "8px",
-                border: "1px solid var(--inst-line-2)",
-              }}
-            >
-              <div>
-                <span className="mono tabular" style={{ fontSize: "8px", color: "var(--inst-faint)", display: "block" }}>
-                  RISCO (R$)
-                </span>
-                <span className="mono tabular" style={{ fontSize: "12px", fontWeight: 600, color: "var(--inst-block)" }}>
-                  {metricasTrade.riscoReais > 0
-                    ? `R$ ${metricasTrade.riscoReais.toFixed(2)}`
-                    : "—"}
-                </span>
-              </div>
-              <div>
-                <span className="mono tabular" style={{ fontSize: "8px", color: "var(--inst-faint)", display: "block" }}>
-                  RETORNO (R$)
-                </span>
-                <span className="mono tabular" style={{ fontSize: "12px", fontWeight: 600, color: "var(--inst-ok)" }}>
-                  {metricasTrade.retornoReais > 0
-                    ? `R$ ${metricasTrade.retornoReais.toFixed(2)}`
-                    : "—"}
-                </span>
-              </div>
-              <div>
-                <span className="mono tabular" style={{ fontSize: "8px", color: "var(--inst-faint)", display: "block" }}>
-                  R:R ESTIMADO
-                </span>
-                <span
-                  className="mono tabular"
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: metricasTrade.rr >= 2 ? "var(--inst-ok)" : "var(--inst-now)",
-                  }}
-                >
-                  {metricasTrade.rr > 0 ? `1 : ${metricasTrade.rr.toFixed(2)}` : "—"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* ============ 6d. BLOCO DO GATE & BOTÃO ABRIR ORDEM ============ */}
-          <div
-            style={{
-              borderTop: `1px solid ${gate.liberado ? "var(--inst-ok-line)" : "var(--inst-block-line)"}`,
-              background: gate.liberado ? "var(--acs)" : "var(--inst-block-bg)",
-              padding: "16px 20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-              marginTop: "auto",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  background: gate.liberado ? "var(--inst-ok)" : "var(--inst-block)",
-                }}
-              />
-              <span
-                className="mono tabular"
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  color: gate.liberado ? "var(--inst-ok)" : "var(--inst-block)",
-                }}
-              >
-                {gate.liberado ? "GATE LIBERADO" : "GATE BLOQUEADO"}
-              </span>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              {gateMotivosExibidos.map((texto, idx) => (
-                <div key={idx} style={{ display: "grid", gridTemplateColumns: "12px 1fr", gap: "8px", alignItems: "start" }}>
-                  <span
-                    className="mono tabular"
-                    style={{
-                      fontSize: "11px",
-                      color: gate.liberado ? "var(--inst-ok)" : "var(--inst-block)",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    —
-                  </span>
-                  <span style={{ fontSize: "11.5px", color: "var(--inst-text-2)", lineHeight: 1.4 }}>
-                    {texto}
-                  </span>
-                </div>
               ))}
             </div>
-
-            {gate.avisos.length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  padding: "6px 10px",
-                  background: "var(--inst-now-bg)",
-                  border: "1px solid var(--inst-now-line)",
-                  borderRadius: "8px",
-                }}
-              >
-                {gate.avisos.map((aviso, idx) => (
-                  <div key={idx} style={{ display: "grid", gridTemplateColumns: "12px 1fr", gap: "6px", alignItems: "start" }}>
-                    <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-now)", lineHeight: 1.4 }}>
-                      !
-                    </span>
-                    <span style={{ fontSize: "10.5px", color: "var(--inst-now)", lineHeight: 1.4 }}>
-                      {aviso}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Print do Trade (Obrigatório antes de abrir ordem) */}
-            <div style={{ marginBottom: "6px" }}>
-              <PrintUpload
-                path={tradePrintPath}
-                data={getDataSaoPaulo()}
-                nome={`trade-${Date.now()}`}
-                onChange={(p) => setTradePrintPath(p)}
-                obrigatorio={true}
-                label="Print do Trade (Setup Antes do Desfecho)"
-              />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "12px", alignItems: "start" }}>
+              {campo("Entrada", entrada, setEntrada)}
+              {campo("Stop", stop, setStop)}
+              {campo("Alvo", alvo, setAlvo)}
+              {campo("Contratos", contratos, setContratos, contratosTravados ? { disabled: true, nota: "da pré-sessão" } : undefined)}
             </div>
-
-            {/* BOTÃO ABRIR ORDEM: sempre visível, travado quando bloqueado ou formulário inválido */}
-            {(() => {
-              const podeAbrir = gate.liberado && formularioValido && !submittingOrdem && !resumo?.trade_aberto_id;
-              return (
-                <button
-                  type="button"
-                  disabled={!podeAbrir}
-                  onClick={handleAbrirOrdem}
-                  className="mono tabular transition-all"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "14px",
-                    border: `1px solid ${podeAbrir ? "var(--inst-ok)" : "var(--bd)"}`,
-                    background: podeAbrir ? "var(--inst-ok)" : "transparent",
-                    borderRadius: "10px",
-                    cursor: podeAbrir ? "pointer" : "not-allowed",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12.5px",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      color: podeAbrir ? "var(--onac)" : "var(--inst-ghost)",
-                    }}
-                  >
-                    {submittingOrdem ? "REGISTRANDO ORDEM..." : "ABRIR ORDEM"}
-                  </span>
-                </button>
-              );
-            })()}
-          </div>
+            {validacaoDirecao.erro && <span style={{ fontSize: "13px", color: "var(--negtx)" }}>{validacaoDirecao.erro}</span>}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Gatilho</span>
+              {chips(
+                [
+                  { v: "MSS_FVG" as GatilhoTrade, l: "MSS + FVG" },
+                  { v: "MSS_OB" as GatilhoTrade, l: "MSS + OB" },
+                  { v: "BPR" as GatilhoTrade, l: "BPR" },
+                  { v: "RISK_ENTRY" as GatilhoTrade, l: "Risk entry" },
+                  { v: "FVG_POS_SWING" as GatilhoTrade, l: "FVG após swing" },
+                ],
+                gatilho,
+                setGatilho
+              )}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: selectedStrategy.id === "varrida_barra_10" ? "1.6fr 1fr" : "1fr", gap: "16px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Contexto da 1ª hora</span>
+                {chips(
+                  [
+                    { v: "CONTINUACAO" as Contexto1h, l: "Continuação" },
+                    { v: "REVERSAO" as Contexto1h, l: "Reversão" },
+                    { v: "LATERAL" as Contexto1h, l: "Lateral" },
+                  ],
+                  contexto1h,
+                  setContexto1h
+                )}
+              </div>
+              {selectedStrategy.id === "varrida_barra_10" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Modo do Setup C</span>
+                  {chips(
+                    [
+                      { v: "C1" as SetupCModo, l: "C1" },
+                      { v: "C2" as SetupCModo, l: "C2" },
+                    ],
+                    setupCModo,
+                    setSetupCModo
+                  )}
+                </div>
+              )}
+            </div>
+            <PrintUpload
+              path={tradePrintPath}
+              data={getDataSaoPaulo()}
+              nome={`trade-${Date.now()}`}
+              onChange={(p) => setTradePrintPath(p)}
+              obrigatorio={true}
+              label="Print da entrada · cole com Ctrl+V"
+              compacto
+            />
+            <label style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px", color: "var(--tx2)" }}>
+              Notas (opcional)
+              <textarea
+                rows={2}
+                value={checklist.notes}
+                onChange={(e) => setChecklist({ ...checklist, notes: e.target.value })}
+                placeholder="O que você viu na entrada"
+                style={{ ...INPUT, height: "auto", padding: "10px 14px", fontSize: "14px", resize: "vertical" }}
+              />
+            </label>
+            <button type="button" onClick={handleAbrirOrdem} disabled={!podeRegistrar} style={{ ...botaoPrimario(podeRegistrar), height: "52px", fontSize: "15px" }}>
+              {submittingOrdem ? "Registrando…" : "Registrar trade"}
+            </button>
+          </section>
         </div>
       </div>
 
-      {/* ============ 7. DIÁLOGO DE FECHAMENTO ============ */}
       {modalFechamentoOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.85)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-            padding: "20px",
-          }}
-        >
-          <div
-            style={{
-              background: "var(--s1)",
-              border: "1px solid var(--inst-line-2)",
-              borderRadius: "4px",
-              width: "100%",
-              maxWidth: "580px",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "18px",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
-            }}
-          >
-            {/* Header Fechamento */}
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid var(--bd)", paddingBottom: "12px" }}>
-              <div>
-                <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.16em", color: "var(--inst-now)" }}>
-                  JOURNAL DE SAÍDA
-                </span>
-                <h2 style={{ margin: "4px 0 0 0", fontSize: "18px", fontWeight: 700, letterSpacing: "-0.01em" }}>
-                  Encerramento da Operação
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setModalFechamentoOpen(false)}
-                className="mono tabular"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--inst-faint)",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
+        <div onClick={() => setModalFechamentoOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0, 0, 0, 0.7)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div role="dialog" aria-modal="true" aria-label="Fechar trade" onClick={(e) => e.stopPropagation()} style={{ ...CARD, maxWidth: "520px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={LBL}>Fechar trade</span>
+              <span style={H2}>
+                {tradeAberto ? `${tradeAberto.direcao === "COMPRA" ? "Compra" : "Venda"} · entrada ${Number(tradeAberto.entrada).toLocaleString("pt-BR")}` : "Trade aberto"}
+              </span>
             </div>
-
-            {/* Erro de validação no fechamento */}
-            {fechamentoError && (
-              <div
-                className="mono tabular"
-                style={{
-                  padding: "8px 12px",
-                  background: "var(--inst-block-bg)",
-                  border: "1px solid var(--inst-block-line)",
-                  color: "var(--inst-block)",
-                  fontSize: "11px",
-                  borderRadius: "8px",
-                }}
-              >
-                {fechamentoError}
-              </div>
-            )}
-
-            {/* Preço de saída e motivo */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
-                  PREÇO DE SAÍDA *
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={saida}
-                  onChange={(e) => setSaida(e.target.value)}
-                  placeholder="0.00"
-                  className="mono tabular"
-                  style={{
-                    width: "100%",
-                    padding: "8px 10px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "10px",
-                    color: "var(--inst-text)",
-                    fontSize: "13px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
-                  MOTIVO DA SAÍDA *
-                </label>
-                <select
-                  value={motivoSaida}
-                  onChange={(e) => setMotivoSaida(e.target.value as any)}
-                  className="mono tabular"
-                  style={{
-                    width: "100%",
-                    padding: "8px 10px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "10px",
-                    color: "var(--inst-text)",
-                    fontSize: "12px",
-                    outline: "none",
-                  }}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="ALVO">ALVO (Bateu Take Profit)</option>
-                  <option value="STOP">STOP (Bateu Stop Loss)</option>
-                  <option value="MANUAL">MANUAL (Zeragem antecipada)</option>
-                </select>
+            <label style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px", color: "var(--tx2)" }}>
+              Preço de saída
+              <input type="text" inputMode="decimal" value={saida} onChange={(e) => setSaida(e.target.value)} placeholder="0" style={INPUT} />
+            </label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Motivo da saída</span>
+              <div role="group" aria-label="Motivo da saída" style={SEGMENTADO}>
+                {([["ALVO", "Alvo"], ["STOP", "Stop"], ["MANUAL", "Manual"]] as const).map(([v, l]) => (
+                  <button key={v} type="button" aria-pressed={motivoSaida === v} onClick={() => setMotivoSaida(v)} style={opcaoSegmentada(motivoSaida === v)}>{l}</button>
+                ))}
               </div>
             </div>
-
-            {/* Se MANUAL: desfecho no plano obrigatório */}
             {motivoSaida === "MANUAL" && (
-              <div style={{ padding: "10px 14px", background: "var(--s2)", border: "1px solid var(--inst-line-2)", borderRadius: "10px" }}>
-                <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-now)", display: "block", marginBottom: "6px" }}>
-                  DESFECHO SEGUNDO O PLANO (OBRIGATÓRIO PARA SAÍDA MANUAL) *
-                </label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-                  {[
-                    { val: "BATEU_ALVO", lbl: "Bateu no Alvo" },
-                    { val: "BATEU_STOP", lbl: "Bateu no Stop" },
-                    { val: "NAO_SEI", lbl: "Não sei / Outro" },
-                  ].map((d) => (
-                    <button
-                      key={d.val}
-                      type="button"
-                      onClick={() => setDesfechoPlano(d.val as any)}
-                      className="mono tabular"
-                      style={{
-                        padding: "6px 8px",
-                        fontSize: "11px",
-                        borderRadius: "8px",
-                        border: `1px solid ${desfechoPlano === d.val ? "var(--inst-now)" : "var(--inst-line-2)"}`,
-                        background: desfechoPlano === d.val ? "var(--inst-now-bg)" : "transparent",
-                        color: desfechoPlano === d.val ? "var(--inst-now)" : "var(--inst-faint)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {d.lbl}
-                    </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Depois da saída, o preço…</span>
+                <div role="group" aria-label="Desfecho do plano" style={SEGMENTADO}>
+                  {([["BATEU_ALVO", "Bateu o alvo"], ["BATEU_STOP", "Bateu o stop"], ["NAO_SEI", "Não sei"]] as const).map(([v, l]) => (
+                    <button key={v} type="button" aria-pressed={desfechoPlano === v} onClick={() => setDesfechoPlano(v)} style={opcaoSegmentada(desfechoPlano === v)}>{l}</button>
                   ))}
                 </div>
               </div>
             )}
-
-            {/* A PERGUNTA MAIS IMPORTANTE: EXECUÇÃO (A / B / C) */}
-            <div
-              style={{
-                padding: "14px 16px",
-                background: "var(--bg)",
-                border: "1px solid var(--inst-line-2)",
-                borderRadius: "10px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--inst-text)" }}>
-                  Como foi a EXECUÇÃO? <span style={{ color: "var(--inst-now)", fontWeight: 400 }}>(não o resultado)</span>
-                </div>
-                <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px", lineHeight: 1.4 }}>
-                  Avalie o seu processo e disciplina. Vitória com execução C reforça vício e é o resultado mais perigoso no trading.
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {[
-                  {
-                    nota: "A",
-                    titulo: "A — Fiz exatamente o que devia",
-                    desc: "Sem hesitar, sem perseguir, sem antecipar. Respeito integral ao sistema.",
-                    cor: "var(--inst-ok)",
-                    bg: "var(--inst-ok-bg)",
-                  },
-                  {
-                    nota: "B",
-                    titulo: "B — Executei, mas com ruído",
-                    desc: "Hesitei, entrei um pouco torto, saí cedo ou hesitei na confirmação.",
-                    cor: "var(--inst-now)",
-                    bg: "var(--inst-now-bg)",
-                  },
-                  {
-                    nota: "C",
-                    titulo: "C — Forcei / quebrei regra",
-                    desc: "Entortei a regra, antecipei sem confirmação, busquei recuperar ou cometi erro de tilt.",
-                    cor: "var(--inst-block)",
-                    bg: "var(--inst-block-bg)",
-                  },
-                ].map((item) => {
-                  const sel = execucao === item.nota;
-                  return (
-                    <div
-                      key={item.nota}
-                      onClick={() => setExecucao(item.nota as any)}
-                      style={{
-                        padding: "10px 12px",
-                        border: `1px solid ${sel ? item.cor : "var(--inst-line-2)"}`,
-                        background: sel ? item.bg : "transparent",
-                        borderRadius: "10px",
-                        cursor: "pointer",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2px",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span className="mono tabular" style={{ fontSize: "12px", fontWeight: 700, color: sel ? item.cor : "var(--inst-text)" }}>
-                          {item.titulo}
-                        </span>
-                        {sel && <span style={{ color: item.cor, fontSize: "12px" }}>✓</span>}
-                      </div>
-                      <span style={{ fontSize: "11px", color: "var(--inst-dim)", lineHeight: 1.35 }}>
-                        {item.desc}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* As 4 perguntas de disciplina */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <span className="mono tabular" style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--inst-faint)" }}>
-                CHECKLIST DE DISCIPLINA *
-              </span>
-
-              {[
-                { label: "Respeitou o plano?", val: respeitouPlano, set: setRespeitouPlano },
-                { label: "Antecipou o stop?", val: antecipouStop, set: setAntecipouStop },
-                { label: "Fez parcial emocional?", val: parcialEmocional, set: setParcialEmocional },
-                { label: "Mudou o alvo durante o trade?", val: mudouAlvo, set: setMudouAlvo },
-              ].map((perg, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "8px 12px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--inst-line-2)",
-                    borderRadius: "8px",
-                  }}
-                >
-                  <span style={{ fontSize: "12px", color: "var(--inst-text-2)" }}>{perg.label}</span>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    <button
-                      type="button"
-                      onClick={() => perg.set(true)}
-                      className="mono tabular"
-                      style={{
-                        padding: "3px 10px",
-                        fontSize: "11px",
-                        borderRadius: "8px",
-                        border: `1px solid ${perg.val === true ? "var(--inst-ok)" : "var(--inst-line-2)"}`,
-                        background: perg.val === true ? "var(--inst-ok-bg)" : "transparent",
-                        color: perg.val === true ? "var(--inst-ok)" : "var(--inst-faint)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      SIM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => perg.set(false)}
-                      className="mono tabular"
-                      style={{
-                        padding: "3px 10px",
-                        fontSize: "11px",
-                        borderRadius: "8px",
-                        border: `1px solid ${perg.val === false ? "var(--inst-block)" : "var(--inst-line-2)"}`,
-                        background: perg.val === false ? "var(--inst-block-bg)" : "transparent",
-                        color: perg.val === false ? "var(--inst-block)" : "var(--inst-faint)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      NÃO
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Nota da execução</span>
+              <div role="group" aria-label="Nota da execução" style={SEGMENTADO}>
+                {(["A", "B", "C"] as const).map((v) => (
+                  <button key={v} type="button" aria-pressed={execucao === v} onClick={() => setExecucao(v)} style={opcaoSegmentada(execucao === v)}>{v}</button>
+                ))}
+              </div>
             </div>
-
-            {/* Notas livres de encerramento */}
-            <div>
-              <label className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-faint)", display: "block", marginBottom: "4px" }}>
-                OBSERVAÇÕES DO FECHAMENTO
-              </label>
-              <textarea
-                value={fechamentoNotas}
-                onChange={(e) => setFechamentoNotas(e.target.value)}
-                placeholder="Sentimento, contexto da saída, motivos de eventual desvio..."
-                rows={2}
-                className="mono tabular"
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  background: "var(--bg)",
-                  border: "1px solid var(--inst-line-2)",
-                  borderRadius: "10px",
-                  color: "var(--inst-text)",
-                  fontSize: "12px",
-                  outline: "none",
-                  resize: "vertical",
-                }}
-              />
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingTop: "12px", borderTop: "1px solid var(--bd)" }}>
+              {simNao("Respeitou o plano?", respeitouPlano, setRespeitouPlano)}
+              {simNao("Antecipou o stop?", antecipouStop, setAntecipouStop)}
+              {simNao("Fez parcial por emoção?", parcialEmocional, setParcialEmocional)}
+              {simNao("Mudou o alvo?", mudouAlvo, setMudouAlvo)}
             </div>
-
-            {/* Botões de Ação do Diálogo */}
-            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-              <button
-                type="button"
-                onClick={() => setModalFechamentoOpen(false)}
-                className="mono tabular"
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  background: "transparent",
-                  border: "1px solid var(--inst-line-2)",
-                  color: "var(--inst-dim)",
-                  borderRadius: "10px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                CANCELAR
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmarFechamento}
-                disabled={fechamentoSubmitting}
-                className="mono tabular"
-                style={{
-                  flex: 2,
-                  padding: "12px",
-                  background: "var(--inst-ok)",
-                  border: "1px solid var(--inst-ok)",
-                  color: "var(--onac)",
-                  borderRadius: "10px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  cursor: fechamentoSubmitting ? "not-allowed" : "pointer",
-                }}
-              >
-                {fechamentoSubmitting ? "FECHANDO..." : "CONFIRMAR FECHAMENTO"}
+            <label style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px", color: "var(--tx2)" }}>
+              Notas (opcional)
+              <textarea rows={2} value={fechamentoNotas} onChange={(e) => setFechamentoNotas(e.target.value)} style={{ ...INPUT, height: "auto", padding: "10px 14px", fontSize: "14px", resize: "vertical" }} />
+            </label>
+            {fechamentoError && <span style={{ fontSize: "13px", color: "var(--negtx)" }}>{fechamentoError}</span>}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <button type="button" onClick={() => setModalFechamentoOpen(false)} style={BOTAO_SECUNDARIO}>Cancelar</button>
+              <button type="button" onClick={handleConfirmarFechamento} disabled={fechamentoSubmitting} style={botaoPrimario(!fechamentoSubmitting)}>
+                {fechamentoSubmitting ? "Fechando…" : "Confirmar fechamento"}
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
+
+const NOME_CURTO: Record<string, string> = {
+  varrida_barra_10: "Varrida das 10",
+  continuidade_tendencia: "Continuidade",
+  reversao_htf: "Reversão HTF",
+};

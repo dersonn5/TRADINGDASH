@@ -10,19 +10,10 @@ import {
   pendenciasDaPreSessao,
   PreSessao,
 } from "@/lib/copa-db";
-import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10 } from "@/data/strategies";
-import {
-  InstPage,
-  InstCard,
-  InstLabel,
-  InstBadge,
-  InstBand,
-  InstDivider,
-  InstEmpty,
-  InstNum,
-} from "@/components/inst";
 import { PrintUpload } from "@/components/print-upload";
-import { Plus, Trash2, Check, Lock, Unlock, AlertCircle, ArrowRight, X } from "lucide-react";
+import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
+
+// Espelho de design/v2/PreSessao.dc.html. A logica (auto-save, fechar, reabrir) nao mudou.
 
 export default function PreSessaoPage() {
   const [sessao, setSessao] = useState<PreSessao | null>(null);
@@ -153,871 +144,371 @@ export default function PreSessaoPage() {
     updateField("agenda", novos);
   };
 
-  if (loading) {
+  if (loading || !sessao) {
     return (
-      <InstPage eyebrow="RITUAL MATINAL" title="Pré-sessão">
-        <InstEmpty>Carregando ritual de pré-sessão...</InstEmpty>
-      </InstPage>
-    );
-  }
-
-  if (!sessao) {
-    return (
-      <InstPage eyebrow="RITUAL MATINAL" title="Pré-sessão">
-        <InstEmpty>Sessão não disponível.</InstEmpty>
-      </InstPage>
+      <>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Ritual antes das 10:00</span>
+          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Pré-Sessão</h1>
+        </div>
+        <div style={{ ...CARD, alignItems: "center", padding: "48px", color: "var(--tx3)", fontSize: "14px" }}>
+          {loading ? "Carregando…" : "Pré-sessão indisponível."}
+        </div>
+      </>
     );
   }
 
   const isFechada = Boolean(sessao.fechada_em);
   const pendencias = pendenciasDaPreSessao(sessao);
+  const bloqueado = pendencias.length > 0;
 
-  // Formatação do cabeçalho
-  const dataHojeObj = new Date();
-  const formatadorData = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const dataExtenso = formatadorData.format(dataHojeObj);
+  const dataExtenso = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "long", day: "numeric", month: "long" }).format(new Date());
   const dataFormatada = dataExtenso.charAt(0).toUpperCase() + dataExtenso.slice(1);
-  const eyebrowTexto = dataFormatada;
 
-  const inputStyle: React.CSSProperties = {
-    background: "var(--inst-panel-2)",
-    border: "1px solid var(--inst-line)",
-    color: "var(--inst-text)",
-    borderRadius: "10px",
-    padding: "8px 12px",
-    fontSize: "12px",
-    outline: "none",
+  // Os 6 requisitos do fechamento — mesma regra de pendenciasDaPreSessao
+  const requisitos = [
+    { l: "Print HTF", ok: Boolean(sessao.screenshot_path) },
+    { l: "Bias H1", ok: sessao.bias_h1 !== "INDEFINIDO" },
+    { l: "Contexto", ok: sessao.contexto !== "INDEFINIDO" },
+    { l: "2 níveis", ok: sessao.niveis.length >= 2 },
+    { l: "Setup do dia", ok: Boolean(sessao.setup_do_dia) },
+    { l: "Tamanho", ok: sessao.setup_do_dia === "NENHUM" || (sessao.contratos_declarados ?? 0) > 0 },
+  ];
+
+  const BIAS = [
+    { v: "COMPRA", l: "Compra" },
+    { v: "VENDA", l: "Venda" },
+    { v: "INDEFINIDO", l: "Indefinido" },
+  ] as const;
+  const CONTEXTOS = [
+    { v: "TENDENCIA", l: "Tendência" },
+    { v: "RANGE", l: "Range" },
+    { v: "INDEFINIDO", l: "Indefinido" },
+  ] as const;
+  const SETUPS = [
+    { v: "reversao_htf", tag: "SETUP A", l: "Reversão HTF", d: "Sweep de liquidez HTF e MSS no 1m" },
+    { v: "continuidade_tendencia", tag: "SETUP B", l: "Continuidade", d: "Captura do extremo do swing a favor da tendência" },
+    { v: "varrida_barra_10", tag: "SETUP C", l: "Varrida das 10", d: "A barra das 10 varre ou é varrida" },
+    { v: "NENHUM", tag: "SEM SETUP", l: "Não operar hoje", d: "Dia fora do plano" },
+  ] as const;
+  const IMPACTO: Record<string, { l: string; bg: string; cor: string }> = {
+    ALTO: { l: "Alto", bg: "var(--ac)", cor: "var(--onac)" },
+    MEDIO: { l: "Médio", bg: "var(--acs)", cor: "var(--actx)" },
+    BAIXO: { l: "Baixo", bg: "var(--s2)", cor: "var(--tx2)" },
   };
+  const nomeBias = (v: string) => BIAS.find((b) => b.v === v)?.l.toLowerCase() ?? v;
+  const nomeCtx = CONTEXTOS.find((c) => c.v === sessao.contexto)?.l.toLowerCase() ?? "";
+  const eventoAlto = sessao.agenda.find((e) => e.impacto === "ALTO" && e.evento.trim());
+  const agendaFrase = sessao.agenda.length === 0
+    ? "Nenhum evento registrado para hoje"
+    : eventoAlto
+      ? `${eventoAlto.evento} às ${eventoAlto.horario} é o evento de maior impacto`
+      : "Nenhum evento de impacto alto";
+  const contratos = sessao.contratos_declarados ?? 0;
+  const semSetup = sessao.setup_do_dia === "NENHUM";
+  const nomeSetupDia = SETUPS.find((s) => s.v === sessao.setup_do_dia)?.l ?? "—";
 
-  const btnChoiceStyle = (selecionado: boolean, disabled: boolean): React.CSSProperties => ({
-    background: selecionado ? "var(--inst-panel-2)" : "transparent",
-    border: selecionado ? "1px solid var(--inst-ok)" : "1px solid var(--inst-line)",
-    color: selecionado ? "var(--inst-ok)" : "var(--inst-dim)",
-    padding: "8px 16px",
-    borderRadius: "10px",
-    fontSize: "11px",
-    fontWeight: selecionado ? 700 : 500,
-    cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled && !selecionado ? 0.4 : 1,
-    transition: "all 0.15s ease",
-  });
+  const escala = (campo: "sono" | "tilt" | "pressao", valor: number) => (
+    <div style={{ flexGrow: 1, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "4px" }}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <button
+          key={i}
+          type="button"
+          aria-label={`${i} de 5`}
+          disabled={isFechada}
+          onClick={() => updateField(campo, valor === i ? i - 1 : i)}
+          style={{ height: "10px", padding: 0, border: 0, borderRadius: "3px", cursor: isFechada ? "not-allowed" : "pointer", background: i <= valor ? "var(--ac)" : "var(--s2)" }}
+        />
+      ))}
+    </div>
+  );
+
+  const cabecalhoCard = (label: string, frase: React.ReactNode, direita?: React.ReactNode) => (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        <span style={LBL}>{label}</span>
+        <span style={H2}>{frase}</span>
+      </div>
+      {direita}
+    </div>
+  );
+
+  const botaoAdicionar = (texto: string, onClick: () => void) =>
+    isFechada ? null : (
+      <button type="button" onClick={onClick} style={{ height: "40px", padding: "0 16px", borderRadius: "10px", border: 0, background: "var(--acs)", color: "var(--actx)", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
+        + {texto}
+      </button>
+    );
+
+  const botaoRemover = (onClick: () => void, rotulo: string) =>
+    isFechada ? null : (
+      <button type="button" aria-label={rotulo} onClick={onClick} style={{ width: "36px", height: "36px", flexShrink: 0, borderRadius: "8px", border: 0, background: "transparent", color: "var(--tx3)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" }}>
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    );
+
+  const campoLinha: React.CSSProperties = { ...INPUT, height: "36px", fontSize: "14px", background: "transparent", border: "1px solid transparent", padding: "0 8px" };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
-      {/* Cabeçalho v2 */}
+    <>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>
-            {eyebrowTexto} · ritual antes das 10:00
-          </span>
-          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>
-            Pré-Sessão
-          </h1>
+          <span style={{ fontSize: "13px", color: "var(--tx3)" }}>{dataFormatada} · ritual antes das 10:00</span>
+          <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Pré-Sessão</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {!isFechada && (
-            <span style={{ fontSize: "12px", color: saveStatus === "salvando" ? "var(--ac)" : "var(--tx3)" }}>
-              {saveStatus === "salvando" ? "Salvando..." : "Salvo"}
+            <span style={{ fontSize: "12px", color: saveStatus === "erro" ? "var(--negtx)" : "var(--tx3)" }}>
+              {saveStatus === "salvando" ? "Salvando…" : saveStatus === "erro" ? "Erro ao salvar" : "Salvo"}
             </span>
           )}
-          <span
-            style={{
-              height: "32px",
-              padding: "0 14px",
-              borderRadius: "999px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontSize: "13px",
-              background: "var(--s1)",
-              border: "1px solid var(--bd)",
-              color: "var(--tx2)",
-            }}
-          >
-            <span
-              style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                background: isFechada ? "var(--tx3)" : "var(--ac)",
-              }}
-            />
-            {isFechada ? "Fechada" : "Aberta"}
+          <span style={{ height: "32px", padding: "0 14px", borderRadius: "999px", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", background: "var(--s1)", border: "1px solid var(--bd)", color: "var(--tx2)" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: isFechada || !bloqueado ? "var(--ac)" : "var(--tx3)" }} />
+            {isFechada ? "Fechada" : bloqueado ? `Aberta · ${pendencias.length} ${pendencias.length === 1 ? "pendência" : "pendências"}` : "Pronta para fechar"}
           </span>
           {isFechada ? (
-            <button
-              type="button"
-              onClick={() => setModalReabrir(true)}
-              style={{
-                height: "44px",
-                padding: "0 22px",
-                borderRadius: "12px",
-                border: "1px solid var(--bd)",
-                background: "transparent",
-                color: "var(--tx2)",
-                fontFamily: "inherit",
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
-            >
+            <button type="button" onClick={() => setModalReabrir(true)} style={{ ...botaoPrimario(true), background: "transparent", color: "var(--tx2)", border: "1px solid var(--bd)", fontWeight: 400 }}>
               Reabrir
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleFechar}
-              disabled={fechando || pendencias.length > 0}
-              style={{
-                height: "44px",
-                padding: "0 22px",
-                borderRadius: "12px",
-                border: 0,
-                fontFamily: "inherit",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: fechando || pendencias.length > 0 ? "not-allowed" : "pointer",
-                background: pendencias.length > 0 ? "var(--s1)" : "var(--ac)",
-                color: pendencias.length > 0 ? "var(--tx3)" : "var(--onac)",
-                opacity: fechando ? 0.7 : 1,
-              }}
-            >
-              {fechando ? "Fechando..." : "Fechar pré-sessão"}
+            <button type="button" onClick={handleFechar} disabled={fechando || bloqueado} style={botaoPrimario(!bloqueado && !fechando)}>
+              {fechando ? "Fechando…" : "Fechar pré-sessão"}
             </button>
           )}
         </div>
       </div>
-      <div style={{ fontSize: "12px", color: "var(--inst-dim)", marginTop: "-12px", marginBottom: "8px" }}>
-        Mapeamento institucional frio e declaração mecânica antes da abertura do pregão.
-      </div>
 
-      {isFechada && (
-        <InstBand
-          tom="ok"
-          titulo="PRÉ-SESSÃO FECHADA E AUDITADA"
-          linhas={[
-            `Fechada em ${new Date(sessao.fechada_em!).toLocaleTimeString("pt-BR")}. As escolhas foram congeladas para o pregão.`,
-            `Setup: ${sessao.setup_do_dia || "NENHUM"} | Tamanho: ${sessao.contratos_declarados || 0} contrato(s)`,
-          ]}
-          acao={
-            <Link href="/checklist">
-              <button
-                type="button"
-                className="mono tabular"
-                style={{
-                  background: "var(--inst-ok)",
-                  border: "1px solid var(--inst-ok)",
-                  color: "var(--onac)",
-                  borderRadius: "10px",
-                  padding: "8px 16px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Ir para o Checklist Pregão
-              </button>
-            </Link>
-          }
-        />
-      )}
-
-      {/* 1. PRINT DO GRÁFICO HTF */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-              1 · Print do Gráfico HTF (Obrigatório)
-            </div>
-            <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-              60m e 15m com liquidez e arrays marcados, antes das 09:00.
-            </div>
-          </div>
-
-          <PrintUpload
-            path={sessao.screenshot_path}
-            data={sessao.data}
-            nome="htf_presessao"
-            onChange={(p) => updateField("screenshot_path", p)}
-            obrigatorio={true}
-            disabled={isFechada}
-          />
-        </div>
-      </InstCard>
-
-      {/* 2. LIQUIDEZ E ARRAYS */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-                2 · Liquidez e Arrays
-              </div>
-              <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-                Mapeie os níveis institucionais de destino e origem no HTF.
-              </div>
-            </div>
-
-            <div className="mono tabular" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "11px", color: sessao.niveis.length >= 2 ? "var(--inst-ok)" : "var(--inst-block)", fontWeight: 700 }}>
-                {sessao.niveis.length} marcados — mínimo 2
-              </span>
-              {!isFechada && (
-                <button
-                  type="button"
-                  onClick={adicionarNivel}
-                  className="mono tabular"
-                  style={{
-                    background: "var(--inst-panel-2)",
-                    border: "1px solid var(--inst-line)",
-                    color: "var(--inst-text)",
-                    borderRadius: "10px",
-                    padding: "4px 10px",
-                    fontSize: "11px",
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  <Plus style={{ width: "12px", height: "12px" }} /> Adicionar Nível
-                </button>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: "12px" }}>
+        {requisitos.map((r) => (
+          <div key={r.l} style={{ padding: "14px 16px", borderRadius: "14px", background: "var(--s1)", border: "1px solid var(--bd)", display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ width: "24px", height: "24px", flexShrink: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: r.ok ? "var(--ac)" : "var(--s2)", color: "var(--onac)" }}>
+              {r.ok && (
+                <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: "none", stroke: "currentColor", strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round" }}>
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
               )}
-            </div>
+            </span>
+            <span style={{ fontSize: "13px", lineHeight: 1.3, color: r.ok ? "var(--tx)" : "var(--tx3)" }}>{r.l}</span>
           </div>
+        ))}
+      </div>
 
-          {sessao.niveis.length === 0 ? (
-            <div className="mono" style={{ fontSize: "11px", color: "var(--inst-faint)", padding: "12px 0", textAlign: "center" }}>
-              Nenhum nível marcado. Adicione ao menos 2 níveis (ex: BSL 60m, FVG 15m).
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {sessao.niveis.map((n, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <input
-                    type="text"
-                    placeholder="Identificação (ex: BSL 60m, FVG 15m, Equal Lows)"
-                    value={n.label}
-                    onChange={(e) => atualizarNivel(idx, "label", e.target.value)}
-                    disabled={isFechada}
-                    className="mono"
-                    style={{ ...inputStyle, flex: 2 }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Preço (ex: 132.500)"
-                    value={n.preco}
-                    onChange={(e) => atualizarNivel(idx, "preco", e.target.value)}
-                    disabled={isFechada}
-                    className="mono tabular"
-                    style={{ ...inputStyle, flex: 1 }}
-                  />
-                  {!isFechada && (
-                    <button
-                      type="button"
-                      onClick={() => removerNivel(idx)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--inst-block)",
-                        cursor: "pointer",
-                        padding: "6px",
-                      }}
-                      title="Remover"
-                    >
-                      <Trash2 style={{ width: "14px", height: "14px" }} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </InstCard>
-
-      {/* 3. CONTEXTO */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-              3 · Contexto Macro de Mercado
-            </div>
-            <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-              Classificação do regime de liquidez atual. INDEFINIDO bloqueia o fechamento.
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {(["TENDENCIA", "RANGE", "INDEFINIDO"] as const).map((ctx) => (
-              <button
-                key={ctx}
-                type="button"
-                onClick={() => updateField("contexto", ctx)}
-                disabled={isFechada}
-                className="mono"
-                style={btnChoiceStyle(sessao.contexto === ctx, isFechada)}
-              >
-                {ctx === "TENDENCIA" ? "TENDÊNCIA" : ctx}
-              </button>
-            ))}
-          </div>
-        </div>
-      </InstCard>
-
-      {/* 4. BIAS */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-              4 · Direcional / Bias (D1 e H1)
-            </div>
-            <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-              Bias H1 é obrigatório e precisa estar definido como COMPRA ou VENDA.
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
-            {/* Bias D1 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <InstLabel>Bias Diário (D1)</InstLabel>
-              <div style={{ display: "flex", gap: "6px" }}>
-                {(["COMPRA", "VENDA", "INDEFINIDO"] as const).map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => updateField("bias_d1", b)}
-                    disabled={isFechada}
-                    className="mono"
-                    style={{ ...btnChoiceStyle(sessao.bias_d1 === b, isFechada), flex: 1, textAlign: "center" }}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Bias H1 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <InstLabel>Bias Intraday (H1)</InstLabel>
-                <span style={{ fontSize: "11px", color: "var(--inst-block)", fontWeight: 700 }}>*</span>
-              </div>
-              <div style={{ display: "flex", gap: "6px" }}>
-                {(["COMPRA", "VENDA", "INDEFINIDO"] as const).map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => updateField("bias_h1", b)}
-                    disabled={isFechada}
-                    className="mono"
-                    style={{ ...btnChoiceStyle(sessao.bias_h1 === b, isFechada), flex: 1, textAlign: "center" }}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </InstCard>
-
-      {/* 5. SETUP DO DIA */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-              5 · Setup do Dia (Decisão Fria)
-            </div>
-            <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-              A escolha é feita antes da abertura e congela o pregão. NENHUM tem o mesmo peso visual.
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
-            <button
-              type="button"
-              onClick={() => updateField("setup_do_dia", "reversao_htf")}
+      <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "20px", alignItems: "start" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <section style={CARD}>
+            {cabecalhoCard("1 · Print do gráfico HTF", "60m e 15m com liquidez e arrays marcados")}
+            <PrintUpload
+              path={sessao.screenshot_path}
+              data={sessao.data}
+              nome="htf_presessao"
+              onChange={(p) => updateField("screenshot_path", p)}
+              obrigatorio={true}
               disabled={isFechada}
-              className="mono"
-              style={{
-                ...btnChoiceStyle(sessao.setup_do_dia === "reversao_htf", isFechada),
-                padding: "16px 14px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <span style={{ fontSize: "13px", fontWeight: 700 }}>REVERSÃO HTF</span>
-              <span style={{ fontSize: "11px", opacity: 0.7 }}>7 KILLs · 6 PONTOS</span>
-            </button>
+            />
+          </section>
 
-            <button
-              type="button"
-              onClick={() => updateField("setup_do_dia", "continuidade_tendencia")}
-              disabled={isFechada}
-              className="mono"
-              style={{
-                ...btnChoiceStyle(sessao.setup_do_dia === "continuidade_tendencia", isFechada),
-                padding: "16px 14px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <span style={{ fontSize: "13px", fontWeight: 700 }}>CONTINUIDADE DE TENDÊNCIA</span>
-              <span style={{ fontSize: "11px", opacity: 0.7 }}>6 KILLs · 6 PONTOS</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => updateField("setup_do_dia", "varrida_barra_10")}
-              disabled={isFechada}
-              className="mono"
-              style={{
-                ...btnChoiceStyle(sessao.setup_do_dia === "varrida_barra_10", isFechada),
-                padding: "16px 14px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <span style={{ fontSize: "13px", fontWeight: 700 }}>VARRIDA DA BARRA DAS 10</span>
-              <span style={{ fontSize: "11px", opacity: 0.7 }}>7 KILLs · 5 PONTOS · EM TESTE</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => updateField("setup_do_dia", "NENHUM")}
-              disabled={isFechada}
-              className="mono"
-              style={{
-                ...btnChoiceStyle(sessao.setup_do_dia === "NENHUM", isFechada),
-                padding: "16px 14px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <span style={{ fontSize: "13px", fontWeight: 700 }}>NENHUM (NÃO OPERAR)</span>
-              <span style={{ fontSize: "11px", opacity: 0.7 }}>Preservação de Capital</span>
-            </button>
-          </div>
-
-          {sessao.setup_do_dia && (
-            <div
-              className="mono"
-              style={{
-                fontSize: "11px",
-                color: "var(--inst-dim)",
-                background: "var(--inst-panel-2)",
-                border: "1px solid var(--inst-line-2)",
-                borderRadius: "10px",
-                padding: "10px 14px",
-                lineHeight: 1.5,
-              }}
-            >
-              {sessao.setup_do_dia === "reversao_htf" && REVERSAO_HTF.descricao}
-              {sessao.setup_do_dia === "continuidade_tendencia" && CONTINUIDADE_TENDENCIA.descricao}
-              {sessao.setup_do_dia === "varrida_barra_10" && VARRIDA_BARRA_10.descricao}
-              {sessao.setup_do_dia === "NENHUM" &&
-                "Hoje é dia de não operar. Decisão válida e sem risco ao capital. O checklist não permitirá novas ordens."}
-            </div>
-          )}
-        </div>
-      </InstCard>
-
-      {/* 6. TAMANHO DECLARADO (se setup !== NENHUM) */}
-      {sessao.setup_do_dia !== "NENHUM" && (
-        <InstCard>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-                6 · Tamanho Declarado
-              </div>
-              <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-                Declarado agora, frio. Trava durante o pregão.
-              </div>
-            </div>
-
-            <div style={{ maxWidth: "240px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <InstLabel>Quantidade de Contratos</InstLabel>
-              <input
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Ex: 1 ou 2"
-                value={sessao.contratos_declarados || ""}
-                onChange={(e) => updateField("contratos_declarados", parseInt(e.target.value, 10) || null)}
-                disabled={isFechada}
-                className="mono tabular"
-                style={{ ...inputStyle, fontWeight: 700 }}
-              />
-            </div>
-          </div>
-        </InstCard>
-      )}
-
-      {/* 7. AGENDA */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-                7 · Agenda e Notícias Macro
-              </div>
-              <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-                Eventos econômicos que podem gerar volatilidade artificial.
-              </div>
-            </div>
-
-            {!isFechada && (
-              <button
-                type="button"
-                onClick={adicionarEvento}
-                className="mono tabular"
-                style={{
-                  background: "var(--inst-panel-2)",
-                  border: "1px solid var(--inst-line)",
-                  color: "var(--inst-text)",
-                  borderRadius: "10px",
-                  padding: "4px 10px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                <Plus style={{ width: "12px", height: "12px" }} /> Adicionar Notícia
-              </button>
+          <section style={CARD}>
+            {cabecalhoCard(
+              "2 · Liquidez e arrays",
+              `${sessao.niveis.length} ${sessao.niveis.length === 1 ? "nível marcado" : "níveis marcados"} · mínimo 2`,
+              botaoAdicionar("Adicionar nível", adicionarNivel)
             )}
-          </div>
+            {sessao.niveis.length === 0 && (
+              <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Nenhum nível marcado. Ex.: BSL 60m, FVG 15m, SSL da 1ª hora.</span>
+            )}
+            {sessao.niveis.map((nv, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 6px 6px 14px", borderRadius: "12px", background: "var(--bg)", border: "1px solid var(--bd)" }}>
+                <input
+                  type="text"
+                  aria-label="Nível"
+                  placeholder="BSL 60m, FVG 15m…"
+                  value={nv.label}
+                  onChange={(e) => atualizarNivel(idx, "label", e.target.value)}
+                  disabled={isFechada}
+                  style={{ ...campoLinha, flexGrow: 1 }}
+                />
+                <input
+                  type="text"
+                  aria-label="Preço"
+                  placeholder="132.500"
+                  value={nv.preco}
+                  onChange={(e) => atualizarNivel(idx, "preco", e.target.value)}
+                  disabled={isFechada}
+                  style={{ ...campoLinha, width: "120px", textAlign: "right", fontWeight: 600, fontSize: "15px" }}
+                />
+                {botaoRemover(() => removerNivel(idx), "Remover nível")}
+              </div>
+            ))}
+          </section>
 
-          {sessao.agenda.length === 0 ? (
-            <div className="mono" style={{ fontSize: "11px", color: "var(--inst-faint)", padding: "8px 0", textAlign: "center" }}>
-              Nenhum evento registrado para hoje.
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {sessao.agenda.map((ev, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <input
-                    type="text"
-                    placeholder="Evento (ex: Payroll, CPI, Vencimento)"
-                    value={ev.evento}
-                    onChange={(e) => atualizarEvento(idx, "evento", e.target.value)}
-                    disabled={isFechada}
-                    className="mono"
-                    style={{ ...inputStyle, flex: 2 }}
-                  />
+          <section style={CARD}>
+            {cabecalhoCard("5 · Agenda do dia", agendaFrase, botaoAdicionar("Adicionar evento", adicionarEvento))}
+            {sessao.agenda.map((ev, idx) => {
+              const imp = IMPACTO[ev.impacto] ?? IMPACTO.MEDIO;
+              return (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "8px 0", borderTop: "1px solid var(--bd)" }}>
                   <input
                     type="time"
+                    aria-label="Horário"
                     value={ev.horario}
                     onChange={(e) => atualizarEvento(idx, "horario", e.target.value)}
                     disabled={isFechada}
-                    className="mono tabular"
-                    style={{ ...inputStyle, width: "95px" }}
+                    style={{ ...campoLinha, width: "84px", fontWeight: 600, fontSize: "15px", padding: 0, colorScheme: "dark light" }}
+                  />
+                  <input
+                    type="text"
+                    aria-label="Evento"
+                    placeholder="Payroll, CPI, abertura de NY…"
+                    value={ev.evento}
+                    onChange={(e) => atualizarEvento(idx, "evento", e.target.value)}
+                    disabled={isFechada}
+                    style={{ ...campoLinha, flexGrow: 1, color: "var(--tx2)" }}
                   />
                   <select
+                    aria-label="Impacto"
                     value={ev.impacto}
                     onChange={(e) => atualizarEvento(idx, "impacto", e.target.value)}
                     disabled={isFechada}
-                    className="mono"
-                    style={{ ...inputStyle, width: "110px" }}
+                    style={{ height: "26px", padding: "0 12px", borderRadius: "999px", border: 0, fontFamily: "inherit", fontSize: "12px", fontWeight: 600, background: imp.bg, color: imp.cor, appearance: "none", textAlign: "center", cursor: isFechada ? "not-allowed" : "pointer" }}
                   >
-                    <option value="BAIXO">BAIXO</option>
-                    <option value="MEDIO">MÉDIO</option>
-                    <option value="ALTO">ALTO</option>
+                    <option value="ALTO">Alto</option>
+                    <option value="MEDIO">Médio</option>
+                    <option value="BAIXO">Baixo</option>
                   </select>
-                  {!isFechada && (
-                    <button
-                      type="button"
-                      onClick={() => removerEvento(idx)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--inst-block)",
-                        cursor: "pointer",
-                        padding: "6px",
-                      }}
-                      title="Remover"
-                    >
-                      <Trash2 style={{ width: "14px", height: "14px" }} />
-                    </button>
-                  )}
+                  {botaoRemover(() => removerEvento(idx), "Remover evento")}
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </section>
         </div>
-      </InstCard>
 
-      {/* 8. ESTADO EMOCIONAL */}
-      <InstCard>
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-              8 · Autoavaliação de Estado Físico & Emocional
-            </div>
-            <div style={{ fontSize: "11px", color: "var(--inst-dim)", marginTop: "2px" }}>
-              Notas de 0 a 5 em botões discretos.
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-            {/* Sono */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <InstLabel>Qualidade do Sono</InstLabel>
-                <span className="mono tabular" style={{ fontSize: "11px", color: "var(--inst-text)" }}>
-                  {sessao.sono} / 5
-                </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <section style={CARD}>
+            {cabecalhoCard("3 · Bias e contexto", `D1 ${nomeBias(sessao.bias_d1)} · H1 ${nomeBias(sessao.bias_h1)} · ${nomeCtx}`)}
+            {([
+              ["Bias diário (D1)", "bias_d1", BIAS],
+              ["Bias intraday (H1)", "bias_h1", BIAS],
+              ["Contexto", "contexto", CONTEXTOS],
+            ] as const).map(([rotulo, campo, opcoes]) => (
+              <div key={campo} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={{ fontSize: "13px", color: "var(--tx2)" }}>{rotulo}</span>
+                <div role="group" aria-label={rotulo} style={SEGMENTADO}>
+                  {opcoes.map((o) => {
+                    const sel = sessao[campo] === o.v;
+                    return (
+                      <button key={o.v} type="button" aria-pressed={sel} disabled={isFechada} onClick={() => updateField(campo, o.v as never)} style={opcaoSegmentada(sel, isFechada)}>
+                        {o.l}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div style={{ display: "flex", gap: "4px" }}>
-                {[0, 1, 2, 3, 4, 5].map((val) => (
+            ))}
+          </section>
+
+          <section style={CARD}>
+            {cabecalhoCard("4 · Setup do dia", "Um setup por dia, escolhido agora — não no calor")}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
+              {SETUPS.map((o) => {
+                const sel = sessao.setup_do_dia === o.v;
+                return (
                   <button
-                    key={val}
+                    key={o.v}
                     type="button"
-                    onClick={() => updateField("sono", val)}
+                    aria-pressed={sel}
                     disabled={isFechada}
-                    className="mono tabular"
-                    style={{ ...btnChoiceStyle(sessao.sono === val, isFechada), flex: 1, padding: "6px 0", textAlign: "center" }}
+                    onClick={() => updateField("setup_do_dia", o.v)}
+                    style={{ textAlign: "left", padding: "14px 16px", borderRadius: "12px", cursor: isFechada ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", gap: "6px", background: sel ? "var(--acs)" : "var(--bg)", border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`, color: "var(--tx)" }}
                   >
-                    {val}
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: sel ? "var(--actx)" : "var(--tx3)" }}>{o.tag}</span>
+                    <span style={{ fontSize: "14px", fontWeight: 600 }}>{o.l}</span>
+                    <span style={{ fontSize: "12px", lineHeight: 1.4, color: "var(--tx2)" }}>{o.d}</span>
                   </button>
-                ))}
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "14px", borderTop: "1px solid var(--bd)", opacity: semSetup ? 0.4 : 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 500 }}>Contratos declarados</span>
+                <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{semSetup ? "não se aplica: dia sem setup" : "tamanho fixo para o dia"}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px", borderRadius: "12px", border: "1px solid var(--bd)", background: "var(--bg)" }}>
+                <button type="button" aria-label="Menos um contrato" disabled={isFechada || semSetup} onClick={() => updateField("contratos_declarados", contratos > 1 ? contratos - 1 : null)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>−</button>
+                <span style={{ width: "44px", textAlign: "center", fontSize: "20px", fontWeight: 600 }}>{contratos}</span>
+                <button type="button" aria-label="Mais um contrato" disabled={isFechada || semSetup} onClick={() => updateField("contratos_declarados", contratos + 1)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>+</button>
               </div>
             </div>
+          </section>
 
-            {/* Tilt */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <InstLabel>Nível de Tilt / Ansiedade</InstLabel>
-                <span className="mono tabular" style={{ fontSize: "11px", color: sessao.tilt > 2 ? "var(--inst-block)" : "var(--inst-text)" }}>
-                  {sessao.tilt} / 5
-                </span>
+          <section style={CARD}>
+            {cabecalhoCard("6 · Estado", sessao.tilt > 2 || sessao.pressao > 2 || sessao.sono < 2 ? "Atenção ao estado antes de operar" : "Pronto para operar")}
+            {([
+              ["Qualidade do sono", "sono"],
+              ["Tilt / ansiedade", "tilt"],
+              ["Pressão por meta", "pressao"],
+            ] as const).map(([rotulo, campo]) => (
+              <div key={campo} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <span style={{ width: "150px", fontSize: "13px", color: "var(--tx2)" }}>{rotulo}</span>
+                {escala(campo, sessao[campo])}
+                <span style={{ width: "32px", textAlign: "right", fontSize: "13px", fontWeight: 600 }}>{sessao[campo]}</span>
               </div>
-              <div style={{ display: "flex", gap: "4px" }}>
-                {[0, 1, 2, 3, 4, 5].map((val) => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() => updateField("tilt", val)}
-                    disabled={isFechada}
-                    className="mono tabular"
-                    style={{ ...btnChoiceStyle(sessao.tilt === val, isFechada), flex: 1, padding: "6px 0", textAlign: "center" }}
-                  >
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Pressão */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <InstLabel>Sensação de Pressão / Meta</InstLabel>
-                <span className="mono tabular" style={{ fontSize: "11px", color: sessao.pressao > 2 ? "var(--inst-block)" : "var(--inst-text)" }}>
-                  {sessao.pressao} / 5
-                </span>
-              </div>
-              <div style={{ display: "flex", gap: "4px" }}>
-                {[0, 1, 2, 3, 4, 5].map((val) => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() => updateField("pressao", val)}
-                    disabled={isFechada}
-                    className="mono tabular"
-                    style={{ ...btnChoiceStyle(sessao.pressao === val, isFechada), flex: 1, padding: "6px 0", textAlign: "center" }}
-                  >
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+            ))}
+          </section>
         </div>
-      </InstCard>
+      </div>
 
-      {/* RODAPÉ — FECHAR */}
-      {!isFechada && (
-        <div>
-          {erroFechar && (
-            <div style={{ marginBottom: "10px" }}>
-              <InstBand tom="block" titulo="ERRO AO FECHAR" linhas={[erroFechar]} />
-            </div>
-          )}
-
-          {pendencias.length > 0 ? (
-            <InstBand
-              tom="block"
-              titulo="PRÉ-SESSÃO INCOMPLETA"
-              linhas={pendencias}
-              acao={
-                <button
-                  type="button"
-                  disabled={true}
-                  className="mono tabular"
-                  style={{
-                    background: "var(--inst-panel-2)",
-                    border: "1px solid var(--inst-line)",
-                    color: "var(--inst-faint)",
-                    padding: "10px 20px",
-                    borderRadius: "10px",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    cursor: "not-allowed",
-                    opacity: 0.6,
-                  }}
-                >
-                  Fechar Pré-Sessão
-                </button>
-              }
-            />
-          ) : (
-            <InstBand
-              tom="ok"
-              titulo="PRONTA PARA FECHAR"
-              linhas={[
-                "Todos os requisitos foram preenchidos. Fechar trava as escolhas para a sessão de hoje e libera o Checklist Pregão.",
-              ]}
-              acao={
-                <button
-                  type="button"
-                  onClick={handleFechar}
-                  disabled={fechando}
-                  className="mono tabular"
-                  style={{
-                    background: "var(--inst-ok)",
-                    border: "1px solid var(--inst-ok)",
-                    color: "var(--onac)",
-                    padding: "10px 24px",
-                    borderRadius: "10px",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    cursor: fechando ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {fechando ? "Fechando..." : "Fechar Pré-Sessão"}
-                </button>
-              }
-            />
-          )}
+      {erroFechar && (
+        <div style={{ padding: "16px 20px", borderRadius: "14px", background: "var(--s1)", border: "1px solid var(--neg)", color: "var(--negtx)", fontSize: "14px" }}>
+          Erro ao fechar: {erroFechar}
         </div>
       )}
 
-      {/* Modal de Reabertura */}
+      <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 22px", borderRadius: "14px", background: "var(--acs)", border: "1px solid var(--bd)" }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, fill: "none", stroke: "var(--actx)", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" }}>
+          <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />
+        </svg>
+        <span style={{ flexGrow: 1, fontSize: "15px" }}>
+          {isFechada
+            ? `Fechada às ${new Date(sessao.fechada_em!).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} · ${nomeSetupDia}${semSetup ? "" : ` · ${contratos} ${contratos === 1 ? "contrato" : "contratos"}`}. As escolhas estão congeladas para o pregão.`
+            : bloqueado
+              ? `Falta: ${requisitos.filter((r) => !r.ok).map((r) => r.l.toLowerCase()).join(", ")}. O checklist só abre com a pré-sessão fechada.`
+              : "Tudo pronto. Fechar congela as escolhas e libera o checklist."}
+        </span>
+        {isFechada && !semSetup && (
+          <Link href="/checklist" style={{ height: "40px", padding: "0 18px", borderRadius: "10px", display: "flex", alignItems: "center", fontSize: "14px", fontWeight: 600, textDecoration: "none", background: "var(--ac)", color: "var(--onac)", flexShrink: 0 }}>
+            Ir para o checklist
+          </Link>
+        )}
+      </div>
+
       {modalReabrir && (
-        <div
-          onClick={() => setModalReabrir(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.85)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "var(--inst-panel)",
-              border: "1px solid var(--inst-line)",
-              borderRadius: "10px",
-              padding: "20px",
-              maxWidth: "480px",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--inst-text)" }}>
-                Reabrir Pré-Sessão do Dia
-              </span>
-              <button
-                type="button"
-                onClick={() => setModalReabrir(false)}
-                style={{ background: "none", border: "none", color: "var(--inst-dim)", cursor: "pointer" }}
-              >
-                <X style={{ width: "16px", height: "16px" }} />
-              </button>
-            </div>
-
-            <div style={{ fontSize: "12px", color: "var(--inst-dim)", lineHeight: 1.5 }}>
-              Reabrir destrava a pré-sessão para edição, mas registra o horário e o motivo explicitamente nas notas
-              da sessão para fins de auditoria de disciplina.
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <InstLabel>Motivo da Reabertura</InstLabel>
+        <div onClick={() => setModalReabrir(false)} style={{ position: "fixed", inset: 0, background: "rgba(0, 0, 0, 0.7)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div role="dialog" aria-modal="true" aria-label="Reabrir pré-sessão" onClick={(e) => e.stopPropagation()} style={{ ...CARD, maxWidth: "480px", width: "100%" }}>
+            {cabecalhoCard("Reabrir", "Reabrir a pré-sessão do dia")}
+            <span style={{ fontSize: "13px", color: "var(--tx2)", lineHeight: 1.5 }}>
+              Destrava a pré-sessão para edição e registra o horário e o motivo nas notas da sessão.
+            </span>
+            <label style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px", color: "var(--tx2)" }}>
+              Motivo da reabertura
               <textarea
-                placeholder="Ex: Mercado abriu com gap rompendo BSL de 60m antes das 09:15, invalidando a premissa de continuidade..."
                 rows={3}
+                placeholder="Ex.: gap rompeu o BSL de 60m antes das 09:15 e invalidou a premissa."
                 value={motivoReabrir}
                 onChange={(e) => setMotivoReabrir(e.target.value)}
-                className="mono"
-                style={{ ...inputStyle, width: "100%", resize: "vertical" }}
+                style={{ ...INPUT, height: "auto", padding: "12px 14px", resize: "vertical", fontSize: "14px" }}
               />
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-              <button
-                type="button"
-                onClick={() => setModalReabrir(false)}
-                className="mono tabular"
-                style={{
-                  background: "transparent",
-                  border: "1px solid var(--inst-line)",
-                  color: "var(--inst-dim)",
-                  padding: "6px 14px",
-                  borderRadius: "10px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleReabrir}
-                disabled={reabrindo || !motivoReabrir.trim()}
-                className="mono tabular"
-                style={{
-                  background: "var(--inst-ok)",
-                  border: "1px solid var(--inst-ok)",
-                  color: "var(--onac)",
-                  padding: "6px 16px",
-                  borderRadius: "10px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  cursor: reabrindo || !motivoReabrir.trim() ? "not-allowed" : "pointer",
-                  opacity: reabrindo || !motivoReabrir.trim() ? 0.6 : 1,
-                }}
-              >
-                {reabrindo ? "Reabrindo..." : "Confirmar Reabertura"}
+            </label>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <button type="button" onClick={() => setModalReabrir(false)} style={BOTAO_SECUNDARIO}>Cancelar</button>
+              <button type="button" onClick={handleReabrir} disabled={reabrindo || !motivoReabrir.trim()} style={botaoPrimario(!reabrindo && Boolean(motivoReabrir.trim()))}>
+                {reabrindo ? "Reabrindo…" : "Confirmar reabertura"}
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

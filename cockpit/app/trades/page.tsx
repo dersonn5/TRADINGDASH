@@ -91,7 +91,6 @@ export default function HistoricoPage() {
 
   return (
     <div
-      className="-m-4 md:-m-6 px-6 md:px-10 pt-8 pb-10"
       style={{
         display: "flex",
         flexDirection: "column",

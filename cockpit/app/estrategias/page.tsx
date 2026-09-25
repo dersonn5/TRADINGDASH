@@ -3,96 +3,94 @@
 import * as React from "react";
 import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
-import {
-  CheckCircle2,
-  XCircle,
-  Play,
-} from "lucide-react";
+import { listarTradesDoMes, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
+import { calcularRTrade, calcularRiscoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
+import { CARD, LBL, H2 } from "@/components/v2/estilos";
 
-export default function EstrategiasTradingPage() {
-  const [selectedId, setSelectedId] = React.useState<string>("playbook_anderson");
-  const strategies = DEFAULT_STRATEGIES;
-  const currentStrategy = strategies.find((s) => s.id === selectedId) || strategies[0];
+// Espelho de design/v2/Estrategias.dc.html.
 
-  const kills = currentStrategy.checklist.filter((i) => i.tipo === "KILL");
-  const pontos = currentStrategy.checklist.filter((i) => i.tipo === "PONTO");
-  const somaPesos = pontos.reduce((acc, p) => acc + p.peso, 0);
+const TAG: Record<string, string> = { varrida_barra_10: "SETUP C", continuidade_tendencia: "SETUP B", reversao_htf: "SETUP A" };
+const NOME: Record<string, string> = {
+  varrida_barra_10: "Varrida da Barra das 10",
+  continuidade_tendencia: "Continuidade de Tendência",
+  reversao_htf: "Reversão HTF",
+};
+const STATUS: Record<string, string> = { EM_CALIBRACAO: "Em calibração", NAO_CALIBRADO: "Não calibrado", CALIBRADO: "Calibrado" };
+const ORDEM = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf"];
+
+export default function EstrategiasPage() {
+  const estrategias = ORDEM.map((id) => DEFAULT_STRATEGIES.find((s) => s.id === id)).filter(Boolean) as typeof DEFAULT_STRATEGIES;
+  const [selId, setSelId] = React.useState(estrategias[0]?.id ?? "");
+  const [trades, setTrades] = React.useState<TradeHistorico[]>([]);
+
+  React.useEffect(() => {
+    const [ano, mes] = getDataSaoPaulo().split("-").map(Number);
+    listarTradesDoMes(ano, mes).then(setTrades).catch(() => setTrades([]));
+  }, []);
+
+  const doMes = (id: string) => {
+    const ts = trades.filter((t) => t.strategy_id === id);
+    const rs = ts.map((t) => calcularRTrade(Number(t.pontos_real ?? 0), calcularRiscoTrade(Number(t.entrada), Number(t.stop))));
+    const pnl = somar(ts.map((t) => Number(t.pnl_real ?? 0)));
+    const rm = media(rs);
+    return { n: ts.length, rm: ts.length ? formatarR(rm) : "—", pnl: ts.length ? formatarBRL(pnl) : "—", cor: pnl >= 0 ? "var(--actx)" : "var(--negtx)" };
+  };
+
+  const d = estrategias.find((s) => s.id === selId) ?? estrategias[0];
+  const kills = d.checklist.filter((i) => i.tipo === "KILL");
+  const pontos = d.checklist.filter((i) => i.tipo === "PONTO");
+  const maxPeso = Math.max(1, ...pontos.map((p) => p.peso));
+  const horario = d.horarios_validos?.length ? `${d.horarios_validos[0].inicio} – ${d.horarios_validos[d.horarios_validos.length - 1].fim}` : "10:00 – 11:30";
+  const fatos = [
+    { l: "Mercado", v: d.mercado.join(" · ") || "WIN" },
+    { l: "Entrada", v: horario },
+    { l: "Score mínimo", v: `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h` },
+    { l: "Limites", v: "3 perdas · 5 operações" },
+  ];
 
   return (
-    <div className="-m-4 md:-m-6 px-6 md:px-10 pt-8 pb-10" style={{ display: "flex", flexDirection: "column", gap: "20px", color: "var(--tx)" }}>
-      {/* Cabeçalho v2 */}
+    <>
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Os três setups do trade system · regras vigentes</span>
         <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Estratégias</h1>
-      </div>      {/* Layout grid v2: lista de estratégias (340px) + detalhe */}
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: "20px", alignItems: "start" }}>
-        {/* Lista de cards */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {strategies.map((strat) => {
-            const isSelected = strat.id === selectedId;
+          {estrategias.map((e) => {
+            const sel = e.id === d.id;
+            const m = doMes(e.id);
             return (
               <button
-                key={strat.id}
+                key={e.id}
                 type="button"
-                aria-pressed={isSelected}
-                onClick={() => setSelectedId(strat.id)}
+                aria-pressed={sel}
+                onClick={() => setSelId(e.id)}
                 style={{
-                  textAlign: "left",
-                  padding: "20px",
-                  borderRadius: "16px",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
-                  color: "var(--tx)",
-                  background: isSelected ? "var(--acs)" : "var(--s1)",
-                  border: `1px solid ${isSelected ? "var(--ac)" : "var(--bd)"}`,
-                  transition: "all 0.15s",
+                  textAlign: "left", padding: "20px", borderRadius: "16px", cursor: "pointer", fontFamily: "inherit",
+                  display: "flex", flexDirection: "column", gap: "12px", color: "var(--tx)",
+                  background: sel ? "var(--acs)" : "var(--s1)", border: `1px solid ${sel ? "var(--ac)" : "var(--bd)"}`,
                 }}
               >
                 <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", color: isSelected ? "var(--actx)" : "var(--tx3)" }}>
-                    {strat.mercado.join(" · ")}
-                  </span>
-                  <span
-                    style={{
-                      height: "24px",
-                      padding: "0 10px",
-                      borderRadius: "999px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      background: "var(--s1)",
-                      color: "var(--tx2)",
-                      border: "1px solid var(--bd)",
-                    }}
-                  >
-                    {strat.checklist.length} itens
+                  <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", color: sel ? "var(--actx)" : "var(--tx3)" }}>{TAG[e.id]}</span>
+                  <span style={{ height: "24px", padding: "0 10px", borderRadius: "999px", display: "inline-flex", alignItems: "center", fontSize: "11px", fontWeight: 600, background: "var(--s2)", color: "var(--tx2)" }}>
+                    {STATUS[e.calibracao?.status ?? ""] ?? "Não calibrado"}
                   </span>
                 </span>
-                <span style={{ fontSize: "17px", fontWeight: 600 }}>{strat.nome}</span>
-                <span
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                    gap: "8px",
-                    paddingTop: "12px",
-                    borderTop: `1px solid ${isSelected ? "rgba(34,211,238,0.2)" : "var(--bd)"}`,
-                  }}
-                >
+                <span style={{ fontSize: "17px", fontWeight: 600 }}>{NOME[e.id] ?? e.nome}</span>
+                <span style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px", paddingTop: "12px", borderTop: "1px solid var(--bd)" }}>
                   <span style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontSize: "11px", color: "var(--tx3)" }}>KILLs</span>
-                    <span style={{ fontSize: "15px", fontWeight: 600 }}>{strat.checklist.filter((i) => i.tipo === "KILL").length}</span>
+                    <span style={{ fontSize: "11px", color: "var(--tx3)" }}>Trades</span>
+                    <span style={{ fontSize: "15px", fontWeight: 600 }}>{m.n}</span>
                   </span>
                   <span style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontSize: "11px", color: "var(--tx3)" }}>Score mín</span>
-                    <span style={{ fontSize: "15px", fontWeight: 600, color: isSelected ? "var(--actx)" : "var(--tx)" }}>{strat.score_minimo} pts</span>
+                    <span style={{ fontSize: "11px", color: "var(--tx3)" }}>R médio</span>
+                    <span style={{ fontSize: "15px", fontWeight: 600, color: m.n ? m.cor : "var(--tx3)" }}>{m.rm}</span>
                   </span>
                   <span style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontSize: "11px", color: "var(--tx3)" }}>Pontos</span>
-                    <span style={{ fontSize: "15px", fontWeight: 600, color: isSelected ? "var(--actx)" : "var(--tx)" }}>{strat.checklist.filter((i) => i.tipo === "PONTO").reduce((a, p) => a + p.peso, 0)} pts</span>
+                    <span style={{ fontSize: "11px", color: "var(--tx3)" }}>Mês</span>
+                    <span style={{ fontSize: "15px", fontWeight: 600, color: m.n ? m.cor : "var(--tx3)" }}>{m.pnl}</span>
                   </span>
                 </span>
               </button>
@@ -100,87 +98,21 @@ export default function EstrategiasTradingPage() {
           })}
         </div>
 
-        {/* Painel de detalhe */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <section
-            style={{
-              padding: "24px",
-              borderRadius: "16px",
-              background: "var(--s1)",
-              border: "1px solid var(--bd)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-            }}
-          >
+          <section style={CARD}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "var(--tx3)",
-                  }}
-                >
-                  {currentStrategy.mercado.join(" · ")}
-                </span>
-                <span style={{ fontSize: "24px", fontWeight: 600, letterSpacing: "-0.01em" }}>
-                  {currentStrategy.nome}
-                </span>
+                <span style={LBL}>{TAG[d.id]}</span>
+                <span style={{ fontSize: "24px", fontWeight: 600, letterSpacing: "-0.01em" }}>{NOME[d.id] ?? d.nome}</span>
               </div>
-              <Link href="/checklist">
-                <button
-                  type="button"
-                  style={{
-                    height: "44px",
-                    padding: "0 18px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    textDecoration: "none",
-                    background: "var(--ac)",
-                    color: "var(--onac)",
-                    border: 0,
-                    fontFamily: "inherit",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Play style={{ width: "14px", height: "14px" }} />
-                  Abrir checklist
-                </button>
+              <Link href="/checklist" style={{ height: "44px", padding: "0 18px", borderRadius: "12px", display: "flex", alignItems: "center", fontSize: "14px", fontWeight: 600, textDecoration: "none", background: "var(--ac)", color: "var(--onac)", flexShrink: 0 }}>
+                Abrir checklist
               </Link>
             </div>
-
-            <p style={{ margin: 0, fontSize: "14px", lineHeight: 1.6, color: "var(--tx2)" }}>
-              {currentStrategy.descricao}
-            </p>
-
-            {/* Fatos rápidos */}
+            <p style={{ margin: 0, fontSize: "14px", lineHeight: 1.6, color: "var(--tx2)" }}>{d.descricao}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "12px" }}>
-              {[
-                { l: "Janela", v: currentStrategy.horarios_validos.map((h) => `${h.inicio}–${h.fim}`).join(", ") },
-                { l: "Score mín", v: `${currentStrategy.score_minimo} pts` },
-                { l: "KILLs", v: String(kills.length) },
-                { l: "Pontos máx", v: `${somaPesos} pts` },
-              ].map((f) => (
-                <div
-                  key={f.l}
-                  style={{
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    background: "var(--bg)",
-                    border: "1px solid var(--bd)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "4px",
-                  }}
-                >
+              {fatos.map((f) => (
+                <div key={f.l} style={{ padding: "14px 16px", borderRadius: "12px", background: "var(--bg)", border: "1px solid var(--bd)", display: "flex", flexDirection: "column", gap: "4px" }}>
                   <span style={{ fontSize: "11px", color: "var(--tx3)" }}>{f.l}</span>
                   <span style={{ fontSize: "14px", fontWeight: 600 }}>{f.v}</span>
                 </div>
@@ -188,202 +120,48 @@ export default function EstrategiasTradingPage() {
             </div>
           </section>
 
-          {/* Ambientes e KILLs + Pontos */}
-          {currentStrategy.ambiente_favoravel && currentStrategy.ambiente_favoravel.length > 0 && (
-            <section
-              style={{
-                padding: "24px",
-                borderRadius: "16px",
-                background: "var(--s1)",
-                border: "1px solid var(--bd)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  color: "var(--tx3)",
-                }}
-              >
-                Ambiente
-              </span>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div
-                  style={{
-                    padding: "16px",
-                    borderRadius: "12px",
-                    background: "var(--acs)",
-                    border: "1px solid var(--ac)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                  }}
-                >
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--actx)" }}>
-                    <CheckCircle2 style={{ width: "12px", height: "12px", display: "inline", marginRight: "6px" }} />
-                    Ambiente ideal
-                  </span>
-                  <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "12px", color: "var(--tx2)", lineHeight: 1.6 }}>
-                    {currentStrategy.ambiente_favoravel.map((cond, i) => (
-                      <li key={i}>{cond}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div
-                  style={{
-                    padding: "16px",
-                    borderRadius: "12px",
-                    background: "var(--s1)",
-                    border: "1px solid var(--bd)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                  }}
-                >
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--tx3)" }}>
-                    <XCircle style={{ width: "12px", height: "12px", display: "inline", marginRight: "6px" }} />
-                    Evitar
-                  </span>
-                  <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "12px", color: "var(--tx2)", lineHeight: 1.6 }}>
-                    {currentStrategy.ambiente_desfavoravel.map((cond, i) => (
-                      <li key={i}>{cond}</li>
-                    ))}
-                  </ul>
-                </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: "20px", alignItems: "start" }}>
+            <section style={CARD}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={LBL}>Obrigatórios · em ordem</span>
+                <span style={H2}>Todos precisam estar cumpridos</span>
               </div>
+              {kills.map((k, i) => (
+                <div key={k.id} style={{ display: "flex", gap: "12px", alignItems: "flex-start", padding: "12px 0", borderTop: "1px solid var(--bd)" }}>
+                  <span style={{ width: "26px", height: "26px", flexShrink: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 600, background: "var(--acs)", color: "var(--actx)" }}>{i + 1}</span>
+                  <span style={{ fontSize: "14px", lineHeight: 1.45 }}>{k.label}</span>
+                </div>
+              ))}
             </section>
-          )}
 
-          <section
-            style={{
-              padding: "24px",
-              borderRadius: "16px",
-              background: "var(--s1)",
-              border: "1px solid var(--bd)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: 500,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--tx3)",
-              }}
-            >
-              Critérios de validação
-            </span>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-              {/* KILLs */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingBottom: "6px",
-                    borderBottom: "1px solid var(--bd)",
-                  }}
-                >
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--neg, var(--tx2))" }}>Mandatórios (KILL)</span>
-                  <span style={{ fontSize: "11px", color: "var(--tx3)" }}>{kills.length} itens</span>
-                </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <section style={CARD}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {kills.map((k) => (
-                    <div
-                      key={k.id}
-                      style={{
-                        padding: "10px 12px",
-                        borderRadius: "10px",
-                        background: "var(--bg)",
-                        border: "1px solid var(--bd)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "4px",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 600 }}>{k.label}</span>
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            fontWeight: 700,
-                            padding: "2px 8px",
-                            borderRadius: "999px",
-                            background: "var(--s1)",
-                            color: "var(--tx3)",
-                            border: "1px solid var(--bd)",
-                          }}
-                        >
-                          KILL
-                        </span>
-                      </div>
-                      {k.ajuda && <div style={{ fontSize: "11px", color: "var(--tx3)", lineHeight: 1.4 }}>{k.ajuda}</div>}
+                  <span style={LBL}>Pontos de qualidade</span>
+                  <span style={H2}>Somam {somar(pontos.map((p) => p.peso))} · mínimo {d.score_minimo}</span>
+                </div>
+                {pontos.map((p) => (
+                  <div key={p.id} style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "10px 0", borderTop: "1px solid var(--bd)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", fontSize: "13px" }}>
+                      <span style={{ lineHeight: 1.4 }}>{p.label}</span>
+                      <span style={{ fontWeight: 600, color: "var(--actx)" }}>{p.peso}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-              {/* PONTOs */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingBottom: "6px",
-                    borderBottom: "1px solid var(--bd)",
-                  }}
-                >
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--actx)" }}>Confluncias (PONTOS)</span>
-                  <span style={{ fontSize: "11px", color: "var(--tx3)" }}>{pontos.length} itens ({somaPesos} pts)</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {pontos.map((p) => (
-                    <div
-                      key={p.id}
-                      style={{
-                        padding: "10px 12px",
-                        borderRadius: "10px",
-                        background: "var(--bg)",
-                        border: "1px solid var(--bd)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "4px",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 600 }}>{p.label}</span>
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            fontWeight: 700,
-                            padding: "2px 8px",
-                            borderRadius: "999px",
-                            background: "var(--acs)",
-                            color: "var(--actx)",
-                            border: "1px solid var(--ac)",
-                          }}
-                        >
-                          +{p.peso} pts
-                        </span>
-                      </div>
-                      {p.ajuda && <div style={{ fontSize: "11px", color: "var(--tx3)", lineHeight: 1.4 }}>{p.ajuda}</div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    <svg width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
+                      <rect x="0" y="0" width="100" height="6" rx="3" style={{ fill: "var(--s2)" }} />
+                      <rect x="0" y="0" width={(p.peso / maxPeso) * 100} height="6" rx="3" style={{ fill: "var(--k1)" }} />
+                    </svg>
+                  </div>
+                ))}
+              </section>
+
+              <section style={{ padding: "20px 24px", borderRadius: "16px", background: "var(--acs)", border: "1px solid var(--bd)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={LBL}>Calibração</span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55 }}>{d.calibracao?.observacao || "Sem amostra suficiente para calibrar. Pesos estimados."}</span>
+              </section>
             </div>
-          </section>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { subirPrint, urlDoPrint } from "@/lib/storage";
-import { InstBadge } from "@/components/inst";
-import { Image as ImageIcon, Loader2, Trash2, X, ExternalLink } from "lucide-react";
 
 export interface PrintUploadProps {
   path: string | null;
@@ -13,6 +11,8 @@ export interface PrintUploadProps {
   obrigatorio?: boolean;
   label?: string;
   disabled?: boolean;
+  /** linha compacta (checklist) em vez da area grande com miniatura (pre-sessao) */
+  compacto?: boolean;
 }
 
 export function PrintUpload({
@@ -23,6 +23,7 @@ export function PrintUpload({
   obrigatorio = false,
   label,
   disabled = false,
+  compacto = false,
 }: PrintUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -115,19 +116,50 @@ export function PrintUpload({
     return () => window.removeEventListener("paste", aoColarNaJanela);
   }, [disabled, path, uploading, data, nome]);
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      {label && (
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <span className="mono" style={{ fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--inst-faint)" }}>
-            {label}
-          </span>
-          {obrigatorio && (
-            <span style={{ fontSize: "11px", color: "var(--inst-block)", fontWeight: 700 }}>*</span>
-          )}
-        </div>
-      )}
+  // Botao "Colar da area de transferencia": le a imagem copiada sem precisar do Ctrl+V.
+  const colarDaAreaDeTransferencia = async () => {
+    if (disabled || uploading) return;
+    setErrorMsg(null);
+    try {
+      const itens = await navigator.clipboard.read();
+      for (const item of itens) {
+        const tipo = item.types.find((t) => t.startsWith("image/"));
+        if (tipo) {
+          const blob = await item.getType(tipo);
+          await processUpload(new File([blob], `print.${tipo.split("/")[1] || "png"}`, { type: tipo }));
+          return;
+        }
+      }
+      setErrorMsg("Não há imagem na área de transferência.");
+    } catch {
+      setErrorMsg("O navegador não liberou a área de transferência. Use Ctrl+V.");
+    }
+  };
 
+  const nomeArquivo = path ? path.split("/").pop() : "";
+  const icone = (tam: number) => (
+    <svg width={tam} height={tam} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, fill: "none", stroke: "var(--tx3)", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round" }}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 15l5-5 4 4 3-3 6 6" />
+    </svg>
+  );
+  const botao: React.CSSProperties = {
+    height: "40px",
+    padding: "0 16px",
+    borderRadius: "10px",
+    border: "1px solid var(--bd)",
+    background: "transparent",
+    color: "var(--tx)",
+    fontFamily: "inherit",
+    fontSize: "13px",
+    cursor: uploading ? "wait" : "pointer",
+  };
+  const escolher = () => {
+    if (!disabled && !uploading) inputRef.current?.click();
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       <input
         type="file"
         ref={inputRef}
@@ -137,247 +169,105 @@ export function PrintUpload({
         disabled={disabled || uploading}
       />
 
-      {!path ? (
+      {compacto ? (
         <div
-          tabIndex={disabled ? -1 : 0}
-          onClick={() => {
-            if (!disabled && !uploading) {
-              inputRef.current?.click();
-            }
-          }}
+          role="button"
+          tabIndex={disabled || path ? -1 : 0}
+          onClick={path ? undefined : escolher}
           onPaste={handlePaste}
           onKeyDown={(e) => {
-            if (!disabled && !uploading && (e.key === "Enter" || e.key === " ")) {
+            if (!path && (e.key === "Enter" || e.key === " ")) {
               e.preventDefault();
-              inputRef.current?.click();
+              escolher();
             }
           }}
-          className="mono"
           style={{
-            border: "1px dashed var(--inst-line-2)",
-            borderRadius: "10px",
-            padding: "20px 16px",
-            textAlign: "center",
-            cursor: disabled ? "not-allowed" : "pointer",
-            background: "var(--inst-panel)",
-            color: "var(--inst-dim)",
-            outline: "none",
-            opacity: disabled ? 0.6 : 1,
-            transition: "border-color 0.15s ease",
+            display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", borderRadius: "12px",
+            border: `1px ${path ? "solid" : "dashed"} ${path ? "var(--ac)" : "var(--bd)"}`, background: path ? "var(--acs)" : "var(--bg)",
+            cursor: path || disabled ? "default" : "pointer", outline: "none",
           }}
         >
-          {uploading ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", color: "var(--inst-now)" }}>
-              <Loader2 className="animate-spin" style={{ width: "16px", height: "16px" }} />
-              <span style={{ fontSize: "12px" }}>Enviando print...</span>
-            </div>
+          {path && signedUrl ? (
+            <img src={signedUrl} alt="Miniatura do print" onClick={() => setModalOpen(true)} style={{ width: "48px", height: "32px", objectFit: "cover", borderRadius: "6px", cursor: "zoom-in", flexShrink: 0 }} />
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <ImageIcon style={{ width: "16px", height: "16px", color: "var(--inst-dim)" }} />
-                <span style={{ fontSize: "12px", color: "var(--inst-text)", fontWeight: 600 }}>
-                  Ctrl+V em qualquer lugar da página, ou clique para escolher
-                </span>
-              </div>
-              <span style={{ fontSize: "11px", color: "var(--inst-faint)" }}>
-                Win+Shift+S recorta a tela · PNG, JPEG ou WebP até 10 MB
-              </span>
-            </div>
+            icone(20)
+          )}
+          <span style={{ flexGrow: 1, fontSize: "13px", color: path ? "var(--tx)" : "var(--tx2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {uploading ? "Enviando print…" : path ? nomeArquivo : label || "Print · cole com Ctrl+V"}
+          </span>
+          {path && !disabled ? (
+            <>
+              <button type="button" onClick={escolher} style={{ ...botao, height: "32px", padding: "0 12px", fontSize: "12px" }}>Trocar</button>
+              <button type="button" onClick={() => onChange(null)} aria-label="Remover print" style={{ ...botao, height: "32px", width: "32px", padding: 0, color: "var(--tx3)" }}>×</button>
+            </>
+          ) : (
+            <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{obrigatorio ? "obrigatório" : "opcional"}</span>
           )}
         </div>
       ) : (
-        <div
-          tabIndex={disabled ? -1 : 0}
-          onPaste={handlePaste}
-          style={{
-            border: "1px solid var(--inst-ok-line)",
-            borderRadius: "10px",
-            padding: "10px 14px",
-            background: "var(--inst-ok-bg)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            outline: "none",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", overflow: "hidden" }}>
-            {signedUrl ? (
-              <img
-                src={signedUrl}
-                alt="Miniatura do print"
-                onClick={() => setModalOpen(true)}
-                style={{
-                  width: "56px",
-                  height: "40px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  border: "1px solid var(--inst-ok-line)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                }}
-                title="Clique para ampliar em tela cheia"
-              />
+        <>
+          <div
+            role={path ? undefined : "button"}
+            tabIndex={disabled || path ? -1 : 0}
+            onClick={path ? () => signedUrl && setModalOpen(true) : escolher}
+            onPaste={handlePaste}
+            onKeyDown={(e) => {
+              if (!path && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                escolher();
+              }
+            }}
+            style={{
+              height: "220px", borderRadius: "12px", border: `1px ${path ? "solid" : "dashed"} var(--bd)`, background: "var(--bg)",
+              overflow: "hidden", position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: path ? (signedUrl ? "zoom-in" : "default") : disabled ? "not-allowed" : "pointer", outline: "none",
+            }}
+          >
+            {path && signedUrl ? (
+              <img src={signedUrl} alt="Print do gráfico HTF" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : path ? (
+              <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Carregando print…</span>
             ) : (
-              <div
-                style={{
-                  width: "56px",
-                  height: "40px",
-                  background: "var(--inst-panel)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "11px",
-                  color: "var(--inst-dim)",
-                  borderRadius: "8px",
-                  flexShrink: 0,
-                }}
-              >
-                Imagem
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "0 24px", textAlign: "center" }}>
+                {icone(28)}
+                <span style={{ fontSize: "14px", fontWeight: 500 }}>{uploading ? "Enviando print…" : "Cole o print (Ctrl+V) ou clique para escolher"}</span>
+                <span style={{ fontSize: "12px", color: "var(--tx3)" }}>Win+Shift+S recorta a tela · PNG, JPEG ou WebP até 10 MB</span>
               </div>
             )}
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <InstBadge tom="ok">PRINT ANEXADO</InstBadge>
-                <span className="mono tabular truncate" style={{ fontSize: "11px", color: "var(--inst-dim)", maxWidth: "220px" }}>
-                  {path.split("/").pop()}
-                </span>
-              </div>
-              {signedUrl && (
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="mono"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    fontSize: "11px",
-                    color: "var(--inst-ok)",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                >
-                  Ver em tamanho cheio
+            {path && (
+              <span style={{ position: "absolute", left: "14px", bottom: "12px", fontSize: "12px", padding: "6px 10px", borderRadius: "8px", background: "var(--s1)", border: "1px solid var(--bd)", color: "var(--tx2)" }}>
+                {nomeArquivo}
+              </span>
+            )}
+          </div>
+          {!disabled && (
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button type="button" onClick={escolher} disabled={uploading} style={botao}>
+                {uploading ? "Enviando…" : path ? "Trocar print" : "Escolher arquivo"}
+              </button>
+              <button type="button" onClick={colarDaAreaDeTransferencia} disabled={uploading} style={{ ...botao, color: "var(--tx2)" }}>
+                Colar da área de transferência
+              </button>
+              {path && (
+                <button type="button" onClick={() => onChange(null)} disabled={uploading} style={{ ...botao, color: "var(--tx3)", marginLeft: "auto" }}>
+                  Remover
                 </button>
               )}
             </div>
-          </div>
-
-          {!disabled && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                disabled={uploading}
-                className="mono tabular"
-                style={{
-                  background: "var(--inst-panel-2)",
-                  border: "1px solid var(--inst-line)",
-                  color: "var(--inst-text)",
-                  borderRadius: "8px",
-                  padding: "4px 8px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                }}
-              >
-                {uploading ? "Subindo..." : "Substituir"}
-              </button>
-              <button
-                type="button"
-                onClick={() => onChange(null)}
-                disabled={uploading}
-                className="mono tabular"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--inst-block)",
-                  cursor: "pointer",
-                  padding: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-                title="Remover print"
-              >
-                <Trash2 style={{ width: "14px", height: "14px" }} />
-              </button>
-            </div>
           )}
-        </div>
+        </>
       )}
 
-      {errorMsg && (
-        <div className="mono" style={{ fontSize: "11px", color: "var(--inst-block)", marginTop: "2px" }}>
-          {errorMsg}
-        </div>
-      )}
+      {errorMsg && <span style={{ fontSize: "12px", color: "var(--negtx)" }}>{errorMsg}</span>}
 
-      {/* Modal de imagem em tamanho cheio */}
       {modalOpen && signedUrl && (
-        <div
-          onClick={() => setModalOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.88)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: "relative",
-              maxWidth: "95vw",
-              maxHeight: "95vh",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span className="mono" style={{ fontSize: "11px", color: "var(--inst-dim)" }}>
-                {path}
-              </span>
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                className="mono"
-                style={{
-                  background: "var(--inst-panel-2)",
-                  border: "1px solid var(--inst-line)",
-                  color: "var(--inst-text)",
-                  borderRadius: "10px",
-                  padding: "4px 10px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  fontSize: "11px",
-                }}
-              >
-                <X style={{ width: "13px", height: "13px" }} /> Fechar
-              </button>
+        <div onClick={() => setModalOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0, 0, 0, 0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: "95vw", maxHeight: "95vh", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{nomeArquivo}</span>
+              <button type="button" onClick={() => setModalOpen(false)} style={{ ...botao, height: "34px" }}>Fechar</button>
             </div>
-            <img
-              src={signedUrl}
-              alt="Print ampliado"
-              style={{
-                maxWidth: "100%",
-                maxHeight: "85vh",
-                objectFit: "contain",
-                borderRadius: "10px",
-                border: "1px solid var(--inst-line)",
-              }}
-            />
+            <img src={signedUrl} alt="Print ampliado" style={{ maxWidth: "100%", maxHeight: "85vh", objectFit: "contain", borderRadius: "12px", border: "1px solid var(--bd)" }} />
           </div>
         </div>
       )}

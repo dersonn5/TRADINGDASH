@@ -64,16 +64,16 @@ export function avaliarLimitesDia(
   const motivos: string[] = [];
 
   if (perdasHoje >= MAX_PERDAS_DIA) {
-    motivos.push("3 perdas no dia: pregao encerrado");
+    motivos.push("3 perdas no dia: pregão encerrado");
   }
 
   if (operacoesHoje >= MAX_OPERACOES_DIA) {
-    motivos.push("5 operacoes no dia: limite atingido");
+    motivos.push("5 operações no dia: limite atingido");
   }
 
   const rest = cooldownRestante(ultimoLossEm, agora);
   if (rest > 0) {
-    motivos.push(`cooldown apos loss: faltam ${rest} min`);
+    motivos.push(`pausa após loss: faltam ${rest} min`);
   }
 
   return {
@@ -188,15 +188,15 @@ export function avaliarGate(
   }
 
   if (tradeAbertoId) {
-    motivos.push("ja existe trade aberto");
+    motivos.push("já existe trade aberto");
   }
 
   if (preSessaoFechada === false) {
-    motivos.push("pre-sessao do dia nao foi fechada");
+    motivos.push("pré-sessão do dia não foi fechada");
   }
 
   if (temPrint === false) {
-    motivos.push("print do trade nao anexado");
+    motivos.push("print do trade não anexado");
   }
 
   const liberado = motivos.length === 0;

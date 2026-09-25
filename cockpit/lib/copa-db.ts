@@ -152,7 +152,7 @@ export async function getSessaoFechadaDoDia(): Promise<string> {
   }
 
   if (!session || !session.fechada_em) {
-    throw new Error("pre-sessao do dia nao foi fechada");
+    throw new Error("pré-sessão do dia não foi fechada");
   }
 
   return session.id;
@@ -527,27 +527,27 @@ export function pendenciasDaPreSessao(p: PreSessao): string[] {
   const pendencias: string[] = [];
 
   if (!p?.screenshot_path) {
-    pendencias.push("print do grafico HTF nao anexado");
+    pendencias.push("print do gráfico HTF não anexado");
   }
 
   if (!p?.bias_h1 || p.bias_h1 === "INDEFINIDO") {
-    pendencias.push("bias H1 nao definido");
+    pendencias.push("bias H1 não definido");
   }
 
   if (!p?.contexto || p.contexto === "INDEFINIDO") {
-    pendencias.push("contexto nao definido");
+    pendencias.push("contexto não definido");
   }
 
   if (!p?.niveis || p.niveis.length < 2) {
-    pendencias.push("marque ao menos 2 niveis de liquidez ou array");
+    pendencias.push("marque ao menos 2 níveis de liquidez ou array");
   }
 
   if (!p?.setup_do_dia) {
-    pendencias.push("setup do dia nao escolhido");
+    pendencias.push("setup do dia não escolhido");
   }
 
   if (p?.setup_do_dia !== "NENHUM" && (!p?.contratos_declarados || p.contratos_declarados <= 0)) {
-    pendencias.push("tamanho nao declarado");
+    pendencias.push("tamanho não declarado");
   }
 
   return pendencias;

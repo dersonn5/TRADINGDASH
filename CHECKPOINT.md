@@ -27,6 +27,18 @@ Conferência visual logada, nos dois temas, das 5 telas (o Claude não consegue 
 - [ ] Rodar a limpeza do banco se ainda não rodou: `cockpit/supabase/migration_limpeza_copa.sql`
       e o DROP das views `v_copa_*`.
 
+## Fidelidade ao design (25/09, segunda rodada)
+- Moldura nova em `components/layout/shell.tsx` (barra lateral do design, tema e sair
+  no rodapé); o shadcn sidebar e o cabeçalho com busca/"bot idle" foram removidos.
+- Visão Geral, Pré-Sessão, Checklist e Estratégias reescritas a partir de
+  `design/v2/*.dc.html`; estilos comuns em `components/v2/estilos.ts`; cálculo da Visão
+  Geral em `lib/visao-geral.ts` (testado com os 16 trades de `scripts/fixture-design.ts`).
+- Textos das estratégias: fonte em `copa/strategies/*.json`, gerados por
+  `python copa/strategies/gerar_ts.py`. O banco (copa_strategy_items) ainda tem os
+  textos antigos sem acento — o app não lê de lá.
+- Como conferir o visual sem login: não há mais atalho no código. Para tirar print,
+  recriar temporariamente o desvio no AuthGate e remover antes do commit.
+
 ## Decisões que não se recuperam lendo o código
 - Paleta monocromática ciano; perda = ciano apagado + sinal "−" (classe
   `perda-vermelha` troca para vermelho) — pedido do operador por "tons da mesma cor".

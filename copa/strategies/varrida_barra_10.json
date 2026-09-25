@@ -5,11 +5,11 @@
   "mercado": [
     "WIN"
   ],
-  "descricao": "A abertura do a vista (barra de 15 min das 10:00) e o momento da manipulacao, em dois modos. C1 - a barra das 10 E MANIPULADA: entre 10:15 e 11:14 o preco passa da maxima ou da minima dela (sweep). C2 - a barra das 10 MANIPULA: ela mesma varre o topo ou o fundo de uma barra de 15 min anterior e devolve (nao precisa romper). Cenarios: continuacao (1a hora em tendencia, varre a maxima/minima contra a tendencia) ou reversao (varre BSL/SSL e devolve). Nos dois: operar CONTRA o lado varrido; NAO esperar o 15 min fechar - o sweep libera olhar o 1m; MSS no sentido da operacao, entrada no reteste do FVG, stop no extremo da pernada do MSS, alvo no proximo BSL/SSL com trailing. Registrar C1 ou C2 nas notas.",
+  "descricao": "A abertura do à vista é o momento da manipulação. C1: entre 10:15 e 11:14 o preço passa da máxima ou da mínima da barra das 10. C2: a própria barra das 10 varre o topo ou o fundo de uma barra de 15 min anterior e devolve. Operar contra o lado varrido, sem esperar o 15 min fechar.",
   "score_minimo": 65,
   "calibracao": {
     "status": "EM_CALIBRACAO",
-    "observacao": "1 min, 5 meses, sweep -> MSS + FVG de reversao sem esperar o 15 min fechar: C1 86 trades +0,21R (t=1,8), C2 95 trades +0,20R (t=1,8); base (todo gatilho 10:00-11:14) +0,11R. Melhor recorte: C1 contra a tendencia da 1a hora, 36 trades +0,43R (visto depois dos dados). Numeros antigos (+0,35R/+0,39R) tinham erro, corrigidos 25/09. Pesos dos PONTOS ESTIMADO. C1 e C2 medidos separados.",
+    "observacao": "Backtest de 5 meses (1 min): C1 +0,21R e C2 +0,20R por trade, o dobro da base. Em 5 anos (15 min), reversão e continuação andam igual. Pesos dos pontos estimados — os trades reais decidem.",
     "atualizado_em": "2026-09-23"
   },
   "ambiente_favoravel": [
@@ -57,43 +57,43 @@
       "id": "k1",
       "tipo": "KILL",
       "peso": 0,
-      "label": "Barra das 10 (15 min) marcada: maxima e minima",
-      "ajuda": "As linhas douradas do indicador. O nivel so fica fixo depois das 10:15."
+      "label": "Barra das 10 marcada: máxima e mínima",
+      "ajuda": "As linhas douradas do indicador. O nível só fica fixo depois das 10:15."
     },
     {
       "id": "k2",
       "tipo": "KILL",
       "peso": 0,
-      "label": "SWEEP do a vista: C1 (entre 10:15 e 11:14 o preco passou da maxima/minima da barra das 10) ou C2 (a barra das 10 passou do topo/fundo de uma barra de 15 min anterior)",
-      "ajuda": "Nao esperar a barra de 15 min fechar: o sweep ja libera olhar o 1 min. Anotar C1 ou C2 e o contexto da 1a hora (a favor, contra ou lateral)."
+      "label": "Sweep do à vista: C1 (preço passou da barra das 10) ou C2 (a barra das 10 passou de uma barra de 15 min anterior)",
+      "ajuda": "Não esperar o 15 min fechar: o sweep já libera olhar o 1 min. Anotar C1 ou C2 e o contexto da 1ª hora."
     },
     {
       "id": "k3",
       "tipo": "KILL",
       "peso": 0,
-      "label": "Direcao CONTRA o lado varrido: topo varrido = venda, fundo varrido = compra",
-      "ajuda": "Vale para C1 e C2. Anotar o contexto: no teste, a reversao CONTRA a tendencia da 1a hora foi o melhor recorte do C1."
+      "label": "Direção contra o lado varrido",
+      "ajuda": "Topo varrido = venda. Fundo varrido = compra."
     },
     {
       "id": "k4",
       "tipo": "KILL",
       "peso": 0,
-      "label": "MSS no 1m em vela FECHADA, no sentido da operacao, em ate 30 min depois do sweep e ate 11:14",
-      "ajuda": "Sem MSS nao ha entrada. Se o preco segue alem do sweep sem virar, nao e setup."
+      "label": "MSS no 1m em vela fechada, até 30 min depois do sweep e até 11:14",
+      "ajuda": "Sem MSS não há entrada. Se o preço segue além do sweep sem virar, não é setup."
     },
     {
       "id": "k5",
       "tipo": "KILL",
       "peso": 0,
-      "label": "Entrada no RETESTE do FVG ou do BLOCO DE ORDEM deixado pela perna do MSS",
-      "ajuda": "Nao perseguir preco. OB = ultimo candle contrario antes da pernada; entrada na abertura dele. OB: stop ~metade (~205 pts), menos entradas, mais 5R. Teste de 5 meses: no C1, OB igual ao FVG (+0,23R x +0,21R); no C2, OB pior (+0,01R x +0,20R) - no C2 preferir FVG."
+      "label": "Entrada no reteste do FVG ou do bloco de ordem da perna do MSS",
+      "ajuda": "Não perseguir preço. OB = último candle contrário antes da pernada; entrada na abertura dele. No C2, preferir o FVG."
     },
     {
       "id": "k6",
       "tipo": "KILL",
       "peso": 0,
-      "label": "Stop no extremo da pernada do MSS · alvo no proximo BSL/SSL",
-      "ajuda": "Nao usar o extremo da barra das 10 como stop no C2 - fica largo demais. Trailing: zero a zero em 1R, depois atras dos swings de 1m."
+      "label": "Stop no extremo da pernada do MSS · alvo no próximo BSL/SSL",
+      "ajuda": "Não usar o extremo da barra das 10 como stop no C2 — fica largo demais. Trailing: zero a zero em 1R, depois atrás dos swings de 1m."
     },
     {
       "id": "k7",
@@ -106,23 +106,23 @@
       "id": "p1",
       "tipo": "PONTO",
       "peso": 25,
-      "label": "Sweep com rejeicao clara no 1m (pavio longo alem do nivel)",
-      "ajuda": "O preco passa do nivel e volta rapido. Aceitacao alem do nivel enfraquece.",
+      "label": "Sweep com rejeição clara no 1m (pavio longo)",
+      "ajuda": "O preço passa do nível e volta rápido. Aceitação além do nível enfraquece.",
       "origem": "ESTIMADO"
     },
     {
       "id": "p2",
       "tipo": "PONTO",
       "peso": 25,
-      "label": "Reversao com barras GRANDES e CONSECUTIVAS no 1m",
-      "ajuda": "A perna do MSS precisa ter conviccao. Reversao arrastada enfraquece.",
+      "label": "Reversão com barras grandes e consecutivas",
+      "ajuda": "A perna do MSS precisa ter convicção. Reversão arrastada enfraquece.",
       "origem": "ESTIMADO"
     },
     {
       "id": "p3",
       "tipo": "PONTO",
       "peso": 20,
-      "label": "FVG limpo e ainda nao mitigado",
+      "label": "FVG limpo e ainda não mitigado",
       "ajuda": "FVG virgem reage melhor.",
       "origem": "ESTIMADO"
     },
@@ -130,16 +130,16 @@
       "id": "p4",
       "tipo": "PONTO",
       "peso": 15,
-      "label": "Alvo (BSL/SSL) a pelo menos 2R",
-      "ajuda": "Se a liquidez mais proxima esta perto demais, o trade paga pouco para o risco.",
+      "label": "Alvo a pelo menos 2R",
+      "ajuda": "Se a liquidez mais próxima está perto demais, o trade paga pouco para o risco.",
       "origem": "ESTIMADO"
     },
     {
       "id": "p5",
       "tipo": "PONTO",
       "peso": 15,
-      "label": "A varrida coincide com outra liquidez (PDH/PDL ou max/min da 1a hora)",
-      "ajuda": "Duas liquidezes no mesmo lugar valem mais que uma.",
+      "label": "A varrida coincide com outra liquidez",
+      "ajuda": "PDH/PDL ou máxima/mínima da 1ª hora no mesmo lugar: duas liquidezes valem mais que uma.",
       "origem": "ESTIMADO"
     }
   ]
