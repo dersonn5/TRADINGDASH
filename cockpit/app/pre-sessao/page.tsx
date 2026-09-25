@@ -11,6 +11,8 @@ import {
   PreSessao,
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
+import { EVENTO_PRESESSAO_SALVA } from "@/components/layout/alertas-voz";
+import { mesclarAgenda, EventoCalendario } from "@/lib/calendario";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 
 // Espelho de design/v2/PreSessao.dc.html. A logica (auto-save, fechar, reabrir) nao mudou.
@@ -59,6 +61,7 @@ export default function PreSessaoPage() {
       try {
         await salvarPreSessao(proximaSessao);
         setSaveStatus("salvo");
+        window.dispatchEvent(new Event(EVENTO_PRESESSAO_SALVA));
       } catch (err: any) {
         console.error("Erro no auto-save:", err);
         setSaveStatus("erro");
@@ -84,6 +87,7 @@ export default function PreSessaoPage() {
       const recarregada = await getPreSessaoDeHoje();
       setSessao(recarregada);
       setSaveStatus("salvo");
+      window.dispatchEvent(new Event(EVENTO_PRESESSAO_SALVA));
     } catch (err: any) {
       setErroFechar(err.message || "Erro ao fechar pré-sessão");
     } finally {
@@ -100,6 +104,7 @@ export default function PreSessaoPage() {
       setMotivoReabrir("");
       const recarregada = await getPreSessaoDeHoje();
       setSessao(recarregada);
+      window.dispatchEvent(new Event(EVENTO_PRESESSAO_SALVA));
     } catch (err: any) {
       alert("Erro ao reabrir pré-sessão: " + err.message);
     } finally {
@@ -143,6 +148,54 @@ export default function PreSessaoPage() {
     const novos = sessao.agenda.filter((_, i) => i !== index);
     updateField("agenda", novos);
   };
+
+  // Calendario automatico (EUA): preenche a agenda da pre-sessao aberta.
+  const [importando, setImportando] = useState(false);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const importouAuto = useRef(false);
+
+  const importarCalendario = async (automatico: boolean) => {
+    const atual = sessaoRef.current;
+    if (!atual || atual.fechada_em) return;
+    setImportando(true);
+    setImportMsg(null);
+    try {
+      const res = await fetch(`/api/calendario?data=${atual.data}`);
+      const corpo = (await res.json()) as { eventos?: EventoCalendario[]; erro?: string };
+      if (!res.ok || !corpo.eventos) {
+        setImportMsg(`Não foi possível importar: ${corpo.erro ?? `erro ${res.status}`}`);
+        return;
+      }
+      // Parte do estado mais recente: o operador pode ter editado durante o fetch
+      const base = sessaoRef.current ?? atual;
+      const nova = mesclarAgenda(base.agenda, corpo.eventos);
+      const acrescentados = nova.length - base.agenda.length;
+      if (acrescentados > 0 && !base.fechada_em) {
+        const atualizada = { ...base, agenda: nova };
+        setSessao(atualizada);
+        dispararSalvarDebounce(atualizada);
+      }
+      setImportMsg(
+        corpo.eventos.length === 0
+          ? "Nenhum evento dos EUA de impacto alto ou médio hoje."
+          : acrescentados > 0
+            ? `${acrescentados} ${acrescentados === 1 ? "evento importado" : "eventos importados"} dos EUA. Revise e acrescente os do Brasil.`
+            : automatico ? null : "A agenda já tem todos os eventos dos EUA de hoje."
+      );
+    } catch (e) {
+      setImportMsg(`Não foi possível importar: ${(e as Error).message}`);
+    } finally {
+      setImportando(false);
+    }
+  };
+
+  // Agenda vazia numa pre-sessao aberta: importa sozinho, uma vez
+  useEffect(() => {
+    if (!sessao || loading || importouAuto.current) return;
+    importouAuto.current = true;
+    if (!sessao.fechada_em && sessao.agenda.length === 0) importarCalendario(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessao, loading]);
 
   if (loading || !sessao) {
     return (
@@ -344,7 +397,19 @@ export default function PreSessaoPage() {
           </section>
 
           <section style={CARD}>
-            {cabecalhoCard("5 · Agenda do dia", agendaFrase, botaoAdicionar("Adicionar evento", adicionarEvento))}
+            {cabecalhoCard(
+              "5 · Agenda do dia",
+              agendaFrase,
+              isFechada ? null : (
+                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                  <button type="button" onClick={() => importarCalendario(false)} disabled={importando} style={{ ...BOTAO_SECUNDARIO, color: "var(--tx2)" }}>
+                    {importando ? "Importando…" : "Importar dos EUA"}
+                  </button>
+                  {botaoAdicionar("Adicionar evento", adicionarEvento)}
+                </div>
+              )
+            )}
+            {importMsg && <span style={{ fontSize: "12px", color: "var(--tx3)", lineHeight: 1.5 }}>{importMsg}</span>}
             {sessao.agenda.map((ev, idx) => {
               const imp = IMPACTO[ev.impacto] ?? IMPACTO.MEDIO;
               return (

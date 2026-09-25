@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { AlertasVoz } from "@/components/layout/alertas-voz";
 
 // Casca do app: barra lateral e area principal, identicas a design/v2/*.dc.html.
 
@@ -162,6 +163,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               {iniciais(nome)}
             </span>
             <span style={{ fontSize: "13px", color: "var(--tx2)", flexGrow: 1 }}>{nome}</span>
+            <AlertasVoz />
             <button type="button" onClick={alternarTema} aria-label={escuro ? "Usar tema claro" : "Usar tema escuro"} title={escuro ? "Tema claro" : "Tema escuro"} style={botaoIcone}>
               {escuro ? (
                 <svg {...svgProps} width={16} height={16}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>

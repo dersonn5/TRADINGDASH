@@ -1,6 +1,9 @@
 import fs from "fs";
 import { montarVisaoGeral } from "../lib/visao-geral";
 import { TRADES_DESIGN } from "./fixture-design";
+import { aberturaNY, alertasDoDia, alertasParaDisparar, horaFalada } from "../lib/alertas";
+import { escolherVoz } from "../lib/voz";
+import { converterFeed, mesclarAgenda } from "../lib/calendario";
 import path from "path";
 import {
   classificarJanela,
@@ -858,6 +861,72 @@ report(
   );
   const vazio = montarVisaoGeral([], [], 2026, 9, "2026-09-25");
   report("Visão Geral: mês vazio não quebra", vazio.n === 0 && vazio.kpis.length === 5, `n=${vazio.n}`);
+}
+
+// Alertas de voz (SPEC_ALERTAS_VOZ.md)
+{
+  report("Alertas: NY abre 10:30 em setembro e 11:30 em janeiro", aberturaNY("2026-09-25") === "10:30" && aberturaNY("2026-01-15") === "11:30",
+    `set=${aberturaNY("2026-09-25")} jan=${aberturaNY("2026-01-15")}`);
+  report("Alertas: sábado e feriado sem alerta", alertasDoDia("2026-09-26", [], true).length === 0 && alertasDoDia("2026-09-07", [], true).length === 0);
+
+  const agendaAlto = [{ evento: "Payroll", horario: "10:30", impacto: "ALTO" as const }];
+  const a1 = alertasDoDia("2026-09-25", agendaAlto, true).filter((a) => a.grupo === "noticia");
+  report("Alertas: notícia Alta às 10:30 gera 10:25 e 10:30", a1.length === 2 && a1[0].hora === "10:25" && a1[1].hora === "10:30",
+    JSON.stringify(a1.map((a) => a.hora)));
+  const med = alertasDoDia("2026-09-25", [{ evento: "ISM", horario: "11:00", impacto: "MEDIO" }], true).filter((a) => a.grupo === "noticia");
+  const baixo = alertasDoDia("2026-09-25", [{ evento: "X", horario: "11:00", impacto: "BAIXO" }], true).filter((a) => a.grupo === "noticia");
+  const fora = alertasDoDia("2026-09-25", [{ evento: "Y", horario: "15:00", impacto: "ALTO" }], true).filter((a) => a.grupo === "noticia");
+  report("Alertas: Médio só na hora, Baixo e fora da janela não falam", med.length === 1 && med[0].hora === "11:00" && baixo.length === 0 && fora.length === 0);
+
+  const temAviso = (fechada: boolean) => alertasDoDia("2026-09-25", [], fechada).some((a) => a.hora === "09:45");
+  report("Alertas: aviso das 09:45 só com a pré-sessão aberta", temAviso(false) && !temAviso(true));
+
+  const doDia = alertasDoDia("2026-09-25", agendaAlto, true);
+  const as1000 = (s: number) => new Date(Date.UTC(2026, 8, 25, 13, 0, s));
+  const d1 = alertasParaDisparar(doDia, as1000(30), new Set()).map((a) => a.hora);
+  const d2 = alertasParaDisparar(doDia, as1000(91), new Set()).map((a) => a.hora);
+  const idDez = doDia.find((a) => a.hora === "10:00")!.id;
+  const d3 = alertasParaDisparar(doDia, as1000(30), new Set([idDez])).map((a) => a.hora);
+  report("Alertas: dispara até 90 s depois e não repete", d1.join() === "10:00" && d2.length === 0 && d3.length === 0,
+    `10:00:30=${d1} 10:01:31=${d2} repetido=${d3}`);
+
+  const abertura = doDia.find((a) => a.hora === "09:00")!.texto;
+  report("Alertas: hora falada e resumo das 09:00",
+    horaFalada("09:45") === "nove e quarenta e cinco" && horaFalada("10:30") === "dez e meia" && horaFalada("12:00") === "meio-dia" &&
+      abertura.includes("Hoje tem uma notícia de impacto alto. A primeira é Payroll, às dez e meia."),
+    abertura);
+
+  const nyInverno = alertasDoDia("2026-01-15", [], true).filter((a) => a.hora === "11:30").map((a) => a.texto);
+  report("Alertas: no inverno dos EUA, NY (11:30) fala antes do fim da janela", nyInverno[0] === "Abertura de Nova York." && nyInverno.length === 2,
+    JSON.stringify(nyInverno));
+
+  const vozes = [
+    { name: "Microsoft Daniel", lang: "pt-BR", voiceURI: "d" },
+    { name: "Google português do Brasil", lang: "pt-BR", voiceURI: "g" },
+    { name: "Microsoft Francisca Online (Natural)", lang: "pt-BR", voiceURI: "f" },
+    { name: "Samantha", lang: "en-US", voiceURI: "s" },
+  ];
+  report("Voz: prefere Francisca, respeita a salva e cai em qualquer pt-BR",
+    escolherVoz(vozes)?.voiceURI === "f" && escolherVoz(vozes, "g")?.voiceURI === "g" &&
+      escolherVoz([vozes[0], vozes[3]])?.voiceURI === "d" && escolherVoz([vozes[3]]) === null);
+
+  const feed = [
+    { title: "Non-Farm Employment Change", country: "USD", date: "2026-09-25T08:30:00-04:00", impact: "High" },
+    { title: "CPI m/m", country: "USD", date: "2026-09-25T08:30:00-04:00", impact: "High" },
+    { title: "CPI y/y", country: "USD", date: "2026-09-25T08:30:00-04:00", impact: "High" },
+    { title: "ISM Services PMI", country: "USD", date: "2026-09-25T10:00:00-04:00", impact: "Medium" },
+    { title: "Some Low", country: "USD", date: "2026-09-25T10:00:00-04:00", impact: "Low" },
+    { title: "ECB Speaks", country: "EUR", date: "2026-09-25T09:00:00-04:00", impact: "High" },
+    { title: "Unemployment Claims", country: "USD", date: "2026-09-24T08:30:00-04:00", impact: "High" },
+  ];
+  const conv = converterFeed(feed, "2026-09-25");
+  report("Calendário: só EUA, Alto/Médio, de hoje, em São Paulo e em português",
+    conv.length === 3 && conv[0].horario === "09:30" && conv[0].evento === "Payroll" && conv[1].evento === "CPI, inflação ao consumidor" &&
+      conv[2].horario === "11:00" && conv[2].impacto === "MEDIO",
+    JSON.stringify(conv.map((e) => `${e.horario} ${e.evento} ${e.impacto}`)));
+  const mesc = mesclarAgenda([{ evento: "Payroll", horario: "09:30", impacto: "ALTO" }, { evento: "Copom", horario: "18:30", impacto: "ALTO" }], conv);
+  report("Calendário: importar não duplica o que já está na agenda", mesc.length === 4 && mesc.filter((e) => e.evento === "Payroll").length === 1,
+    JSON.stringify(mesc.map((e) => `${e.horario} ${e.evento}`)));
 }
 
 if (hasErrors) {

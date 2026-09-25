@@ -39,6 +39,13 @@ Conferência visual logada, nos dois temas, das 5 telas (o Claude não consegue 
 - Como conferir o visual sem login: não há mais atalho no código. Para tirar print,
   recriar temporariamente o desvio no AuthGate e remover antes do commit.
 
+## Alertas de voz (25/09) — `cockpit/SPEC_ALERTAS_VOZ.md`
+- Motor puro em `lib/alertas.ts`, voz em `lib/voz.ts` (Web Speech API), calendário em
+  `lib/calendario.ts` + `app/api/calendario/route.ts` (ForexFactory, só EUA, cache 1 h).
+- Componente `components/layout/alertas-voz.tsx` na barra lateral (botão alto-falante).
+- Teste sem esperar o horário (só em dev): `?relogio=09:59:50&data=2026-09-25`.
+- Falta: prova ao vivo num dia útil (TASK-502) e conferir os feriados da B3 de 2026.
+
 ## Decisões que não se recuperam lendo o código
 - Paleta monocromática ciano; perda = ciano apagado + sinal "−" (classe
   `perda-vermelha` troca para vermelho) — pedido do operador por "tons da mesma cor".
@@ -52,6 +59,11 @@ Conferência visual logada, nos dois temas, das 5 telas (o Claude não consegue 
 - Views `v_copa_*` devem ser apagadas: rodam sem RLS e expõem os trades à chave anon.
 
 ## Armadilhas já pagas
+- O navegador não fala sem um clique na página (autoplay). Por isso o aviso no painel
+  e o ponto no botão de alto-falante até o primeiro clique.
+- Abertura de NY não é fixa: 10:30 no horário de verão dos EUA, 11:30 de nov a mar.
+- Rota de API que usa "hoje" não pode ser estática: a data vem por `?data=` (deixa a rota
+  dinâmica) e o feed fica no cache de fetch (`next.revalidate`).
 - O relatório do Gemini disse "tsc limpo" e "anotado no CHECKPOINT" — nenhum dos
   dois era verdade (Histórico com erro de tipo, arquivo inexistente). Conferir o
   `git diff`, nunca o relatório.
