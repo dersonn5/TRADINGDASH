@@ -166,31 +166,78 @@ continuidade em tendência. Escolher na pré-sessão, não no calor.
 # Setup C — VARRIDA DA BARRA DAS 10 *(em teste desde 23/09/2026)*
 
 Observado pelo operador no gráfico de 15 min: *"a barra das 10 ou manipula ou é
-manipulada, deixando máxima e mínima"*. A abertura do à vista cria liquidez nos dois
-lados da barra das 10:00, e o mercado costuma voltar para buscar.
+manipulada, deixando máxima e mínima"*. A abertura do à vista é o momento da
+manipulação — em dois modos.
+
+## Os dois modos
+
+| Modo | O que acontece | Direção | Evidência |
+|---|---|---|---|
+| **C1 — é manipulada** | entre 10:15 e 11:14, o preço passa da máxima/mínima **da barra das 10** (sweep) | contra o lado varrido | 1 min: +0,21R, 2× a base; 5 anos: reversão e continuação iguais |
+| **C2 — manipula** | **a própria barra das 10** varre o topo/fundo de uma **barra de 15 min anterior** e devolve (na mesma barra ou nas seguintes; não precisa romper) | contra o lado varrido | 1 min: +0,20R, 2× a base, menos estável |
+
+Os dois cenários do C2 (descritos pelo operador):
+
+- **Continuação:** 1ª hora em tendência (3 das 4 barras de 15 min na mesma direção,
+  ou domínio claro de um lado). O índice deixa uma máxima (ou mínima) contra a tendência;
+  o à vista abre, varre essa liquidez e o preço segue a tendência.
+  Exemplo (25/09): 1ª hora de baixa; a barra das 10 subiu e varreu o topo da barra das
+  09:15; a barra das 10:15 fechou de baixa, para dentro → venda.
+  É o cenário principal do C2 para o operador: a barra das 10 vem papar os stops do
+  último topo (tendência de baixa) ou do último fundo (tendência de alta) e o preço
+  segue. Medido (5 meses de 1 min): 36 trades, +0,17R (t 1,0), metades +0,44 / 0,00;
+  base +0,11R. Em 5 anos de 15 min, anda igual à mesma confirmação sem o sweep.
+- **Reversão:** o à vista abre perto de um BSL/SSL, varre na barra das 10 e devolve —
+  com barras contrárias depois, ou já na própria barra das 10 (sweep e início da
+  reversão na mesma barra).
 
 ## Regras
 
 ```
 1. NÍVEL      às 10:15, máxima e mínima da barra de 15 min das 10:00
               (linhas douradas do indicador Barra10H)
-2. VARRIDA    entre 10:15 e 11:14, uma barra de 15 min PASSA da linha
-              e FECHA DE VOLTA dentro da barra das 10
-                topo varrido  -> procurar VENDA
-                fundo varrido -> procurar COMPRA
-              fechou fora e ficou fora = rompimento -> SEM TRADE
-3. GATILHO    no 1 min: MSS no sentido da reversão, até 45 min depois
-              do início da barra que varreu
-4. ENTRADA    reteste do FVG da pernada do MSS
-5. STOP       além do extremo da pernada (o topo/fundo da varrida)
+2. SWEEP
+   C1         entre 10:15 e 11:14, o preço PASSA da linha da barra das 10
+   C2         dentro da barra das 10, o preço PASSA do topo/fundo de uma
+              barra de 15 min anterior
+   Direção    topo varrido -> VENDA   |   fundo varrido -> COMPRA
+   NÃO esperar a barra de 15 min fechar: o sweep já libera olhar o 1 min.
+   Se o preço seguir e romper, não aparece o MSS (ou o stop pega).
+3. GATILHO    no 1 min: sinal de atuação institucional e MSS de reversão
+              em até 30 min depois do sweep, e antes de 11:15
+4. ENTRADA    reteste do FVG ou do BLOCO DE ORDEM da pernada do MSS
+              OB = último candle contrário antes da pernada; entrada na
+              abertura dele. No C2, preferir o FVG (OB pior no teste)
+5. STOP       no extremo da pernada do MSS
+              (no C2, NUNCA no extremo da barra das 10: fica largo demais)
 6. ALVO       próximo BSL/SSL; trailing: zero a zero em 1R, depois
               atrás dos swings de 1 min
 ```
 
+**Registrar C1 ou C2 em cada trade.** Os dois são medidos separados.
+
+| | Estrutura (5 anos, 15 min) | Gatilho de 1 min (5 meses) |
+|---|---|---|
+| C1 | volta ao outro lado 52% × 44% da barra das 11 (z = 3,7) | 86 trades, **+0,21R** (t 1,8), metades +0,23 / +0,20 |
+| C2 | só se destaca na **reversão contra a tendência da 1ª hora** (3R 16% × 10%) | 95 trades, **+0,20R** (t 1,8), metades +0,36 / +0,05 |
+| Base: todo gatilho 10:00–11:14 | — | 484 trades, +0,11R |
+
+Gatilho de 1 min testado **como se opera ao vivo**: sweep → MSS + FVG de reversão, sem
+esperar o 15 min fechar (`profit/backtest_c_ao_vivo.py`). Recorte mais forte: **C1 contra a
+tendência da 1ª hora, 36 trades, +0,43R (t 2,2), metades +0,48 / +0,40** — achado depois
+de olhar os dados, precisa confirmar ao vivo.
+
+> **Correção de 25/09/2026.** Os números de 1 min publicados antes (C1 +0,35R, C2
+> +0,30R, 64 trades +0,39R) estavam errados: o backtest exigia que a barra de 15 min
+> fechasse de volta, mas deixava a entrada acontecer antes desse fechamento. Detalhes:
+> [[Estudo_Barra_das_10]] itens 6 e 7.
+
 - **Um trade do Setup C por dia.** Dentro da janela de entrada 10:00–11:30, só WIN,
   limites do dia valendo.
-- **As duas direções valem.** A direção da 1ª hora (a favor ou contra) não separou
-  resultado nos testes — o lado varrido define a direção.
+- **As duas direções valem**, e os dois cenários também. Em 5 meses de 1 min, a reversão
+  contra a 1ª hora foi o melhor recorte do C1 (+0,43R), mas **nos 5 anos de 15 min
+  reversão e continuação andam igual** (C1 2R 18% × 21%; C2 21% × 22%). Anotar o cenário
+  em cada trade, sem dar prioridade a nenhum.
 - **Tamanho calculado para o stop** (mediana do backtest: ~420 pts).
 
 ## Evidência
@@ -198,11 +245,13 @@ lados da barra das 10:00, e o mercado costuma voltar para buscar.
 | Parte | Função | Base |
 |---|---|---|
 | Barra das 10 varrida | onde e quando | 5 anos de 15 min: varrida em ~2/3 dos dias todo ano; volta ao outro lado 52% × 44% da barra das 11, em todos os 6 anos (z = 3,7) |
-| MSS + FVG no 1 min | entrada com stop curto | 5 meses de 1 min: 64 trades, **+0,39R/trade** (t = 2,5), positivo em todos os meses; 3 contratos: +R$ 3.888, pior queda −R$ 834 |
+| MSS + FVG no 1 min | entrada com stop curto | 5 meses de 1 min, sweep → gatilho sem esperar o 15 min: C1 +0,21R, C2 +0,20R, o dobro da base (+0,11R); 3 contratos: C1 +R$ 2.583, C2 +R$ 1.695 |
 | Alvo BSL/SSL + trailing | o ganho | a gestão do operador |
 
 **Operar a varrida no fechamento do 15 min NÃO funciona** (5 anos: 41% de acerto, payoff
-1,12, −0,08R/trade). O resultado vem do gatilho de 1 min em cima da estrutura.
+1,12, −0,08R/trade). O ganho vem do **gatilho de 1 min logo depois do sweep**. Ainda não é
+prova (t 1,8, 5 meses; a diferença para a base não é significativa): os trades reais do
+cockpit decidem.
 
 Detalhes: [[Estudo_Barra_das_10]].
 
