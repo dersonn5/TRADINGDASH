@@ -116,6 +116,19 @@ se repetem **em todos os anos** de 2021 a 2026.
 - Isto é descritivo, não é regra de entrada: falta medir entrada/stop/alvo depois das 10:15
   (Fase 4 do operador), com os últimos pregões guardados para validação.
 
+**Os 92% não viram trade sozinhos** (`profit/referencia_v_1015.py`, referência bruta, não
+é regra). Entrada no fechamento de 10:14 contra o impulso, stop além do extremo, custo 10 pts:
+
+| | n | Acerto | Média | Risco med. | Alvo med. |
+|---|---|---|---|---|---|
+| Sinal, alvo = lado oposto (1 min) | 39 | 92% | **+0,19R** | 615 pts | 150 pts |
+| Sinal, alvo = V completo (1 min) | 28 | 61% | +0,08R | 600 pts | 440 pts |
+| Espelho 5 anos (15 min), alvo = lado oposto | 225 | 54% | **−0,17R** | 240 pts | 145 pts |
+
+Motivo: quando o sinal aparece, o preço já devolveu metade — o stop no extremo fica 4× maior
+que o que falta até o alvo. Acerta muito e ganha pouco. Para pagar, a entrada precisa de
+stop curto (gatilho de 1 min depois das 10:15), a ser definido pelo operador.
+
 ## Por que este estudo
 
 Observação do operador: "o índice abre às 09:00, vai para um lado e depois reverte".
