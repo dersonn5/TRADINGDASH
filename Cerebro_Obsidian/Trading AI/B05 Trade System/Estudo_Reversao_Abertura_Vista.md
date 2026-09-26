@@ -177,6 +177,37 @@ Próximo: é descritivo. Para virar trade falta a entrada do operador (quando en
 movimento, com qual stop) — o extremo pode sair das 09:07 às 10:07, e entrar antes dele
 custa o resto do movimento.
 
+**8. Setup V: V das 09:00 + sweep de liquidez + gatilhos (26/09/2026)** (`profit/setup_v_sweep.py`)
+
+Hipótese do operador: o V (item 7) + sweep de PDH/PDL ou BSL/SSL + nossos gatilhos de entrada.
+Definições confirmadas antes de rodar: liquidez = PDH/PDL + swings de 15 min do dia anterior
+intactos; gatilho contra o movimento de 800 pts em até 30 min depois do sweep; gatilhos MSS+FVG,
+MSS+OB, BPR e Risk (cada um separado); alvo na liquidez oposta + zero a zero em 1R + trailing;
+saída até 12:00; custo 10 pts; janelas 09:00–11:29 e 10:00–11:29. 1 min, 109 pregões.
+
+| Entrada 10:00–11:29 (regra atual) | n | Acerto | Média | t |
+|---|---|---|---|---|
+| **V + sweep**, primeiro gatilho do dia | 23 | 30% | +0,40R | 0,7 |
+| V + sweep, MSS+FVG | 14 | 29% | **−0,42R** | −1,8 |
+| **V sem exigir sweep**, primeiro gatilho | 100 | 46% | **+0,38R** | **2,2** |
+| V sem exigir sweep, MSS+FVG | 96 | 51% | +0,24R | 1,8 |
+| Base: todo MSS+FVG da janela | 490 | 48% | +0,13R | 2,3 |
+| Base: todo BPR da janela | 177 | 51% | **+0,30R** | **2,9** |
+
+Entrada 09:00–11:29: V + sweep, primeiro gatilho +0,98R (n=49, t=1,2) — puxado por poucos Risk
+com stop de 10–35 pts (um de +38R); MSS+FVG +0,13R, igual à base.
+
+- **O sweep de liquidez não melhorou o V** — na janela das 10:00 piorou. Os sweeps acontecem
+  cedo (09:0x); 30 min depois ainda não é 10:00.
+- O que ficou melhor que a base foi o **gatilho contra o movimento do V, sem sweep** (+0,38R).
+  Mas: 5 meses, ~40 combinações olhadas — alguma sai boa por acaso. Não é prova.
+- **BPR foi o melhor gatilho em geral** (+0,30R, positivo nas duas metades), sem relação com o V.
+- MSS+OB: acerto 5–21%, resultado zero ou negativo em quase todo recorte.
+- Risk entry com stop de 10–35 pts não é executável na prática (slippage do WIN).
+
+**Não entra no checklist.** Para validar é preciso mais histórico de 1 min (meses anteriores a
+abr/2026, "Expandir base" no Profit) e rodar as mesmas regras sem mudar nada.
+
 ## Por que este estudo
 
 Observação do operador: "o índice abre às 09:00, vai para um lado e depois reverte".
