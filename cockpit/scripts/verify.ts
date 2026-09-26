@@ -903,6 +903,12 @@ report(
   report("Alertas: no inverno dos EUA, NY (11:30) fala antes do fim da janela", nyInverno[0] === "Abertura de Nova York." && nyInverno.length === 2,
     JSON.stringify(nyInverno));
 
+  const comSino = doDia.filter((a) => a.som === "sino").map((a) => a.hora);
+  const caminhoSino = path.resolve(__dirname, "../public/sons/sino-pregao.ogg");
+  report("Alertas: sino de pregão viva voz nas aberturas das 09:00 e 10:00 e arquivo presente",
+    comSino.join() === "09:00,10:00" && fs.existsSync(caminhoSino),
+    `sino=${comSino.join()} arquivo=${fs.existsSync(caminhoSino)}`);
+
   const vozes = [
     { name: "Microsoft Daniel", lang: "pt-BR", voiceURI: "d" },
     { name: "Google português do Brasil", lang: "pt-BR", voiceURI: "g" },

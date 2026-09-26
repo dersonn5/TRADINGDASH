@@ -4,6 +4,7 @@
  */
 
 export type GrupoAlerta = "rotina" | "noticia";
+export type SomAlerta = "sino";
 
 export interface Alerta {
   id: string;
@@ -13,6 +14,7 @@ export interface Alerta {
   segmentos: string[];
   grupo: GrupoAlerta;
   ordem: number; // desempate quando dois alertas caem no mesmo minuto
+  som?: SomAlerta; // efeito sonoro previo (ex: sino de pregao viva voz na abertura)
 }
 
 export interface EventoAgenda {
@@ -107,10 +109,10 @@ export function alertasDoDia(dataISO: string, agenda: EventoAgenda[], preSessaoF
     : [fraseQuantasNoticias(altos.length), frasePrimeira(altos[0].evento), fraseAs(altos[0].horario)];
 
   const ny = aberturaNY(dataISO);
-  const rotina: Array<[string, string | string[], number]> = [
-    ["09:00", [FRASE_BOM_DIA, ...resumo], 1],
+  const rotina: Array<[string, string | string[], number, SomAlerta?]> = [
+    ["09:00", [FRASE_BOM_DIA, ...resumo], 1, "sino"],
     ["09:55", "Cinco minutos para a abertura do mercado à vista.", 1],
-    ["10:00", "Abertura do mercado à vista. Janela de entrada aberta.", 1],
+    ["10:00", "Abertura do mercado à vista. Janela de entrada aberta.", 1, "sino"],
     [somarMinutos(ny, -5), "Cinco minutos para a abertura de Nova York.", 0],
     [ny, "Abertura de Nova York.", 0],
     ["11:00", "Fim da janela nobre. A partir de agora, só com score oitenta.", 1],
@@ -121,9 +123,17 @@ export function alertasDoDia(dataISO: string, agenda: EventoAgenda[], preSessaoF
   ];
   if (!preSessaoFechada) rotina.push(["09:45", "Faltam quinze minutos para a janela. A pré-sessão ainda não foi fechada.", 1]);
 
-  const alertas: Alerta[] = rotina.map(([hora, fala, ordem]) => {
+  const alertas: Alerta[] = rotina.map(([hora, fala, ordem, som]) => {
     const segmentos = typeof fala === "string" ? [fala] : fala;
-    return { id: `rotina-${hora}-${ordem}`, hora, texto: segmentos.join(" "), segmentos, grupo: "rotina", ordem };
+    return {
+      id: `rotina-${hora}-${ordem}`,
+      hora,
+      texto: segmentos.join(" "),
+      segmentos,
+      grupo: "rotina",
+      ordem,
+      ...(som ? { som } : {}),
+    };
   });
 
   eventos

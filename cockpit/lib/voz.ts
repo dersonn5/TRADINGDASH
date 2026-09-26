@@ -123,6 +123,20 @@ export function tocarPlano(plano: PassoFala[], opcoes: { volume: number; vozNave
   });
 }
 
+export const URL_SINO_PREGAO = "/sons/sino-pregao.ogg";
+
+/** Toca as badaladas de abertura do pregão viva voz, respeitando fila e volume. */
+export function tocarSino(volume = 1): Promise<void> {
+  const minha = geracao;
+  const p = fila.then(async () => {
+    if (minha !== geracao) return;
+    await tocarArquivo(URL_SINO_PREGAO, volume);
+    await new Promise((r) => setTimeout(r, PAUSA_MS));
+  });
+  fila = p;
+  return p;
+}
+
 export function pararTudo() {
   geracao++;
   audioAtual?.pause();

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { getDataSaoPaulo, getPreSessaoDeHoje } from "@/lib/copa-db";
 import { Alerta, EventoAgenda, FRASE_TESTE, alertasDoDia, alertasParaDisparar, ehDiaDePregao } from "@/lib/alertas";
-import { carregarManifest, carregarVozes, escolherVoz, pararTudo, tocarPlano, vozesEmPortugues } from "@/lib/voz";
+import { carregarManifest, carregarVozes, escolherVoz, pararTudo, tocarPlano, tocarSino, vozesEmPortugues, URL_SINO_PREGAO } from "@/lib/voz";
 import { ManifestVoz, planoDeFala } from "@/lib/voz-clipes";
 import { CARD, LBL, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 
@@ -17,9 +17,10 @@ interface Config {
   voz: string | null; // voiceURI da voz do navegador (tambem cobre o que a Dora nao tem gravado)
   rotina: boolean;
   noticias: boolean;
+  sino: boolean; // badaladas de abertura do pregão viva voz (09:00 e 10:00)
 }
 
-const CONFIG_PADRAO: Config = { ligado: true, volume: 1, motor: "dora", voz: null, rotina: true, noticias: true };
+const CONFIG_PADRAO: Config = { ligado: true, volume: 1, motor: "dora", voz: null, rotina: true, noticias: true, sino: true };
 const CHAVE_CONFIG = "alertas-voz-config";
 const OPCAO_DORA = "__dora__";
 const chaveFalados = (data: string) => `alertas-falados-${data}`;
@@ -158,9 +159,15 @@ export function AlertasVoz() {
   );
   const voz = React.useMemo(() => escolherVoz(vozes, config.voz), [vozes, config.voz]);
   const dora = config.motor === "dora" && manifest !== null;
-  const falarSegmentos = React.useCallback(
-    (segmentos: string[]) => tocarPlano(planoDeFala(segmentos, dora ? manifest : null), { volume: config.volume, vozNavegador: voz }),
-    [dora, manifest, config.volume, voz]
+  const executarAlerta = React.useCallback(
+    (alerta: Alerta | { segmentos: string[]; som?: "sino" }) => {
+      const passos = planoDeFala(alerta.segmentos, dora ? manifest : null);
+      if (alerta.som === "sino" && config.sino !== false) {
+        passos.unshift({ tipo: "arquivo", url: URL_SINO_PREGAO });
+      }
+      tocarPlano(passos, { volume: config.volume, vozNavegador: voz });
+    },
+    [dora, manifest, config.volume, config.sino, voz]
   );
 
   // Disparo
@@ -170,13 +177,13 @@ export function AlertasVoz() {
     if (!disparar.length) return;
     const novos = new Set(falados);
     for (const a of disparar) {
-      falarSegmentos(a.segmentos);
+      executarAlerta(a);
       novos.add(a.id);
       if (process.env.NODE_ENV !== "production") console.info(`[voz] ${a.hora} ${a.texto}`);
     }
     setFalados(novos);
     gravarFalados(hoje, novos);
-  }, [agora, ativos, falados, config.ligado, desbloqueado, falarSegmentos, hoje]);
+  }, [agora, ativos, falados, config.ligado, desbloqueado, executarAlerta, hoje]);
 
   // Fecha o painel ao clicar fora
   React.useEffect(() => {
@@ -190,7 +197,15 @@ export function AlertasVoz() {
 
   const ouvir = (a: Alerta | string) => {
     pararTudo();
-    falarSegmentos(typeof a === "string" ? [a] : a.segmentos);
+    if (typeof a === "string") {
+      executarAlerta({ segmentos: [a] });
+    } else {
+      executarAlerta(a);
+    }
+  };
+  const testarSino = () => {
+    pararTudo();
+    tocarSino(config.volume);
   };
   const pendenteClique = config.ligado && !desbloqueado;
   const vozesBR = vozesEmPortugues(vozes);
@@ -271,20 +286,31 @@ export function AlertasVoz() {
             <input type="range" min={0} max={1} step={0.05} value={config.volume} onChange={(e) => salvarConfig({ volume: Number(e.target.value) })} style={{ accentColor: "var(--ac)" }} />
           </label>
 
-          <div style={{ display: "flex", gap: "18px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "18px" }}>
+              <label style={linhaCheck}>
+                <input type="checkbox" checked={config.rotina} onChange={() => salvarConfig({ rotina: !config.rotina })} style={{ width: "16px", height: "16px", accentColor: "var(--ac)" }} />
+                Rotina do pregão
+              </label>
+              <label style={linhaCheck}>
+                <input type="checkbox" checked={config.noticias} onChange={() => salvarConfig({ noticias: !config.noticias })} style={{ width: "16px", height: "16px", accentColor: "var(--ac)" }} />
+                Notícias
+              </label>
+            </div>
             <label style={linhaCheck}>
-              <input type="checkbox" checked={config.rotina} onChange={() => salvarConfig({ rotina: !config.rotina })} style={{ width: "16px", height: "16px", accentColor: "var(--ac)" }} />
-              Rotina do pregão
-            </label>
-            <label style={linhaCheck}>
-              <input type="checkbox" checked={config.noticias} onChange={() => salvarConfig({ noticias: !config.noticias })} style={{ width: "16px", height: "16px", accentColor: "var(--ac)" }} />
-              Notícias
+              <input type="checkbox" checked={config.sino !== false} onChange={() => salvarConfig({ sino: config.sino === false })} style={{ width: "16px", height: "16px", accentColor: "var(--ac)" }} />
+              <span>Sino de abertura <span style={{ color: "var(--tx3)", fontSize: "11px" }}>(09:00 e 10:00)</span></span>
             </label>
           </div>
 
-          <button type="button" onClick={() => ouvir(FRASE_TESTE)} style={{ ...BOTAO_SECUNDARIO, width: "100%" }}>
-            Testar a voz
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button type="button" onClick={() => ouvir(FRASE_TESTE)} style={{ ...BOTAO_SECUNDARIO, flex: 1, padding: "8px 10px", fontSize: "12px" }}>
+              Testar voz
+            </button>
+            <button type="button" onClick={testarSino} style={{ ...BOTAO_SECUNDARIO, flex: 1, padding: "8px 10px", fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+              <span>🔔</span> Testar sino
+            </button>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingTop: "12px", borderTop: "1px solid var(--bd)" }}>
             <span style={{ fontSize: "12px", color: "var(--tx3)", paddingBottom: "4px" }}>Hoje</span>
@@ -297,7 +323,10 @@ export function AlertasVoz() {
                 return (
                   <div key={a.id} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderTop: "1px solid var(--bd)", opacity: ativo ? 1 : 0.45 }}>
                     <span style={{ width: "42px", flexShrink: 0, fontSize: "13px", fontWeight: 600, color: ja ? "var(--tx3)" : "var(--tx)" }}>{a.hora}</span>
-                    <span style={{ flexGrow: 1, fontSize: "12px", lineHeight: 1.45, color: ja ? "var(--tx3)" : "var(--tx2)" }}>{a.texto}</span>
+                    <span style={{ flexGrow: 1, fontSize: "12px", lineHeight: 1.45, color: ja ? "var(--tx3)" : "var(--tx2)" }}>
+                      {a.som === "sino" && <span title="Toca badaladas de sino na abertura" style={{ marginRight: "4px" }}>🔔</span>}
+                      {a.texto}
+                    </span>
                     <button type="button" onClick={() => ouvir(a)} aria-label={`Ouvir o alerta das ${a.hora}`} style={{ width: "28px", height: "28px", flexShrink: 0, borderRadius: "8px", border: "1px solid var(--bd)", background: "transparent", color: "var(--tx2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {svg(<path d="M8 5v14l11-7z" />)}
                     </button>
