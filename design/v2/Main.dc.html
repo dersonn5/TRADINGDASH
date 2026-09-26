@@ -96,11 +96,28 @@ body{margin:0}
             <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx3)">Curva de capital</span>
             <span style="font-size: 16px; font-weight: 600">{{curva.frase}}</span>
           </div>
-          <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: flex-end; font-size: 12px; color: var(--tx2)">
-            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--tx)"></span>Total</span>
-            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--k1)"></span>Varrida das 10</span>
-            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--k3)"></span>Continuidade</span>
-            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; border-radius: 2px; background: var(--k2)"></span>Reversão HTF</span>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; font-size: 12px; color: var(--tx2)">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <svg width="20" height="10" viewBox="0 0 20 10" style="display: block" aria-hidden="true">
+                <line x1="0" y1="5" x2="20" y2="5" stroke="var(--tx)" stroke-width="2.5" stroke-linecap="round"></line>
+                <circle cx="10" cy="5" r="2.5" fill="var(--bg)" stroke="var(--tx)" stroke-width="1.8"></circle>
+              </svg>Total
+            </span>
+            <span style="display: flex; align-items: center; gap: 6px">
+              <svg width="20" height="10" viewBox="0 0 20 10" style="display: block" aria-hidden="true">
+                <line x1="0" y1="5" x2="20" y2="5" stroke="var(--strat-c)" stroke-width="2" stroke-linecap="round"></line>
+              </svg>Varrida das 10
+            </span>
+            <span style="display: flex; align-items: center; gap: 6px">
+              <svg width="20" height="10" viewBox="0 0 20 10" style="display: block" aria-hidden="true">
+                <line x1="0" y1="5" x2="20" y2="5" stroke="var(--strat-b)" stroke-width="1.8" stroke-dasharray="6 3" stroke-linecap="round"></line>
+              </svg>Continuidade
+            </span>
+            <span style="display: flex; align-items: center; gap: 6px">
+              <svg width="20" height="10" viewBox="0 0 20 10" style="display: block" aria-hidden="true">
+                <line x1="0" y1="5" x2="20" y2="5" stroke="var(--strat-a)" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"></line>
+              </svg>Reversão HTF
+            </span>
           </div>
         </div>
         <svg width="688" height="250" viewBox="{{curva.vb}}" role="img" aria-label="Curva de capital do mês">
@@ -111,9 +128,9 @@ body{margin:0}
             <text x="{{curva.lx}}" y="{{t.yt}}" text-anchor="end" style="fill: var(--tx3); font-size: 11px">{{t.label}}</text>
           </sc-for>
           <path d="{{curva.area}}" style="fill: var(--ac); fill-opacity: 0.08"></path>
-          <path d="{{curva.A}}" style="fill: none; stroke: var(--k2); stroke-width: 1.5; stroke-dasharray: 4 4"></path>
-          <path d="{{curva.B}}" style="fill: none; stroke: var(--k3); stroke-width: 1.5; stroke-dasharray: 2 3"></path>
-          <path d="{{curva.C}}" style="fill: none; stroke: var(--k1); stroke-width: 1.8"></path>
+          <path d="{{curva.A}}" style="fill: none; stroke: var(--strat-a); stroke-width: 1.8; stroke-dasharray: 2 4; stroke-linecap: round"></path>
+          <path d="{{curva.B}}" style="fill: none; stroke: var(--strat-b); stroke-width: 1.8; stroke-dasharray: 6 3; stroke-linecap: round"></path>
+          <path d="{{curva.C}}" style="fill: none; stroke: var(--strat-c); stroke-width: 2; stroke-linecap: round"></path>
           <path d="{{curva.d}}" style="fill: none; stroke: var(--tx); stroke-width: 2.4; stroke-linejoin: round"></path>
           <circle cx="{{curva.endx}}" cy="{{curva.endy}}" r="5" style="fill: var(--bg); stroke: var(--tx); stroke-width: 2.4"></circle>
           <sc-for list="{{curva.xl}}" as="x" hint-placeholder-count="5">
@@ -129,11 +146,14 @@ body{margin:0}
         </div>
         <sc-for list="{{estr}}" as="e" hint-placeholder-count="3">
           <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--bd)">
-            <div style="display: flex; justify-content: space-between; align-items: baseline">
-              <span style="font-size: 14px; font-weight: 500">{{e.nome}}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--s2); color: {{e.corBarra}}; border: 1px solid {{e.corBarra}}; letter-spacing: 0.04em">{{e.tag}}</span>
+                <span style="font-size: 14px; font-weight: 500">{{e.nome}}</span>
+              </div>
               <span style="font-size: 15px; font-weight: 600; color: {{e.cor}}">{{e.pnlTxt}}</span>
             </div>
-            <svg width="300" height="8" viewBox="0 0 300 8" aria-hidden="true"><rect x="0" y="0" width="300" height="8" rx="4" style="fill: var(--s2)"></rect><rect x="0" y="0" width="{{e.wN}}" height="8" rx="4" style="fill: var(--k1)"></rect></svg>
+            <svg width="300" height="8" viewBox="0 0 300 8" aria-hidden="true"><rect x="0" y="0" width="300" height="8" rx="4" style="fill: var(--s2)"></rect><rect x="0" y="0" width="{{e.wN}}" height="8" rx="4" style="fill: {{e.corBarra}}"></rect></svg>
             <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--tx2)">
               <span>{{e.nTxt}} · {{e.acerto}} acerto</span>
               <span style="color: {{e.rmCor}}">{{e.rm}} médio</span>
@@ -330,8 +350,8 @@ body{margin:0}
 class Component extends DCLogic {
   vars() {
     const red = this.props.perdaVermelha ?? false;
-    const D = { bg: '#000000', s1: '#0A0E10', s2: '#121A1E', bd: '#1B252A', ln: '#141C20', tx: '#EAF7FA', tx2: '#9DB2B9', tx3: '#657A81', ac: '#22D3EE', acs: 'rgba(34,211,238,0.10)', actx: '#67E8F9', onac: '#00191F', k1: '#22D3EE', k2: '#0891B2', k3: '#A5F3FC', k4: '#155E75', k5: '#67E8F9', neg: red ? '#F2625E' : '#4F6E78', negtx: red ? '#F2625E' : '#8FA7AF' };
-    const L = { bg: '#FFFFFF', s1: '#F4F9FA', s2: '#E7F1F4', bd: '#DCE8EB', ln: '#EBF2F4', tx: '#06181D', tx2: '#48626A', tx3: '#728C94', ac: '#0891B2', acs: 'rgba(8,145,178,0.08)', actx: '#0E7490', onac: '#FFFFFF', k1: '#0891B2', k2: '#164E63', k3: '#22D3EE', k4: '#67E8F9', k5: '#0E7490', neg: red ? '#D63B3F' : '#A9BDC3', negtx: red ? '#C2363A' : '#5E777F' };
+    const D = { bg: '#000000', s1: '#0A0E10', s2: '#121A1E', bd: '#1B252A', ln: '#141C20', tx: '#EAF7FA', tx2: '#9DB2B9', tx3: '#657A81', ac: '#22D3EE', acs: 'rgba(34,211,238,0.10)', actx: '#67E8F9', onac: '#00191F', 'strat-c': '#22D3EE', 'strat-b': '#F59E0B', 'strat-a': '#C084FC', k1: 'var(--strat-c)', k2: 'var(--strat-a)', k3: 'var(--strat-b)', k4: '#38BDF8', k5: '#818CF8', neg: red ? '#F2625E' : '#4F6E78', negtx: red ? '#F2625E' : '#8FA7AF' };
+    const L = { bg: '#FFFFFF', s1: '#F4F9FA', s2: '#E7F1F4', bd: '#DCE8EB', ln: '#EBF2F4', tx: '#06181D', tx2: '#48626A', tx3: '#728C94', ac: '#0891B2', acs: 'rgba(8,145,178,0.08)', actx: '#0E7490', onac: '#FFFFFF', 'strat-c': '#0891B2', 'strat-b': '#D97706', 'strat-a': '#9333EA', k1: 'var(--strat-c)', k2: 'var(--strat-a)', k3: 'var(--strat-b)', k4: '#0284C7', k5: '#6366F1', neg: red ? '#D63B3F' : '#A9BDC3', negtx: red ? '#C2363A' : '#5E777F' };
     const c = (this.props.tema ?? 'dark') === 'light' ? L : D;
     return Object.keys(c).map((k) => '--' + k + ': ' + c[k]).join('; ');
   }
@@ -422,7 +442,8 @@ class Component extends DCLogic {
       const ts = T.filter((t) => t.est === k);
       const p = sum(ts.map((t) => t.pnl));
       const rm = mean(ts.map((t) => t.r));
-      return { k, nome: EST[k], n: ts.length, pnl: p, pnlTxt: brl(p), cor: cor(p), rm: rr(rm), rmCor: cor(rm), acerto: pct(ts.filter((t) => t.pnl > 0).length / ts.length), dd: brl(-dd(ts.map((t) => t.pnl)).m), stop: median(ts.map((t) => t.risco)) + ' pts' };
+      const corBarra = k === 'C' ? 'var(--strat-c)' : k === 'B' ? 'var(--strat-b)' : 'var(--strat-a)';
+      return { k, tag: 'SETUP ' + k, corBarra, nome: EST[k], n: ts.length, pnl: p, pnlTxt: brl(p), cor: cor(p), rm: rr(rm), rmCor: cor(rm), acerto: pct(ts.filter((t) => t.pnl > 0).length / ts.length), dd: brl(-dd(ts.map((t) => t.pnl)).m), stop: median(ts.map((t) => t.risco)) + ' pts' };
     });
     const maxN = Math.max(...estr.map((e) => e.n));
     estr.forEach((e) => { e.wN = Math.round((e.n / maxN) * 300); e.nTxt = e.n + (e.n === 1 ? ' trade' : ' trades'); });

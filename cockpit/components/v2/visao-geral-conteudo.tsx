@@ -22,7 +22,22 @@ function AmostraPequena() {
   return <span style={PILL_PEQUENA}>amostra pequena</span>;
 }
 
+const CONFIG_SERIES = [
+  { id: "Total", label: "Total", cor: "var(--tx)", dash: undefined, dot: true },
+  { id: "C", stratId: "varrida_barra_10", label: "Varrida das 10", cor: "var(--strat-c)", dash: undefined, dot: false },
+  { id: "B", stratId: "continuidade_tendencia", label: "Continuidade", cor: "var(--strat-b)", dash: "6 3", dot: false },
+  { id: "A", stratId: "reversao_htf", label: "Reversão HTF", cor: "var(--strat-a)", dash: "2 4", dot: false },
+];
+
+const MAPA_ESTRAT: Record<string, { serieId: string; tag: string; cor: string }> = {
+  varrida_barra_10: { serieId: "C", tag: "SETUP C", cor: "var(--strat-c)" },
+  continuidade_tendencia: { serieId: "B", tag: "SETUP B", cor: "var(--strat-b)" },
+  reversao_htf: { serieId: "A", tag: "SETUP A", cor: "var(--strat-a)" },
+};
+
 export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
+  const [highlightSerie, setHighlightSerie] = React.useState<string | null>(null);
+
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", borderRadius: "14px", background: "var(--acs)", border: "1px solid var(--bd)" }}>
@@ -50,13 +65,53 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
             label="Curva de capital"
             frase={vg.curva.frase}
             direita={
-              <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "flex-end", fontSize: "12px", color: "var(--tx2)" }}>
-                {[["Total", "var(--tx)"], ["Varrida das 10", "var(--k1)"], ["Continuidade", "var(--k3)"], ["Reversão HTF", "var(--k2)"]].map(([l, c]) => (
-                  <span key={l} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ width: "14px", height: "3px", borderRadius: "2px", background: c }} />
-                    {l}
-                  </span>
-                ))}
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end", fontSize: "12px" }}>
+                {CONFIG_SERIES.map((s) => {
+                  const ativo = highlightSerie === s.id;
+                  const apagado = highlightSerie !== null && !ativo;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onMouseEnter={() => setHighlightSerie(s.id)}
+                      onMouseLeave={() => setHighlightSerie(null)}
+                      onClick={() => setHighlightSerie(highlightSerie === s.id ? null : s.id)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        background: ativo ? "var(--s2)" : "transparent",
+                        border: `1px solid ${ativo ? s.cor : "transparent"}`,
+                        borderRadius: "6px",
+                        padding: "3px 8px",
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                        fontSize: "12px",
+                        color: apagado ? "var(--tx3)" : "var(--tx2)",
+                        opacity: apagado ? 0.4 : 1,
+                        transition: "all 0.15s ease",
+                      }}
+                      title={ativo ? "Clique para desmarcar foco" : `Destacar ${s.label}`}
+                    >
+                      <svg width="20" height="10" viewBox="0 0 20 10" style={{ display: "block", flexShrink: 0 }} aria-hidden="true">
+                        <line
+                          x1="0"
+                          y1="5"
+                          x2="20"
+                          y2="5"
+                          stroke={s.cor}
+                          strokeWidth={s.id === "Total" ? 2.5 : 2}
+                          strokeDasharray={s.dash}
+                          strokeLinecap="round"
+                        />
+                        {s.dot && <circle cx="10" cy="5" r="2.5" fill="var(--bg)" stroke={s.cor} strokeWidth="1.8" />}
+                      </svg>
+                      <span style={{ fontWeight: ativo ? 600 : 400, color: ativo ? "var(--tx)" : undefined }}>
+                        {s.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             }
           />
@@ -73,12 +128,71 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
                 <text x={vg.curva.lx} y={t.yt} textAnchor="end" style={{ fill: "var(--tx3)", fontSize: "11px" }}>{t.label}</text>
               </g>
             ))}
-            <path d={vg.curva.area} style={{ fill: "var(--ac)", fillOpacity: 0.08 }} />
-            <path d={vg.curva.A} style={{ fill: "none", stroke: "var(--k2)", strokeWidth: 1.5, strokeDasharray: "4 4" }} />
-            <path d={vg.curva.B} style={{ fill: "none", stroke: "var(--k3)", strokeWidth: 1.5, strokeDasharray: "2 3" }} />
-            <path d={vg.curva.C} style={{ fill: "none", stroke: "var(--k1)", strokeWidth: 1.8 }} />
-            <path d={vg.curva.d} style={{ fill: "none", stroke: "var(--tx)", strokeWidth: 2.4, strokeLinejoin: "round" }} />
-            <circle cx={vg.curva.endx} cy={vg.curva.endy} r="5" style={{ fill: "var(--bg)", stroke: "var(--tx)", strokeWidth: 2.4 }} />
+            <path
+              d={vg.curva.area}
+              style={{
+                fill: "var(--ac)",
+                fillOpacity: highlightSerie && highlightSerie !== "Total" ? 0.03 : 0.08,
+                transition: "fill-opacity 0.2s ease",
+              }}
+            />
+            <path
+              d={vg.curva.A}
+              style={{
+                fill: "none",
+                stroke: "var(--strat-a)",
+                strokeWidth: highlightSerie === "A" ? 2.8 : 1.8,
+                strokeDasharray: "2 4",
+                strokeLinecap: "round",
+                opacity: highlightSerie && highlightSerie !== "A" ? 0.2 : 1,
+                transition: "opacity 0.2s ease, stroke-width 0.2s ease",
+              }}
+            />
+            <path
+              d={vg.curva.B}
+              style={{
+                fill: "none",
+                stroke: "var(--strat-b)",
+                strokeWidth: highlightSerie === "B" ? 2.8 : 1.8,
+                strokeDasharray: "6 3",
+                strokeLinecap: "round",
+                opacity: highlightSerie && highlightSerie !== "B" ? 0.2 : 1,
+                transition: "opacity 0.2s ease, stroke-width 0.2s ease",
+              }}
+            />
+            <path
+              d={vg.curva.C}
+              style={{
+                fill: "none",
+                stroke: "var(--strat-c)",
+                strokeWidth: highlightSerie === "C" ? 3.0 : 2.0,
+                opacity: highlightSerie && highlightSerie !== "C" ? 0.2 : 1,
+                transition: "opacity 0.2s ease, stroke-width 0.2s ease",
+              }}
+            />
+            <path
+              d={vg.curva.d}
+              style={{
+                fill: "none",
+                stroke: "var(--tx)",
+                strokeWidth: highlightSerie === "Total" ? 3.2 : 2.4,
+                strokeLinejoin: "round",
+                opacity: highlightSerie && highlightSerie !== "Total" ? 0.35 : 1,
+                transition: "opacity 0.2s ease, stroke-width 0.2s ease",
+              }}
+            />
+            <circle
+              cx={vg.curva.endx}
+              cy={vg.curva.endy}
+              r={highlightSerie === "Total" ? 6 : 5}
+              style={{
+                fill: "var(--bg)",
+                stroke: "var(--tx)",
+                strokeWidth: 2.4,
+                opacity: highlightSerie && highlightSerie !== "Total" ? 0.35 : 1,
+                transition: "all 0.2s ease",
+              }}
+            />
             {vg.curva.xl.map((x) => (
               <text key={x.x} x={x.x} y={vg.curva.xly} textAnchor={x.anchor} style={{ fill: "var(--tx3)", fontSize: "11px" }}>{x.label}</text>
             ))}
@@ -90,22 +204,58 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
             <span style={LBL}>Por estratégia</span>
             <span style={{ ...H2, lineHeight: 1.4 }}>{vg.estrFrase}</span>
           </div>
-          {vg.estr.map((e) => (
-            <div key={e.id} style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "16px", borderTop: "1px solid var(--bd)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <span style={{ fontSize: "14px", fontWeight: 500 }}>{e.nome}</span>
-                <span style={{ fontSize: "15px", fontWeight: 600, color: e.cor }}>{e.pnlTxt}</span>
+          {vg.estr.map((e) => {
+            const meta = MAPA_ESTRAT[e.id] ?? { serieId: "C", tag: "SETUP", cor: "var(--strat-c)" };
+            const isRowHighlighted = highlightSerie === meta.serieId;
+            return (
+              <div
+                key={e.id}
+                onMouseEnter={() => setHighlightSerie(meta.serieId)}
+                onMouseLeave={() => setHighlightSerie(null)}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  paddingTop: "16px",
+                  borderTop: "1px solid var(--bd)",
+                  cursor: "pointer",
+                  borderRadius: "8px",
+                  padding: "12px 8px 4px 8px",
+                  background: isRowHighlighted ? "var(--s2)" : "transparent",
+                  transition: "background 0.15s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        background: "var(--s2)",
+                        color: meta.cor,
+                        border: `1px solid ${meta.cor}`,
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {meta.tag}
+                    </span>
+                    <span style={{ fontSize: "14px", fontWeight: isRowHighlighted ? 600 : 500 }}>{e.nome}</span>
+                  </div>
+                  <span style={{ fontSize: "15px", fontWeight: 600, color: e.cor }}>{e.pnlTxt}</span>
+                </div>
+                <svg width="100%" height="8" viewBox="0 0 300 8" preserveAspectRatio="none" aria-hidden="true">
+                  <rect x="0" y="0" width="300" height="8" rx="4" style={{ fill: "var(--s2)" }} />
+                  <rect x="0" y="0" width={e.wN} height="8" rx="4" style={{ fill: meta.cor }} />
+                </svg>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--tx2)" }}>
+                  <span>{e.nTxt} · {e.acerto} acerto</span>
+                  <span style={{ color: e.rmCor }}>{e.rm} médio</span>
+                </div>
               </div>
-              <svg width="100%" height="8" viewBox="0 0 300 8" preserveAspectRatio="none" aria-hidden="true">
-                <rect x="0" y="0" width="300" height="8" rx="4" style={{ fill: "var(--s2)" }} />
-                <rect x="0" y="0" width={e.wN} height="8" rx="4" style={{ fill: "var(--k1)" }} />
-              </svg>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--tx2)" }}>
-                <span>{e.nTxt} · {e.acerto} acerto</span>
-                <span style={{ color: e.rmCor }}>{e.rm} médio</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
       </div>
 
