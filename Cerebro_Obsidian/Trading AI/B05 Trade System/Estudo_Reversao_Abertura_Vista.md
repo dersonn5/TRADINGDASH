@@ -82,6 +82,40 @@ Correções de código feitas no caminho (não são mudanças de regra):
 ("Expandir base" no Profit) ou com a regra de risco máximo definida pelo operador —
 sabendo que definir o limite depois de ver os resultados é ajuste, não descoberta.
 
+**6. Que condição separa o V da continuação? (26/09/2026)** (`profit/condicoes_reversao.py`)
+
+Pergunta do operador: "na abertura faz um movimento forte, é falso, reverte e entrega em V —
+qual condição ele imprime que mais impacta em reverter?". Definições do item 4 (impulso =
+10:00–10:04; reverteu = rompe o lado oposto de 10:00–10:14 até 10:59). **V** = reverteu e
+anda além da abertura das 10:00 pelo menos o tamanho do impulso, até 11:29.
+Só condições conhecidas **até 10:15**. 1 min: 107 pregões (abr–set/2026, reverteu 70%,
+V 53%, estável mês a mês). Confirmação: 15 min, 1.347 pregões (2021–2026), com espelho
+(impulso = corpo da barra de 15 min das 10:00), que concorda com o 1 min em 69% dos dias.
+
+**O que decide é como a barra das 10:00 termina — nada antes das 10:00 importa.**
+
+| Às 10:15 (1 min) | Reverteu | V | n |
+|---|---|---|---|
+| Extremo cedo (até 10:07) e 10:14 fecha na metade de volta | **92%** | **79%** | 39 |
+| Extremo tarde (10:08+) e 10:14 fecha no lado do impulso | **46%** | **24%** | 41 |
+| 10:14 fecha no lado do impulso **e impulso grande** (range > ~850 pts) | **33%** | **14%** | 21 |
+
+5 anos, 15 min (barra das 10:00): fechou de volta (pavio contra o impulso) **79%**;
+fechou no impulso com barra grande (> 25% do range médio de 10 dias) **38%**. As duas pontas
+se repetem **em todos os anos** de 2021 a 2026.
+
+- **O movimento forte que fecha forte NÃO é falso:** impulso grande que segue fechando no
+  extremo às 10:14 continua em 2 de cada 3 dias. O V vem do impulso que **perde força cedo**
+  (extremo nos primeiros ~7 min) e já devolve até 10:14.
+- Não separam (1 min e 5 anos): gap, direção do dia anterior, direção da 1ª hora, 1ª hora ou
+  impulso tomando máx/mín do dia anterior, varrer a máx/mín da 1ª hora, onde o à vista abre.
+- Dia da semana: quarta 43% no 1 min, mas não se repete nos 5 anos — ruído.
+- **Controle:** barra de 15 min que fecha de volta reverte mais em qualquer horário
+  (11:00 68%, 14:00 69%). Às 10:00 é mais (79%), e a base das 10:00 é maior (56% contra
+  45–50%). Parte do efeito é mecânica: quem já devolveu está mais perto do outro lado.
+- Isto é descritivo, não é regra de entrada: falta medir entrada/stop/alvo depois das 10:15
+  (Fase 4 do operador), com os últimos pregões guardados para validação.
+
 ## Por que este estudo
 
 Observação do operador: "o índice abre às 09:00, vai para um lado e depois reverte".
