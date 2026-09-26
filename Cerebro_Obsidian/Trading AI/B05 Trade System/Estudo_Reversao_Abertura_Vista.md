@@ -129,6 +129,54 @@ Motivo: quando o sinal aparece, o preço já devolveu metade — o stop no extre
 que o que falta até o alvo. Acerta muito e ganha pouco. Para pagar, a entrada precisa de
 stop curto (gatilho de 1 min depois das 10:15), a ser definido pelo operador.
 
+**7. O V da abertura das 09:00 — definição do operador (26/09/2026)** (`profit/padrao_v_0900.py`)
+
+"Vi diversos pregões que o índice começa indo pra baixo e reverte em V, e vice-versa."
+Definição combinada antes de rodar:
+- **Movimento:** o preço se afasta **800 pts** da abertura das 09:00; o lado que chega
+  primeiro define a direção.
+- **V:** depois do extremo, volta **pelo menos 75%** do caminho abertura → extremo.
+- **Prazo:** até 12:00. Conservador: extremo e volta no mesmo candle não conta.
+
+| Base | Dias com movimento 800+ | V (volta 75%) |
+|---|---|---|
+| 1 min, abr–set/2026 (108 pregões) | 106 (98%) | **80 (75%)** — baixa 74%, alta 78% |
+| 15 min, 2026 | 176 | **74%** |
+| 15 min, 2021–2025 | 842 | 23% a 42% por ano |
+
+**O V é mais forte em 2026, mas não é novo.** 800 pts em 2021 (índice ~117 mil) é um
+movimento maior que em 2026 (~181 mil). Com o mesmo tamanho em % (0,43% da abertura):
+
+| Ano | V | Chegou ao tamanho até 09:29 | Chegou depois |
+|---|---|---|---|
+| 2021 | 60% | 69% | 55% |
+| 2022 | 72% | 77% | 67% |
+| 2023 | 61% | 71% | 56% |
+| 2024 | 45% | 62% | 37% |
+| 2025 | 57% | 61% | 53% |
+| **2026** | **74%** | **75%** | **70%** |
+
+**A condição que mais pesa: a velocidade.** Movimento que chega ao tamanho nos primeiros
+30 min (até 09:29) reverte mais **em todos os anos** (+5 a +25 pontos percentuais). Em 2026
+isso acontece em 73% dos dias — por isso o operador vê o V quase todo dia.
+
+Não separam nos 5 anos (15 min): direção inicial (alta × baixa), gap, direção do dia
+anterior, dia da semana. Ter tomado a máx/mín do dia anterior **reduz** um pouco (39% × 47%);
+no 1 min parecia o contrário (81% × 71%) — ruído de amostra pequena.
+
+Anatomia dos 80 V do 1 min: movimento até o extremo mediana **1.225 pts** (p25 935, p75 1.575);
+extremo mediana **09:30** (p25 09:07, p75 10:07); V completo mediana **10:02** (p25 09:20,
+p75 10:28) — a volta costuma terminar perto da abertura do à vista.
+
+Datas para conferir no Profit: `profit/padrao_v_0900_dias.csv` (fora do git) ou a saída do
+script. **Diferença para o item 2:** lá o "impulso das 09:00" eram os 5 primeiros minutos;
+aqui é o movimento de 800 pts até o extremo — definição do operador, e por isso o resultado
+muda (21% × 75%).
+
+Próximo: é descritivo. Para virar trade falta a entrada do operador (quando entrar contra o
+movimento, com qual stop) — o extremo pode sair das 09:07 às 10:07, e entrar antes dele
+custa o resto do movimento.
+
 ## Por que este estudo
 
 Observação do operador: "o índice abre às 09:00, vai para um lado e depois reverte".
