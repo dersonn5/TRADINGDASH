@@ -37,7 +37,7 @@ export default function VisaoGeralPage() {
       .then(([atual, anterior]) => {
         if (!vivo) return;
         setDados({ atual: atual as TradeVG[], anterior: anterior as TradeVG[] });
-        setAtualizado(new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date()).replace(" ", ", "));
+        setAtualizado(new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date()));
       })
       .catch((e) => vivo && setErro(e.message || "Erro ao carregar os trades do mês"));
     return () => {
@@ -87,13 +87,6 @@ export default function VisaoGeralPage() {
         <div style={{ ...CARD, color: "var(--negtx)", fontSize: "14px" }}>{erro}</div>
       ) : !vg ? (
         <div style={{ ...CARD, alignItems: "center", padding: "48px", color: "var(--tx3)", fontSize: "14px" }}>Carregando…</div>
-      ) : vg.n === 0 ? (
-        <div style={{ ...CARD, alignItems: "center", padding: "64px 32px", gap: "10px", textAlign: "center" }}>
-          <span style={{ fontSize: "18px", fontWeight: 600 }}>Nenhum trade fechado em {nomeMes.toLowerCase()}.</span>
-          <span style={{ fontSize: "14px", color: "var(--tx3)", maxWidth: "440px", lineHeight: 1.5 }}>
-            Os gráficos aparecem aqui assim que você fechar trades pelo checklist.
-          </span>
-        </div>
       ) : (
         <VisaoGeralConteudo vg={vg} />
       )}

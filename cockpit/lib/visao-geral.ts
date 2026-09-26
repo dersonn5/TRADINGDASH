@@ -30,7 +30,8 @@ const COR_POS = "var(--actx)";
 const COR_NEG = "var(--negtx)";
 const FILL_POS = "var(--ac)";
 const FILL_NEG = "var(--neg)";
-const cor = (x: number) => (x >= 0 ? COR_POS : COR_NEG);
+// zero e neutro: sem trade nao e ganho
+const cor = (x: number) => (x > 0 ? COR_POS : x < 0 ? COR_NEG : "var(--tx)");
 const fill = (x: number) => (x >= 0 ? FILL_POS : FILL_NEG);
 const CORES_K = ["var(--k1)", "var(--k2)", "var(--k3)", "var(--k4)", "var(--k5)"];
 const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -107,8 +108,8 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const X = (i: number) => pl + (i * (W - pl - pr)) / Math.max(n, 1);
   const Y = (v: number) => pt + ((top - v) / (top - bot)) * (H - pt - pb);
   const path = (a: number[]) => a.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
-  const ticks: { y: string; yt: string; label: string }[] = [];
-  for (let v = bot; v <= top; v += passo) ticks.push({ y: Y(v).toFixed(1), yt: (Y(v) + 4).toFixed(1), label: v === 0 ? "0" : v < 0 ? `−${formatarBRL(-v, false)}` : formatarBRL(v, false) });
+  const ticks: { y: string; yt: string; label: string }[] = n ? [] : [{ y: Y(0).toFixed(1), yt: (Y(0) + 4).toFixed(1), label: "0" }];
+  if (n) for (let v = bot; v <= top; v += passo) ticks.push({ y: Y(v).toFixed(1), yt: (Y(v) + 4).toFixed(1), label: v === 0 ? "0" : v < 0 ? `−${formatarBRL(-v, false)}` : formatarBRL(v, false) });
   const pico = Math.max(...cum);
   const iPico = cum.indexOf(pico);
   const idxRotulos = n <= 5 ? Array.from({ length: n }, (_, i) => i + 1) : [1, Math.round(n * 0.25), Math.round(n * 0.5), Math.round(n * 0.75), n];
@@ -124,19 +125,20 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     endx: X(n).toFixed(1), endy: Y(cum[n]).toFixed(1),
     frase: n
       ? `Pico de ${formatarBRL(pico)}${iPico > 0 ? ` em ${diaMes(trades[iPico - 1].data)}` : ""}${temDD ? ` · pior trecho ${formatarBRL(-D.maxDrawdown)} (${diaMes(trades[Math.max(D.picoIndex, 1) - 1].data)} → ${diaMes(trades[D.valeIndex - 1].data)})` : " · sem drawdown"}`
-      : "",
+      : "Sem trades no mês ainda",
   };
 
   // Por estrategia
-  const ids = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf"].filter((id) => trades.some((t) => t.strategy_id === id));
+  const todasEstrategias = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf"];
+  const ids = n ? todasEstrategias.filter((id) => trades.some((t) => t.strategy_id === id)) : todasEstrategias;
   const estr = ids.map((id) => {
     const ts = trades.filter((t) => t.strategy_id === id);
     const p = somar(ts.map(pnl));
     const rm = media(ts.map(rDoTrade));
     return {
       id, nome: NOMES_ESTRATEGIAS[id] ?? id, n: ts.length, pnl: p, pnlTxt: formatarBRL(p), cor: cor(p),
-      rm: formatarR(rm), rmCor: cor(rm), acerto: formatarPct(ts.filter((t) => pnl(t) > 0).length / ts.length),
-      dd: formatarBRL(-calcularDrawdown(ts.map(pnl)).maxDrawdown), stop: `${mediana(ts.map(risco))} pts`,
+      rm: formatarR(rm), rmCor: cor(rm), acerto: formatarPct(ts.length ? ts.filter((t) => pnl(t) > 0).length / ts.length : 0),
+      dd: formatarBRL(-calcularDrawdown(ts.map(pnl)).maxDrawdown), stop: ts.length ? `${mediana(ts.map(risco))} pts` : "—",
       nTxt: plural(ts.length, "trade", "trades"), wN: 0,
     };
   }).sort((a, b) => b.n - a.n);
@@ -145,15 +147,15 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const maisN = [...estr].sort((a, b) => b.n - a.n)[0];
   const maisP = [...estr].sort((a, b) => b.pnl - a.pnl)[0];
   const pior = [...estr].sort((a, b) => a.pnl - b.pnl)[0];
-  const estrFrase = maisN ? `Mais trades: ${maisN.nome} (${maisN.n}) · mais resultado: ${maisP.nome}` : "";
-  const tabFrase = maisP
-    ? estr.length > 1
+  const estrFrase = n ? `Mais trades: ${maisN.nome} (${maisN.n}) · mais resultado: ${maisP.nome}` : "Nenhum trade no mês ainda";
+  const tabFrase = !n
+    ? "Os resultados por estratégia aparecem com o primeiro trade fechado"
+    : estr.length > 1
       ? `${maisP.nome} carrega o mês com ${maisP.pnlTxt}; ${pior.nome}${pior.pnl < 0 ? " está negativa: " : " tem o menor resultado: "}${pior.pnlTxt}`
-      : `${maisP.nome}: ${maisP.pnlTxt} no mês`
-    : "";
+      : `${maisP.nome}: ${maisP.pnlTxt} no mês`;
   const tot = {
     n, acerto: formatarPct(n ? wins.length / n : 0), rm: formatarR(n ? totalR / n : 0), rmCor: cor(totalR),
-    pnl: formatarBRL(total), cor: cor(total), dd: formatarBRL(-D.maxDrawdown), stop: `${mediana(trades.map(risco))} pts`,
+    pnl: formatarBRL(total), cor: cor(total), dd: formatarBRL(-D.maxDrawdown), stop: n ? `${mediana(trades.map(risco))} pts` : "—",
   };
 
   // Por horario (504 x 220)
@@ -179,7 +181,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     bars, y0: y0.toFixed(1), y0t: (y0 + 4).toFixed(1), yTop: hpt + 4, yBot: (hpt + plotH + 4).toFixed(1),
     topTxt: `+${hmaxTxt}R`, botTxt: `−${hmaxTxt}R`,
     frase: melhor ? `Melhor faixa: ${melhor.f}–${fimDaFaixa(melhor.f)} · ${formatarR(melhor.rm)} médio · ${plural(melhor.n, "trade", "trades")}` : "Nenhum trade dentro da janela",
-    pequena: !melhor || melhor.n < 10,
+    pequena: Boolean(melhor) && melhor!.n < 10,
   };
 
   // Gatilhos (anel)
@@ -204,8 +206,14 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
       return item;
     });
   const melhorG = [...gk].filter((g) => g.n >= 2).sort((a, b) => b.rm - a.rm)[0];
+  const itensGatilho = gk.length
+    ? gk
+    : Object.keys(NOMES_GATILHOS).map((k, i) => ({
+        nome: NOMES_GATILHOS[k], n: 0, rm: 0, dash: `0 ${circ.toFixed(1)}`, off: "0", cor: CORES_K[i % 5],
+        pct: "0%", rmTxt: "—", rmCor: "var(--tx3)",
+      }));
   const gat = {
-    n: comGatilho.length, itens: gk,
+    n: comGatilho.length, itens: itensGatilho,
     frase: gk.length
       ? `Mais usado: ${gk[0].nome} (${gk[0].n} de ${comGatilho.length})${melhorG ? ` · paga mais: ${melhorG.nome} ${formatarR(melhorG.rm)}` : ""}`
       : "Nenhum trade com gatilho registrado",
@@ -226,9 +234,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     bars: SB.map((s, i) => {
       const h = (cont[i] / cmax) * 120;
       const cx = i * sslot + sslot / 2;
-      return { l: s.l, n: cont[i], cx: cx.toFixed(1), x: (cx - 26).toFixed(1), y: (160 - h).toFixed(1), h: Math.max(h, 2).toFixed(1), vy: (160 - h - 8).toFixed(1), fill: med >= s.a && med < s.b ? "var(--k1)" : "var(--k4)" };
+      return { l: s.l, n: cont[i], cx: cx.toFixed(1), x: (cx - 26).toFixed(1), y: (160 - h).toFixed(1), h: Math.max(h, 2).toFixed(1), vy: (160 - h - 8).toFixed(1), fill: n && med >= s.a && med < s.b ? "var(--k1)" : "var(--k4)" };
     }),
-    frase: `Stop mediano ${med} pts · ${plural(acima, "stop", "stops")} de 250 pts ou mais`,
+    frase: n ? `Stop mediano ${med} pts · ${plural(acima, "stop", "stops")} de 250 pts ou mais` : "Nenhum stop registrado no mês",
   };
 
   // Calendario: semanas de segunda a sexta que cobrem o mes
@@ -267,7 +275,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     altura: 22 + r * 48,
     dow: ["Seg", "Ter", "Qua", "Qui", "Sex"].map((l, i) => ({ l, x: i * 76 + 35 })),
     cells,
-    frase: melhorDia ? `${diasPos} de ${dias.length} ${dias.length === 1 ? "dia positivo" : "dias positivos"} · melhor: ${diaMes(melhorDia)} ${formatarBRL(porDia[melhorDia])}` : "",
+    frase: melhorDia ? `${diasPos} de ${dias.length} ${dias.length === 1 ? "dia positivo" : "dias positivos"} · melhor: ${diaMes(melhorDia)} ${formatarBRL(porDia[melhorDia])}` : "Nenhum dia operado no mês ainda",
   };
 
   // Disciplina
@@ -275,9 +283,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const noPlano = n - desv.length;
   const custo = somar(desv.map((t) => Math.max(0, Number(t.pnl_plano ?? t.pnl_real ?? 0) - pnl(t))));
   const disc = {
-    pct: formatarPct(n ? noPlano / n : 1), sub: `${noPlano} de ${plural(n, "trade", "trades")} no plano`,
-    w: Math.round((n ? noPlano / n : 1) * 280),
-    frase: desv.length === 0 ? "Todos os trades seguiram o plano" : custo > 0 ? `Desvios custaram ${formatarBRL(custo, false)} no mês` : `${plural(desv.length, "desvio", "desvios")} do plano, sem custo medido`,
+    pct: n ? formatarPct(noPlano / n) : "—", sub: `${noPlano} de ${plural(n, "trade", "trades")} no plano`,
+    w: n ? Math.round((noPlano / n) * 280) : 0,
+    frase: !n ? "Sem trades para medir ainda" : desv.length === 0 ? "Todos os trades seguiram o plano" : custo > 0 ? `Desvios custaram ${formatarBRL(custo, false)} no mês` : `${plural(desv.length, "desvio", "desvios")} do plano, sem custo medido`,
     itens: desv.map((t) => ({ data: diaMes(t.data), tipo: tipoDesvio(t), custo: formatarBRL(-Math.max(0, Number(t.pnl_plano ?? t.pnl_real ?? 0) - pnl(t))) })),
   };
 
@@ -289,11 +297,15 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const tsC = trades.filter((t) => t.strategy_id === "varrida_barra_10");
   const modos = ["C1", "C2"].map((m) => grupo(tsC.filter((t) => t.setup_c_modo === m), m));
   const ctx = Object.keys(NOMES_CONTEXTOS).map((k) => grupo(trades.filter((t) => t.contexto_1h === k), NOMES_CONTEXTOS[k]));
-  const sc = { modos, ctx, frase: `C1 ${modos[0].rm} × C2 ${modos[1].rm} por trade`, pequena: tsC.length < 10 };
+  const sc = {
+    modos, ctx,
+    frase: tsC.length ? `C1 ${modos[0].rm} × C2 ${modos[1].rm} por trade` : "Sem trades do Setup C ainda",
+    pequena: tsC.length > 0 && tsC.length < 10,
+  };
 
   const resumo = n
     ? `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)} está em ${formatarBRL(total)} com ${plural(n, "trade", "trades")} (${formatarR(totalR)}).${maisP ? ` ${maisP.nome} carrega o mês` : ""}${melhor ? `; o melhor horário é ${melhor.f}–${fimDaFaixa(melhor.f)}.` : "."}`
-    : "";
+    : `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)} ainda não tem trades fechados. Os números aparecem aqui conforme você fecha trades pelo checklist.`;
 
   return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, sc };
 }

@@ -209,7 +209,7 @@ export default function HistoricoPage() {
       )}
 
       {/* 4 KPI cards */}
-      {!loading && fechados.length > 0 && (
+      {!loading && (
         <div
           style={{
             display: "grid",
@@ -223,12 +223,12 @@ export default function HistoricoPage() {
             {
               l: "R médio",
               v: sinalR(rMedio),
-              cor: rMedio >= 0 ? "var(--actx)" : "var(--negtx)",
+              cor: rMedio > 0 ? "var(--actx)" : rMedio < 0 ? "var(--negtx)" : "var(--tx)",
             },
             {
               l: "Resultado",
               v: formatarBRL(resultado),
-              cor: resultado >= 0 ? "var(--actx)" : "var(--negtx)",
+              cor: resultado > 0 ? "var(--actx)" : resultado < 0 ? "var(--negtx)" : "var(--tx)",
             },
           ].map((k) => (
             <div
@@ -287,28 +287,6 @@ export default function HistoricoPage() {
           >
             Carregando…
           </div>
-        ) : fechados.length === 0 ? (
-          <div
-            style={{
-              fontSize: "14px",
-              color: "var(--tx3)",
-              textAlign: "center",
-              padding: "32px 0",
-            }}
-          >
-            Nenhum trade fechado ainda.
-          </div>
-        ) : visiveis.length === 0 ? (
-          <div
-            style={{
-              fontSize: "14px",
-              color: "var(--tx3)",
-              textAlign: "center",
-              padding: "32px 0",
-            }}
-          >
-            Nenhum trade com esse filtro.
-          </div>
         ) : (
           <div
             role="table"
@@ -350,6 +328,11 @@ export default function HistoricoPage() {
                 Plano
               </span>
             </div>
+            {visiveis.length === 0 && (
+              <div style={{ padding: "28px 0", borderTop: "1px solid var(--bd)", textAlign: "center", fontSize: "14px", color: "var(--tx3)" }}>
+                {fechados.length === 0 ? "Nenhum trade fechado ainda. Os trades registrados pelo checklist aparecem aqui." : "Nenhum trade com esse filtro."}
+              </div>
+            )}
             {/* Linhas */}
             {visiveis.map((t) => {
               const pnl = Number(t.pnl_real) || 0;
