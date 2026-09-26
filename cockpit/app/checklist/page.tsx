@@ -51,6 +51,7 @@ export default function ChecklistPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveErro, setSaveErro] = useState(false);
   const [now, setNow] = useState<Date>(() => new Date());
 
   // Pré-sessão do dia
@@ -394,6 +395,7 @@ export default function ChecklistPage() {
     };
     const ok = await saveChecklist(toSave);
     setSaving(false);
+    setSaveErro(!ok);
     if (ok) {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -809,7 +811,7 @@ export default function ChecklistPage() {
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
               <button type="button" onClick={handleReset} style={{ ...BOTAO_SECUNDARIO, height: "36px", color: "var(--tx2)" }}>Zerar</button>
               <button type="button" onClick={handleSave} disabled={saving} style={{ ...BOTAO_SECUNDARIO, height: "36px" }}>
-                {saving ? "Salvando…" : saveSuccess ? "Salvo" : "Salvar progresso"}
+                {saving ? "Salvando…" : saveSuccess ? "Salvo" : saveErro ? "Não salvou · tentar de novo" : "Salvar progresso"}
               </button>
             </div>
           </section>

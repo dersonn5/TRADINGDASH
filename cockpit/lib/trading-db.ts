@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { Strategy } from "@/lib/types";
+import { getDataSaoPaulo } from "./copa-db";
 
 export interface ChecklistItem {
   id: string;
@@ -30,7 +31,8 @@ export interface LiveChecklist {
 // -------------------------------------------------------------
 
 export async function fetchTodayChecklist(strategy: Strategy): Promise<LiveChecklist> {
-  const today = new Date().toISOString().split("T")[0];
+  // Dia em Sao Paulo: toISOString() daria o dia seguinte depois das 21h
+  const today = getDataSaoPaulo();
   const defaultChecklist = getDefaultChecklist(today, strategy);
   try {
     const { data, error } = await supabase
@@ -70,7 +72,7 @@ export async function fetchTodayChecklist(strategy: Strategy): Promise<LiveCheck
 
 export async function saveChecklist(checklist: LiveChecklist): Promise<boolean> {
   try {
-    const today = checklist.session_date || new Date().toISOString().split("T")[0];
+    const today = checklist.session_date || getDataSaoPaulo();
     const { error } = await supabase.from("trading_live_checklist").upsert(
       {
         session_date: today,
@@ -84,7 +86,8 @@ export async function saveChecklist(checklist: LiveChecklist): Promise<boolean> 
         strategy_id: checklist.strategy_id,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "session_date" }
+      // user_id vem do default auth.uid() da tabela; um checklist por usuario por dia
+      { onConflict: "user_id,session_date" }
     );
 
     if (error) throw error;
