@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { AlertasVoz } from "@/components/layout/alertas-voz";
+import { modoDemo, sairDoDemo } from "@/lib/demo";
 
 // Casca do app: barra lateral e area principal, identicas a design/v2/*.dc.html.
 
@@ -83,6 +84,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [escuro, setEscuro] = React.useState(true);
   const [nome, setNome] = React.useState("Anderson");
   const [recolhida, setRecolhida] = React.useState(false);
+  const [demo, setDemo] = React.useState(false);
 
   React.useEffect(() => {
     const salvo = localStorage.getItem("cognitive-theme");
@@ -90,6 +92,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     setEscuro(isDark);
     document.documentElement.classList.toggle("dark", isDark);
     setRecolhida(localStorage.getItem("cognitive-sidebar") === "recolhida");
+    setDemo(modoDemo());
     supabase.auth.getUser().then(({ data }) => {
       const meta = data.user?.user_metadata as { name?: string; full_name?: string } | undefined;
       const n = meta?.name || meta?.full_name;
@@ -149,6 +152,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
           position: "sticky",
           top: 0,
           height: "100vh",
+          // sticky cria contexto de empilhamento: sem isso o painel de alertas (fixed, filho
+          // desta barra) fica atras do conteudo da pagina
+          zIndex: 40,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: recolhida ? "center" : "flex-start", gap: "10px", padding: recolhida ? 0 : "0 8px" }}>
@@ -217,6 +223,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <path d="M9 3v18" />
           </svg>
         </button>
+        {demo && (
+          <div role="status" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", padding: "12px 18px", borderRadius: "12px", border: "1px dashed var(--ac)", background: "var(--acs)", color: "var(--actx)", fontSize: "13px" }}>
+            <span>Demonstração: Visão Geral, Histórico e Estratégias mostram trades fictícios. Nada disso está no banco.</span>
+            <button type="button" onClick={sairDoDemo} style={{ flexShrink: 0, height: "32px", padding: "0 14px", borderRadius: "8px", border: "1px solid var(--ac)", background: "transparent", color: "var(--actx)", fontFamily: "inherit", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}>
+              Sair da demonstração
+            </button>
+          </div>
+        )}
         {children}
       </main>
     </div>

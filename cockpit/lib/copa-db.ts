@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { modoDemo, tradesDemo, tradesDemoDoMes } from "./demo";
 import { mercadoPermitido } from "./gate";
 
 export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "BPR" | "RISK_ENTRY" | "FVG_POS_SWING";
@@ -292,6 +293,7 @@ export interface TradeHistorico {
  * Todos os trades registrados pelo checklist, do mais recente para o mais antigo.
  */
 export async function listarTrades(): Promise<TradeHistorico[]> {
+  if (modoDemo()) return tradesDemo(getDataSaoPaulo());
   const { data, error } = await supabase
     .from("copa_trades")
     .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
@@ -316,6 +318,7 @@ export async function listarTradesDoMes(
   ano: number,
   mes: number
 ): Promise<TradeHistorico[]> {
+  if (modoDemo()) return tradesDemoDoMes(ano, mes, getDataSaoPaulo());
   const mesStr = String(mes).padStart(2, "0");
   const dataInicio = `${ano}-${mesStr}-01`;
   const ultimoDia = new Date(ano, mes, 0).getDate();

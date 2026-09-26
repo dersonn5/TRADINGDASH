@@ -1,81 +1,65 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 25/09/2026 · Claude (retomou depois do Gemini parar por limite)
+Atualizado: 26/09/2026 · Claude
 
 ## Onde estamos
-Spec `cockpit/SPEC_FRONT_V2.md` (visual novo + Visão Geral) com todas as fases de
-código feitas. Falta a conferência visual logada pelo Anderson e o commit.
+Cockpit v2 no ar e commitado. Voz Dora (Kokoro) integrada nos alertas. Modo
+demonstração com trades fictícios. O Anderson começa a operar de verdade na segunda (28/09).
 
 ## Pronto e verificado
-- Fases 2–5 (Gemini): Sora, tokens escuro/claro, campos gatilho/contexto/modo,
-  `lib/metricas.ts`, Visão Geral — prova: `npx tsx scripts/verify.ts` passa (inclui o
-  conjunto de 4 trades da TASK-402); `tsc --noEmit` limpo.
-- Fase 6 (Claude): Histórico, Estratégias, Checklist e Pré-Sessão no visual v2 —
-  prova: `npm run build` limpo com as 7 rotas; dev server responde 200 em `/`,
-  `/pre-sessao`, `/checklist`, `/trades`, `/estrategias`, `/login`.
-- Migrations rodadas no Supabase: `migration_setup_c.sql`, `migration_gatilho.sql`
-  (o Gemini gravou e apagou um trade de teste com os 3 campos).
-
-## Em andamento
-Conferência visual logada, nos dois temas, das 5 telas (o Claude não consegue logar).
+- Visual v2 fiel a `design/v2/*.dc.html` nas 5 telas; telas zeradas sem dados — prova:
+  prints headless (playwright-core no scratchpad, Chromium de `~/AppData/Local/ms-playwright`).
+- Alertas de voz com a Dora — prova: `npx tsx scripts/verify.ts` (cobertura: toda frase
+  fixa e todo nome conhecido têm áudio); no navegador, "Testar a voz" pediu
+  `/voz/manifest.json` e o `.ogg` certo; a Dora é a opção padrão do painel.
+- Modo demonstração — prova: prints de Visão Geral, Histórico e Estratégias com
+  `?demo=1` (jul–set/2026, 63 trades, 51% de acerto).
+- `trading_live_checklist` com RLS por usuário: SQL em
+  `cockpit/supabase/migration_checklist_ao_vivo.sql`.
 
 ## Próximo
-- [ ] Anderson abre as 5 telas logado (escuro e claro) e aponta o que destoa do
-      `design/v2/`.
-- [ ] Commit (tudo desde 25/09 está sem commit — limpeza da Copa, Setup C, v2).
-- [ ] Renomear tabelas `copa_*` → `ct_*` (combinado para depois da v2).
-- [ ] Rodar a limpeza do banco se ainda não rodou: `cockpit/supabase/migration_limpeza_copa.sql`
-      e o DROP das views `v_copa_*`.
+- [ ] Anderson roda `migration_checklist_ao_vivo.sql` no Supabase e testa "Salvar progresso".
+- [ ] Limpeza Passo 2 (apagar os 3 dias e o trade de teste) e DROP das views `v_copa_*`,
+      se ainda não rodou.
+- [ ] Prova ao vivo dos alertas num dia útil (TASK-502) e conferir feriados B3 2026.
+- [ ] Renomear tabelas `copa_*` → `ct_*`.
 
-## Fidelidade ao design (25/09, segunda rodada)
-- Moldura nova em `components/layout/shell.tsx` (barra lateral do design, tema e sair
-  no rodapé); o shadcn sidebar e o cabeçalho com busca/"bot idle" foram removidos.
-- Visão Geral, Pré-Sessão, Checklist e Estratégias reescritas a partir de
-  `design/v2/*.dc.html`; estilos comuns em `components/v2/estilos.ts`; cálculo da Visão
-  Geral em `lib/visao-geral.ts` (testado com os 16 trades de `scripts/fixture-design.ts`).
-- Textos das estratégias: fonte em `copa/strategies/*.json`, gerados por
-  `python copa/strategies/gerar_ts.py`. O banco (copa_strategy_items) ainda tem os
-  textos antigos sem acento — o app não lê de lá.
-- Como conferir o visual sem login: não há mais atalho no código. Para tirar print,
-  recriar temporariamente o desvio no AuthGate e remover antes do commit.
-
-## Alertas de voz (25/09) — `cockpit/SPEC_ALERTAS_VOZ.md`
-- Motor puro em `lib/alertas.ts`, voz em `lib/voz.ts` (Web Speech API), calendário em
-  `lib/calendario.ts` + `app/api/calendario/route.ts` (ForexFactory, só EUA, cache 1 h).
-- Componente `components/layout/alertas-voz.tsx` na barra lateral (botão alto-falante).
-- Teste sem esperar o horário (só em dev): `?relogio=09:59:50&data=2026-09-25`.
-- Falta: prova ao vivo num dia útil (TASK-502) e conferir os feriados da B3 de 2026.
+## Voz Dora — como regerar
+1. `npx tsx scripts/listar-frases-voz.ts` (em `cockpit/`) grava `tools/voz/frases.json`.
+2. `C:/Users/Pc/kokoro-voz/Scripts/python.exe tools/voz/gerar.py` gera só o que falta em
+   `cockpit/public/voz/` e reescreve o `manifest.json` (287 frases, 4,8 MB).
+- Regerar sempre que mudar um texto em `lib/alertas.ts` ou um nome em `lib/calendario.ts`
+  (o teste de cobertura do verify.ts falha até regerar).
+- Pronúncia de inglês/siglas: `tools/voz/pronuncia.py`. Mudou o dicionário: apagar os
+  `.ogg` afetados e regerar.
+- O que não tem áudio (nome de evento digitado à mão) sai pela voz do navegador, só
+  aquele pedaço. Por isso o campo Evento da pré-sessão sugere os nomes gravados.
 
 ## Decisões que não se recuperam lendo o código
-- Paleta monocromática ciano; perda = ciano apagado + sinal "−" (classe
-  `perda-vermelha` troca para vermelho) — pedido do operador por "tons da mesma cor".
-- Tudo em Sora; `.mono`/`.tabular` viraram só `tabular-nums` — o operador não
-  gostou da fonte mono.
-- Gráficos em SVG puro, sem Bklit — o `shadcn add @bklit/...` falhou com
-  `ECOMPROMISED` (lock do npm). Visual igual ao artboard.
-- Checklist e Pré-Sessão ganharam o visual pelos componentes `components/inst/*`
-  (restilizados) e por troca de estilo pontual — a lógica de 2.150 linhas do
-  checklist não foi reescrita de propósito.
-- Views `v_copa_*` devem ser apagadas: rodam sem RLS e expõem os trades à chave anon.
+- Voz: áudios pré-gerados na GPU do operador, tocados como arquivo estático. Sem
+  servidor de voz. O manifest é indexado pelo texto normalizado (o hash só dá nome ao
+  arquivo), então o navegador não precisa calcular SHA-1.
+- Modo demonstração só no front (`lib/demo.ts`, interceptado em `listarTrades` e
+  `listarTradesDoMes`): nada vai para o Supabase. Liga com `?demo=1`, sai pelo aviso.
+  Semente fixa escolhida para parecer um trader real.
+- Paleta monocromática ciano; perda = ciano apagado + "−". Tudo em Sora.
+- Gráficos em SVG puro (Bklit falhou com `ECOMPROMISED`).
+- Views `v_copa_*` rodam sem RLS e expõem os trades à chave anon: apagar.
 
 ## Armadilhas já pagas
-- O navegador não fala sem um clique na página (autoplay). Por isso o aviso no painel
-  e o ponto no botão de alto-falante até o primeiro clique.
-- Abertura de NY não é fixa: 10:30 no horário de verão dos EUA, 11:30 de nov a mar.
-- Rota de API que usa "hoje" não pode ser estática: a data vem por `?data=` (deixa a rota
-  dinâmica) e o feed fica no cache de fetch (`next.revalidate`).
-- O relatório do Gemini disse "tsc limpo" e "anotado no CHECKPOINT" — nenhum dos
-  dois era verdade (Histórico com erro de tipo, arquivo inexistente). Conferir o
-  `git diff`, nunca o relatório.
-- Apagar `.next/` com o dev server rodando deixa tudo em 500. Pare o servidor
-  (porta 3000) antes, ou reinicie depois.
-- `→` escrito como texto JSX (fora de string) aparece literal na tela.
-- Seletor de mês da Visão Geral tem que ser ancorado no mês de hoje; ancorado no
-  mês escolhido, o mês atual some da lista.
-- Backtests do Setup C com gatilho de 1 min deixavam entrar antes da barra de 15 min
-  fechar (olhar o futuro). Detalhes: `Cerebro_Obsidian/.../Estudo_Barra_das_10.md` itens 6–9.
+- `position: sticky` cria contexto de empilhamento: o painel de alertas (fixed, dentro
+  da barra lateral) ficava atrás do conteúdo. A barra lateral precisa de `zIndex`.
+- O overlay de dev do Next (`nextjs-portal`) cobre o botão de alto-falante nos testes
+  headless: esconder com CSS ou `click({ force: true })`.
+- Kokoro deu `CUDA error: out of memory` uma vez com a GPU quase livre; rodar de novo passou.
+- O navegador não fala sem um clique (autoplay). Abertura de NY: 10:30 no verão dos
+  EUA, 11:30 de nov a mar.
+- Relatório do Gemini disse "tsc limpo" sem ser verdade. Conferir o `git diff`.
+- Apagar `.next/` com o dev server rodando deixa tudo em 500.
+- Conferir visual sem login: desvio temporário no AuthGate, removido antes do commit.
+- Backtests do Setup C com gatilho de 1 min olhavam o futuro. Ver
+  `Cerebro_Obsidian/.../Estudo_Barra_das_10.md` itens 6–9.
 
 ## Aberto / bloqueado
-- Chave `service_role` do Supabase vazou no histórico do GitHub
-  (`cockpit/lib/supabase-admin.ts`, commit ccdcc8b) e dá acesso a outros sistemas
-  do mesmo projeto (`trena_*`, `wilerk_*`). Precisa ser trocada no painel.
+- Chave `service_role` vazou no histórico do GitHub (commit ccdcc8b); repo privado.
+  Trocar no painel do Supabase quando der.

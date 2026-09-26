@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { getDataSaoPaulo, getPreSessaoDeHoje } from "@/lib/copa-db";
-import { Alerta, EventoAgenda, alertasDoDia, alertasParaDisparar, ehDiaDePregao } from "@/lib/alertas";
-import { carregarVozes, escolherVoz, falar, pararTudo, vozesEmPortugues } from "@/lib/voz";
+import { Alerta, EventoAgenda, FRASE_TESTE, alertasDoDia, alertasParaDisparar, ehDiaDePregao } from "@/lib/alertas";
+import { carregarManifest, carregarVozes, escolherVoz, pararTudo, tocarPlano, vozesEmPortugues } from "@/lib/voz";
+import { ManifestVoz, planoDeFala } from "@/lib/voz-clipes";
 import { CARD, LBL, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 
 // Alertas de voz do pregao (cockpit/SPEC_ALERTAS_VOZ.md). Montado na barra lateral:
@@ -12,13 +13,15 @@ import { CARD, LBL, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 interface Config {
   ligado: boolean;
   volume: number;
-  voz: string | null; // voiceURI
+  motor: "dora" | "navegador"; // dora = audios gravados (Kokoro); navegador = Web Speech
+  voz: string | null; // voiceURI da voz do navegador (tambem cobre o que a Dora nao tem gravado)
   rotina: boolean;
   noticias: boolean;
 }
 
-const CONFIG_PADRAO: Config = { ligado: true, volume: 1, voz: null, rotina: true, noticias: true };
+const CONFIG_PADRAO: Config = { ligado: true, volume: 1, motor: "dora", voz: null, rotina: true, noticias: true };
 const CHAVE_CONFIG = "alertas-voz-config";
+const OPCAO_DORA = "__dora__";
 const chaveFalados = (data: string) => `alertas-falados-${data}`;
 // Evento disparado pela pre-sessao quando salva, fecha ou reabre: recarrega a agenda.
 export const EVENTO_PRESESSAO_SALVA = "presessao-salva";
@@ -73,6 +76,7 @@ export function AlertasVoz() {
   const [config, setConfig] = React.useState<Config>(CONFIG_PADRAO);
   const [aberto, setAberto] = React.useState(false);
   const [vozes, setVozes] = React.useState<SpeechSynthesisVoice[]>([]);
+  const [manifest, setManifest] = React.useState<ManifestVoz | null>(null);
   const [desbloqueado, setDesbloqueado] = React.useState(false);
   const [agenda, setAgenda] = React.useState<EventoAgenda[]>([]);
   const [fechada, setFechada] = React.useState(false);
@@ -88,6 +92,7 @@ export function AlertasVoz() {
     // Em desenvolvimento, o relogio simulado vale como pagina liberada (teste sem clique)
     if (simulado.current.offsetMs !== 0) setDesbloqueado(true);
     carregarVozes().then(setVozes);
+    carregarManifest().then(setManifest);
   }, []);
 
   const salvarConfig = (parcial: Partial<Config>) => {
@@ -152,6 +157,11 @@ export function AlertasVoz() {
     [alertas, config.rotina, config.noticias]
   );
   const voz = React.useMemo(() => escolherVoz(vozes, config.voz), [vozes, config.voz]);
+  const dora = config.motor === "dora" && manifest !== null;
+  const falarSegmentos = React.useCallback(
+    (segmentos: string[]) => tocarPlano(planoDeFala(segmentos, dora ? manifest : null), { volume: config.volume, vozNavegador: voz }),
+    [dora, manifest, config.volume, voz]
+  );
 
   // Disparo
   React.useEffect(() => {
@@ -160,13 +170,13 @@ export function AlertasVoz() {
     if (!disparar.length) return;
     const novos = new Set(falados);
     for (const a of disparar) {
-      falar(a.texto, { voz, volume: config.volume });
+      falarSegmentos(a.segmentos);
       novos.add(a.id);
       if (process.env.NODE_ENV !== "production") console.info(`[voz] ${a.hora} ${a.texto}`);
     }
     setFalados(novos);
     gravarFalados(hoje, novos);
-  }, [agora, ativos, falados, config.ligado, config.volume, desbloqueado, voz, hoje]);
+  }, [agora, ativos, falados, config.ligado, desbloqueado, falarSegmentos, hoje]);
 
   // Fecha o painel ao clicar fora
   React.useEffect(() => {
@@ -178,7 +188,10 @@ export function AlertasVoz() {
     return () => document.removeEventListener("mousedown", fora);
   }, [aberto]);
 
-  const ouvir = (a: Alerta | string) => falar(typeof a === "string" ? a : a.texto, { voz, volume: config.volume });
+  const ouvir = (a: Alerta | string) => {
+    pararTudo();
+    falarSegmentos(typeof a === "string" ? [a] : a.segmentos);
+  };
   const pendenteClique = config.ligado && !desbloqueado;
   const vozesBR = vozesEmPortugues(vozes);
 
@@ -235,12 +248,15 @@ export function AlertasVoz() {
 
           <label style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "13px", color: "var(--tx2)" }}>
             Voz
-            {vozesBR.length ? (
+            {vozesBR.length || manifest ? (
               <select
-                value={voz?.voiceURI ?? ""}
-                onChange={(e) => salvarConfig({ voz: e.target.value })}
+                value={dora ? OPCAO_DORA : voz?.voiceURI ?? ""}
+                onChange={(e) =>
+                  salvarConfig(e.target.value === OPCAO_DORA ? { motor: "dora" } : { motor: "navegador", voz: e.target.value })
+                }
                 style={{ height: "40px", borderRadius: "10px", border: "1px solid var(--bd)", background: "var(--bg)", color: "var(--tx)", fontFamily: "inherit", fontSize: "13px", padding: "0 10px" }}
               >
+                {manifest && <option value={OPCAO_DORA}>Dora (Kokoro)</option>}
                 {vozesBR.map((v) => (
                   <option key={v.voiceURI} value={v.voiceURI}>{v.name}</option>
                 ))}
@@ -266,7 +282,7 @@ export function AlertasVoz() {
             </label>
           </div>
 
-          <button type="button" onClick={() => ouvir("Alertas de voz ativados. Eu aviso a abertura do pregão e as notícias do dia.")} style={{ ...BOTAO_SECUNDARIO, width: "100%" }}>
+          <button type="button" onClick={() => ouvir(FRASE_TESTE)} style={{ ...BOTAO_SECUNDARIO, width: "100%" }}>
             Testar a voz
           </button>
 

@@ -78,7 +78,8 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const rsA = anteriores.map(rDoTrade);
   const ganhosA = somar(anteriores.map(pnl).filter((p) => p > 0));
   const perdasA = -somar(anteriores.map(pnl).filter((p) => p < 0));
-  const semAnt = `${nomeMesAnt}: sem trades`;
+  // rodape dos KPIs e a comparacao com o mes anterior: deixar claro que nao e o mes aberto
+  const semAnt = `Mês anterior (${nomeMesAnt}): sem trades`;
   const kpis = [
     { label: "Resultado", valor: formatarBRL(total), cor: cor(total), sub: `${formatarR(totalR)} no mês`, delta: nA ? `${formatarBRL(total - pnlA)} contra ${nomeMesAnt}` : semAnt },
     { label: "Trades", valor: String(n), cor: "var(--tx)", sub: `${formatarPct(n ? wins.length / n : 0)} de acerto`, delta: nA ? `${nomeMesAnt}: ${plural(nA, "trade", "trades")} · ${formatarPct(anteriores.filter((t) => pnl(t) > 0).length / nA)}` : semAnt },
@@ -138,7 +139,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     return {
       id, nome: NOMES_ESTRATEGIAS[id] ?? id, n: ts.length, pnl: p, pnlTxt: formatarBRL(p), cor: cor(p),
       rm: formatarR(rm), rmCor: cor(rm), acerto: formatarPct(ts.length ? ts.filter((t) => pnl(t) > 0).length / ts.length : 0),
-      dd: formatarBRL(-calcularDrawdown(ts.map(pnl)).maxDrawdown), stop: ts.length ? `${mediana(ts.map(risco))} pts` : "—",
+      dd: formatarBRL(-calcularDrawdown(ts.map(pnl)).maxDrawdown), stop: ts.length ? `${Math.round(mediana(ts.map(risco)))} pts` : "—",
       nTxt: plural(ts.length, "trade", "trades"), wN: 0,
     };
   }).sort((a, b) => b.n - a.n);
@@ -155,7 +156,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
       : `${maisP.nome}: ${maisP.pnlTxt} no mês`;
   const tot = {
     n, acerto: formatarPct(n ? wins.length / n : 0), rm: formatarR(n ? totalR / n : 0), rmCor: cor(totalR),
-    pnl: formatarBRL(total), cor: cor(total), dd: formatarBRL(-D.maxDrawdown), stop: n ? `${mediana(trades.map(risco))} pts` : "—",
+    pnl: formatarBRL(total), cor: cor(total), dd: formatarBRL(-D.maxDrawdown), stop: n ? `${Math.round(mediana(trades.map(risco)))} pts` : "—",
   };
 
   // Por horario (504 x 220)
@@ -225,7 +226,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     { l: "< 150", a: 0, b: 150 }, { l: "150–199", a: 150, b: 200 }, { l: "200–249", a: 200, b: 250 },
     { l: "250–299", a: 250, b: 300 }, { l: "300+", a: 300, b: Infinity },
   ];
-  const med = mediana(trades.map(risco));
+  const med = Math.round(mediana(trades.map(risco)));
   const cont = SB.map((s) => trades.filter((t) => risco(t) >= s.a && risco(t) < s.b).length);
   const cmax = Math.max(1, ...cont);
   const sslot = 392 / 5;

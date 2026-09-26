@@ -9,6 +9,8 @@ export interface Alerta {
   id: string;
   hora: string; // "HH:MM" em America/Sao_Paulo
   texto: string;
+  // Pedacos de fala, cada um com seu audio da voz Dora. Juntos com espaco = texto.
+  segmentos: string[];
   grupo: GrupoAlerta;
   ordem: number; // desempate quando dois alertas caem no mesmo minuto
 }
@@ -77,6 +79,17 @@ export function horaFalada(hora: string): string {
   return `${base} e ${numeroPorExtenso(m)}`;
 }
 
+// Frases com nome ou numero variavel. Exportadas para o script que lista o que precisa de
+// audio (scripts/listar-frases-voz.ts): mudou um texto aqui, regerar os audios.
+export const FRASE_TESTE = "Alertas de voz ativados. Eu aviso a abertura do pregão e as notícias do dia.";
+export const FRASE_BOM_DIA = "Bom dia. O pregão abriu. Até as dez, só observar e marcar.";
+export const FRASE_SEM_NOTICIA = "Hoje não tem notícia de impacto alto.";
+export const fraseQuantasNoticias = (n: number) => `Hoje tem ${numeroPorExtenso(n, true)} ${n === 1 ? "notícia" : "notícias"} de impacto alto.`;
+export const frasePrimeira = (nome: string) => `A primeira é ${nome},`;
+export const fraseAs = (hora: string) => `às ${horaFalada(hora)}.`;
+export const fraseNoticiaAntes = (nome: string) => `Atenção: em cinco minutos, ${nome}. Impacto alto.`;
+export const fraseNoticiaAgora = (nome: string) => `Saindo agora: ${nome}.`;
+
 function paraMinutos(hora: string): number {
   const [h, m] = hora.split(":").map(Number);
   return h * 60 + m;
@@ -90,12 +103,12 @@ export function alertasDoDia(dataISO: string, agenda: EventoAgenda[], preSessaoF
     .map((e) => ({ ...e, evento: e.evento.trim() }));
   const altos = eventos.filter((e) => e.impacto === "ALTO").sort((a, b) => paraMinutos(a.horario) - paraMinutos(b.horario));
   const resumo = altos.length === 0
-    ? "Hoje não tem notícia de impacto alto."
-    : `Hoje tem ${numeroPorExtenso(altos.length, true)} ${altos.length === 1 ? "notícia" : "notícias"} de impacto alto. A primeira é ${altos[0].evento}, às ${horaFalada(altos[0].horario)}.`;
+    ? [FRASE_SEM_NOTICIA]
+    : [fraseQuantasNoticias(altos.length), frasePrimeira(altos[0].evento), fraseAs(altos[0].horario)];
 
   const ny = aberturaNY(dataISO);
-  const rotina: Array<[string, string, number]> = [
-    ["09:00", `Bom dia. O pregão abriu. Até as dez, só observar e marcar. ${resumo}`, 1],
+  const rotina: Array<[string, string | string[], number]> = [
+    ["09:00", [FRASE_BOM_DIA, ...resumo], 1],
     ["09:55", "Cinco minutos para a abertura do mercado à vista.", 1],
     ["10:00", "Abertura do mercado à vista. Janela de entrada aberta.", 1],
     [somarMinutos(ny, -5), "Cinco minutos para a abertura de Nova York.", 0],
@@ -108,17 +121,20 @@ export function alertasDoDia(dataISO: string, agenda: EventoAgenda[], preSessaoF
   ];
   if (!preSessaoFechada) rotina.push(["09:45", "Faltam quinze minutos para a janela. A pré-sessão ainda não foi fechada.", 1]);
 
-  const alertas: Alerta[] = rotina.map(([hora, texto, ordem]) => ({ id: `rotina-${hora}-${ordem}`, hora, texto, grupo: "rotina", ordem }));
+  const alertas: Alerta[] = rotina.map(([hora, fala, ordem]) => {
+    const segmentos = typeof fala === "string" ? [fala] : fala;
+    return { id: `rotina-${hora}-${ordem}`, hora, texto: segmentos.join(" "), segmentos, grupo: "rotina", ordem };
+  });
 
   eventos
     .filter((e) => e.horario >= "09:00" && e.horario <= "12:00")
     .forEach((e) => {
       const chave = `${e.horario}-${e.evento}`;
       if (e.impacto === "ALTO") {
-        alertas.push({ id: `noticia-pre-${chave}`, hora: somarMinutos(e.horario, -5), texto: `Atenção: em cinco minutos, ${e.evento}. Impacto alto.`, grupo: "noticia", ordem: 2 });
+        alertas.push({ id: `noticia-pre-${chave}`, hora: somarMinutos(e.horario, -5), texto: fraseNoticiaAntes(e.evento), segmentos: [fraseNoticiaAntes(e.evento)], grupo: "noticia", ordem: 2 });
       }
       if (e.impacto === "ALTO" || e.impacto === "MEDIO") {
-        alertas.push({ id: `noticia-${chave}`, hora: e.horario, texto: `Saindo agora: ${e.evento}.`, grupo: "noticia", ordem: 2 });
+        alertas.push({ id: `noticia-${chave}`, hora: e.horario, texto: fraseNoticiaAgora(e.evento), segmentos: [fraseNoticiaAgora(e.evento)], grupo: "noticia", ordem: 2 });
       }
     });
 

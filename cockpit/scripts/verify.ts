@@ -1,9 +1,12 @@
 import fs from "fs";
 import { montarVisaoGeral } from "../lib/visao-geral";
 import { TRADES_DESIGN } from "./fixture-design";
-import { aberturaNY, alertasDoDia, alertasParaDisparar, horaFalada } from "../lib/alertas";
+import {
+  FRASE_TESTE, aberturaNY, alertasDoDia, alertasParaDisparar, fraseAs, fraseNoticiaAgora, fraseNoticiaAntes, fraseQuantasNoticias, frasePrimeira, horaFalada,
+} from "../lib/alertas";
 import { escolherVoz } from "../lib/voz";
-import { converterFeed, mesclarAgenda } from "../lib/calendario";
+import { planoDeFala } from "../lib/voz-clipes";
+import { EVENTOS_BRASIL, NOMES_EUA, converterFeed, mesclarAgenda } from "../lib/calendario";
 import path from "path";
 import {
   classificarJanela,
@@ -924,6 +927,38 @@ report(
     conv.length === 3 && conv[0].horario === "09:30" && conv[0].evento === "Payroll" && conv[1].evento === "CPI, inflação ao consumidor" &&
       conv[2].horario === "11:00" && conv[2].impacto === "MEDIO",
     JSON.stringify(conv.map((e) => `${e.horario} ${e.evento} ${e.impacto}`)));
+  // Voz Dora (SPEC_VOZ_KOKORO.md)
+  const comResumo = alertasDoDia("2026-09-25", agendaAlto, false);
+  const bomDia = comResumo.find((a) => a.hora === "09:00")!;
+  report("Voz Dora: segmentos juntos formam o texto; resumo das 09:00 em 4 pedaços",
+    comResumo.every((a) => a.segmentos.join(" ") === a.texto) && bomDia.segmentos.length === 4,
+    JSON.stringify(bomDia.segmentos));
+  const manifestFalso = { voz: "pf_dora", velocidade: 1, clipes: { "Bom dia.": "a.ogg", "Fim.": "b.ogg" } };
+  const plano = planoDeFala(["Bom dia.", "  Nome   novo, ", "Fim."], manifestFalso);
+  report("Voz Dora: plano usa o áudio que existe e o navegador no resto, na ordem",
+    plano.length === 3 && plano[0].tipo === "arquivo" && plano[1].tipo === "navegador" && (plano[1] as { texto: string }).texto === "Nome novo," &&
+      plano[2].tipo === "arquivo" && (plano[2] as { url: string }).url === "/voz/b.ogg" && planoDeFala(["Bom dia."], null)[0].tipo === "navegador",
+    JSON.stringify(plano));
+  const manifestPath = path.resolve(__dirname, "../public/voz/manifest.json");
+  if (fs.existsSync(manifestPath)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+    const nomes = [...NOMES_EUA, ...EVENTOS_BRASIL];
+    const precisa = [
+      FRASE_TESTE,
+      ...["2026-09-25", "2026-01-15"].flatMap((d) => alertasDoDia(d, [], false).flatMap((a) => a.segmentos)),
+      ...nomes.flatMap((n) => [fraseNoticiaAntes(n), fraseNoticiaAgora(n), frasePrimeira(n)]),
+      ...[1, 2, 3, 4, 5, 6].map(fraseQuantasNoticias),
+      fraseAs("09:30"), fraseAs("10:25"), fraseAs("11:55"),
+    ];
+    const faltando = precisa.filter((t) => planoDeFala([t], manifest)[0].tipo !== "arquivo");
+    report("Voz Dora: toda frase fixa e todo nome conhecido têm áudio gravado", faltando.length === 0,
+      faltando.length ? `sem áudio: ${JSON.stringify(faltando.slice(0, 5))} — rodar listar-frases-voz.ts e gerar.py` : `${precisa.length} frases`);
+    const arquivosFaltando = Object.values(manifest.clipes as Record<string, string>).filter((a) => !fs.existsSync(path.resolve(__dirname, "../public/voz", a)));
+    report("Voz Dora: todo arquivo do manifest existe em public/voz", arquivosFaltando.length === 0, arquivosFaltando.slice(0, 3).join());
+  } else {
+    report("Voz Dora: public/voz/manifest.json existe", false, "rodar tools/voz/gerar.py");
+  }
+
   const mesc = mesclarAgenda([{ evento: "Payroll", horario: "09:30", impacto: "ALTO" }, { evento: "Copom", horario: "18:30", impacto: "ALTO" }], conv);
   report("Calendário: importar não duplica o que já está na agenda", mesc.length === 4 && mesc.filter((e) => e.evento === "Payroll").length === 1,
     JSON.stringify(mesc.map((e) => `${e.horario} ${e.evento}`)));

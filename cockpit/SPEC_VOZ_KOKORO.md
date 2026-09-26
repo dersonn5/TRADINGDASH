@@ -1,7 +1,7 @@
 # SPEC — Voz Kokoro (pf_dora) nos alertas do pregão
 
 > **Executor:** Gemini. **Revisor:** Anderson.
-> **Status:** aprovada pelo Anderson em 26/09/2026. Começar pela Fase 0.
+> **Status:** implementada pelo Claude em 26/09/2026 (ver CHECKPOINT.md, seção Voz Dora). Diferença da spec: o manifest é indexado pelo texto normalizado, não pelo SHA-1.
 > Depende de `cockpit/SPEC_ALERTAS_VOZ.md` (já implementada — ler antes).
 
 Leia `CHECKPOINT.md` (raiz), `cockpit/SPEC_ALERTAS_VOZ.md` e este arquivo antes de abrir

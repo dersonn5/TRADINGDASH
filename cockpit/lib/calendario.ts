@@ -68,6 +68,17 @@ const NOMES: Record<string, string> = {
   "Trade Balance": "balança comercial americana",
 };
 
+/** Nomes em portugues dos eventos dos EUA (os que a voz Dora tem gravados). */
+export const NOMES_EUA = [...new Set(Object.values(NOMES))];
+
+// Eventos do Brasil: nao vem do feed, o operador escreve na agenda. Sugeridos no campo Evento
+// da pre-sessao para sair com o nome que a voz tem gravado.
+export const EVENTOS_BRASIL = [
+  "IPCA", "IPCA-15", "decisão do Copom", "ata do Copom", "PIB brasileiro", "Caged", "IBC-Br",
+  "produção industrial", "vendas no varejo do Brasil", "Relatório Focus", "leilão do Tesouro",
+  "fluxo cambial", "IGP-M",
+];
+
 export function nomeEmPortugues(titulo: string): string {
   return NOMES[titulo] ?? titulo;
 }

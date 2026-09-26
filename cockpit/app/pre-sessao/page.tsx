@@ -12,7 +12,7 @@ import {
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
 import { EVENTO_PRESESSAO_SALVA } from "@/components/layout/alertas-voz";
-import { mesclarAgenda, EventoCalendario } from "@/lib/calendario";
+import { mesclarAgenda, EventoCalendario, EVENTOS_BRASIL, NOMES_EUA } from "@/lib/calendario";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 
 // Espelho de design/v2/PreSessao.dc.html. A logica (auto-save, fechar, reabrir) nao mudou.
@@ -410,6 +410,10 @@ export default function PreSessaoPage() {
               )
             )}
             {importMsg && <span style={{ fontSize: "12px", color: "var(--tx3)", lineHeight: 1.5 }}>{importMsg}</span>}
+            {/* Nomes que a voz Dora tem gravados: escrito assim, o alerta sai com a voz dela */}
+            <datalist id="eventos-conhecidos">
+              {[...EVENTOS_BRASIL, ...NOMES_EUA].map((n) => <option key={n} value={n} />)}
+            </datalist>
             {sessao.agenda.map((ev, idx) => {
               const imp = IMPACTO[ev.impacto] ?? IMPACTO.MEDIO;
               return (
@@ -426,6 +430,7 @@ export default function PreSessaoPage() {
                     type="text"
                     aria-label="Evento"
                     placeholder="Payroll, CPI, abertura de NY…"
+                    list="eventos-conhecidos"
                     value={ev.evento}
                     onChange={(e) => atualizarEvento(idx, "evento", e.target.value)}
                     disabled={isFechada}
