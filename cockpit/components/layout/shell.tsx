@@ -44,17 +44,20 @@ const grupoTitulo: React.CSSProperties = {
   color: "var(--tx3)",
 };
 
-function NavLink({ item, ativo }: { item: Item; ativo: boolean }) {
+function NavLink({ item, ativo, recolhida }: { item: Item; ativo: boolean; recolhida: boolean }) {
   return (
     <Link
       href={item.href}
       aria-current={ativo ? "page" : undefined}
+      aria-label={recolhida ? item.label : undefined}
+      title={recolhida ? item.label : undefined}
       style={{
         display: "flex",
         alignItems: "center",
+        justifyContent: recolhida ? "center" : "flex-start",
         gap: "12px",
         height: "44px",
-        padding: "0 12px",
+        padding: recolhida ? 0 : "0 12px",
         borderRadius: "10px",
         fontSize: "14px",
         fontWeight: ativo ? 500 : 400,
@@ -64,7 +67,7 @@ function NavLink({ item, ativo }: { item: Item; ativo: boolean }) {
       }}
     >
       {item.icon}
-      {item.label}
+      {!recolhida && item.label}
     </Link>
   );
 }
@@ -79,12 +82,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [escuro, setEscuro] = React.useState(true);
   const [nome, setNome] = React.useState("Anderson");
+  const [recolhida, setRecolhida] = React.useState(false);
 
   React.useEffect(() => {
     const salvo = localStorage.getItem("cognitive-theme");
     const isDark = salvo ? salvo === "dark" : true;
     setEscuro(isDark);
     document.documentElement.classList.toggle("dark", isDark);
+    setRecolhida(localStorage.getItem("cognitive-sidebar") === "recolhida");
     supabase.auth.getUser().then(({ data }) => {
       const meta = data.user?.user_metadata as { name?: string; full_name?: string } | undefined;
       const n = meta?.name || meta?.full_name;
@@ -97,6 +102,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
     setEscuro(proximo);
     document.documentElement.classList.toggle("dark", proximo);
     localStorage.setItem("cognitive-theme", proximo ? "dark" : "light");
+  }
+
+  function alternarBarra() {
+    const proximo = !recolhida;
+    setRecolhida(proximo);
+    localStorage.setItem("cognitive-sidebar", proximo ? "recolhida" : "aberta");
   }
 
   async function sair() {
@@ -126,10 +137,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <nav
         aria-label="Principal"
         style={{
-          width: "232px",
+          width: recolhida ? "76px" : "232px",
           flexShrink: 0,
           boxSizing: "border-box",
-          padding: "28px 16px 24px",
+          padding: recolhida ? "28px 12px 24px" : "28px 16px 24px",
+          transition: "width 160ms ease",
           borderRight: "1px solid var(--bd)",
           display: "flex",
           flexDirection: "column",
@@ -139,30 +151,33 @@ export function Shell({ children }: { children: React.ReactNode }) {
           height: "100vh",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "0 8px" }}>
-          <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: recolhida ? "center" : "flex-start", gap: "10px", padding: recolhida ? 0 : "0 8px" }}>
+          <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true" style={{ flexShrink: 0 }}>
             <rect x="0.5" y="0.5" width="29" height="29" rx="8" style={{ fill: "var(--acs)", stroke: "var(--ac)", strokeOpacity: 0.45 }} />
             <path d="M6 17h4l3-7 4 12 3-7h4" style={{ fill: "none", stroke: "var(--ac)", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" }} />
           </svg>
-          <span style={{ fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em" }}>Cognitive Trading</span>
+          {!recolhida && <span style={{ fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em", flexGrow: 1, whiteSpace: "nowrap" }}>Cognitive Trading</span>}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <span style={grupoTitulo}>Pregão</span>
-          {PREGAO.map((i) => <NavLink key={i.href} item={i} ativo={ativo(i.href)} />)}
+          {!recolhida && <span style={grupoTitulo}>Pregão</span>}
+          {PREGAO.map((i) => <NavLink key={i.href} item={i} ativo={ativo(i.href)} recolhida={recolhida} />)}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <span style={grupoTitulo}>Registro</span>
-          {REGISTRO.map((i) => <NavLink key={i.href} item={i} ativo={ativo(i.href)} />)}
+          {!recolhida && <span style={grupoTitulo}>Registro</span>}
+          {recolhida && <span aria-hidden="true" style={{ height: "1px", background: "var(--bd)", margin: "0 8px 8px" }} />}
+          {REGISTRO.map((i) => <NavLink key={i.href} item={i} ativo={ativo(i.href)} recolhida={recolhida} />)}
         </div>
 
-        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "0 8px" }}>
+        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px", alignItems: recolhida ? "center" : "stretch" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: recolhida ? 0 : "0 8px" }} title={recolhida ? nome : undefined}>
             <span style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--acs)", color: "var(--actx)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 600, flexShrink: 0 }}>
               {iniciais(nome)}
             </span>
-            <span style={{ fontSize: "13px", color: "var(--tx2)", flexGrow: 1 }}>{nome}</span>
+            {!recolhida && <span style={{ fontSize: "13px", color: "var(--tx2)" }}>{nome}</span>}
+          </div>
+          <div style={{ display: "flex", flexDirection: recolhida ? "column" : "row", alignItems: "center", gap: "8px", padding: recolhida ? 0 : "0 8px" }}>
             <AlertasVoz />
             <button type="button" onClick={alternarTema} aria-label={escuro ? "Usar tema claro" : "Usar tema escuro"} title={escuro ? "Tema claro" : "Tema escuro"} style={botaoIcone}>
               {escuro ? (
@@ -180,6 +195,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       <main
         style={{
+          position: "relative",
           flexGrow: 1,
           minWidth: 0,
           boxSizing: "border-box",
@@ -189,6 +205,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
           gap: "20px",
         }}
       >
+        <button
+          type="button"
+          onClick={alternarBarra}
+          aria-label={recolhida ? "Abrir barra lateral" : "Recolher barra lateral"}
+          title={recolhida ? "Abrir barra lateral" : "Recolher barra lateral"}
+          style={{ position: "absolute", top: "12px", left: "8px", width: "28px", height: "28px", borderRadius: "8px", border: 0, background: "transparent", color: "var(--tx3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+        >
+          <svg {...svgProps} width={16} height={16}>
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M9 3v18" />
+          </svg>
+        </button>
         {children}
       </main>
     </div>
