@@ -75,3 +75,7 @@ conversa_ronaldo_*.md
 profit/*.pdf
 profit/*.csv
 profit/backtest_plots/
+
+# Voz Kokoro: amostras para ouvir e cache do Python (os audios finais vao em cockpit/public/voz)
+tools/voz/amostras/
+tools/voz/__pycache__/
