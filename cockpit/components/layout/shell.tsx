@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { AlertasVoz } from "@/components/layout/alertas-voz";
-import { modoDemo, sairDoDemo } from "@/lib/demo";
+import { entrarNoDemo, modoDemo, sairDoDemo } from "@/lib/demo";
 
 // Casca do app: barra lateral e area principal, identicas a design/v2/*.dc.html.
 
@@ -177,6 +177,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px", alignItems: recolhida ? "center" : "stretch" }}>
+          {!recolhida && !demo && (
+            <button
+              type="button"
+              onClick={entrarNoDemo}
+              style={{ height: "36px", margin: "0 8px", borderRadius: "10px", border: "1px dashed var(--bd)", background: "transparent", color: "var(--tx3)", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}
+            >
+              Ver com dados fictícios
+            </button>
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: recolhida ? 0 : "0 8px" }} title={recolhida ? nome : undefined}>
             <span style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--acs)", color: "var(--actx)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 600, flexShrink: 0 }}>
               {iniciais(nome)}

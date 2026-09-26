@@ -20,6 +20,15 @@ export function modoDemo(): boolean {
   }
 }
 
+export function entrarNoDemo() {
+  try {
+    localStorage.setItem(CHAVE, "1");
+  } catch {
+    // sem localStorage o demo so vale pela URL
+  }
+  window.location.href = "/?demo=1";
+}
+
 export function sairDoDemo() {
   try {
     localStorage.removeItem(CHAVE);
