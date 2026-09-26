@@ -203,6 +203,11 @@ com stop de 10–35 pts (um de +38R); MSS+FVG +0,13R, igual à base.
   Mas: 5 meses, ~40 combinações olhadas — alguma sai boa por acaso. Não é prova.
 - **BPR foi o melhor gatilho em geral** (+0,30R, positivo nas duas metades), sem relação com o V.
 - MSS+OB: acerto 5–21%, resultado zero ou negativo em quase todo recorte.
+- **Os +0,98R das 09:00 são um trade só.** 49 trades: 28 MSS+FVG (+0,17R), 12 Risk (+3,96R),
+  9 MSS+OB (−0,47R). Mediana −0,08R, acerto 39%. Um Risk de 03/08 com stop de 15 pts deu
+  +38R (+570 pts) — e foi um repique no meio da queda, não o V (o fundo veio depois). Sem ele,
+  +0,21R; sem os 3 maiores, −0,03R. Com stop mínimo de 50 pts: 44 trades, +0,11R. Em pontos:
+  +32 pts por trade (R$ 930 em 5 meses com 3 contratos). Média em R engana quando há stop minúsculo.
 - Risk entry com stop de 10–35 pts não é executável na prática (slippage do WIN).
 
 **Não entra no checklist.** Para validar é preciso mais histórico de 1 min (meses anteriores a
