@@ -229,6 +229,21 @@ Leitura: depois do V, o mais comum é o preço ficar entre o extremo e a abertur
 movimento inteiro do outro lado é minoria (~1 em 5) e devolver tudo até o extremo acontece em
 ~40–48% das manhãs. Estável ano a ano.
 
+**Com gap para fechar, e o preço já perto dele** (`profit/gap_depois_do_v.py`). A tabela acima
+parte do instante do V (75% de volta até a abertura) e mistura dias sem gap. Nos dias em que o
+gap e o movimento foram para o mesmo lado, a partir do momento em que o preço já percorreu
+parte do caminho fundo → fechamento do dia anterior:
+
+| Já percorreu | Base | Até 12:00: gap fecha / volta ao fundo | Até o fechamento: gap fecha / volta ao fundo |
+|---|---|---|---|
+| 75% | 1 min (32) | **47%** / 16% | **66%** / 22% |
+| 75% | 15 min 5 anos (176) | **44%** / 15% | **66%** / 24% |
+| 85% | 1 min (24) | **58%** / 12% | **71%** / 21% |
+| 85% | 15 min 5 anos (104) | **51%** / 13% | **72%** / 21% |
+
+Perto do gap, fechar o gap é o mais provável e voltar ao fundo é o menos provável — 1 min e
+5 anos concordam. A distância que falta decide mais que o "V" em si.
+
 ## Por que este estudo
 
 Observação do operador: "o índice abre às 09:00, vai para um lado e depois reverte".
