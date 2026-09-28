@@ -213,6 +213,22 @@ com stop de 10–35 pts (um de +38R); MSS+FVG +0,13R, igual à base.
 **Não entra no checklist.** Para validar é preciso mais histórico de 1 min (meses anteriores a
 abr/2026, "Expandir base" no Profit) e rodar as mesmas regras sem mudar nada.
 
+**9. Depois que o V se completa (28/09/2026)** (`profit/depois_do_v.py`)
+
+Do minuto em que o V (item 7) se completa até 12:00:
+
+| Base | V | Passa da abertura 09:00 | Segue (espelho inteiro) | Devolve até o extremo | Gap fecha* |
+|---|---|---|---|---|---|
+| 1 min, abr–set/2026 | 81 | 64% | 22% | 48% | 37% |
+| — V completo antes das 10:00 | 37 | 81% | 38% | 54% | 58% |
+| — V completo 10:00 ou depois | 44 | 50% | 9% | 43% | 21% |
+| 15 min, 2021–2026 (em %) | 738 | 74% | 21% | 39% | 38% |
+
+\*Dias em que o gap foi no mesmo sentido do movimento (o V vai na direção de fechar o gap).
+Leitura: depois do V, o mais comum é o preço ficar entre o extremo e a abertura; seguir o
+movimento inteiro do outro lado é minoria (~1 em 5) e devolver tudo até o extremo acontece em
+~40–48% das manhãs. Estável ano a ano.
+
 ## Por que este estudo
 
 Observação do operador: "o índice abre às 09:00, vai para um lado e depois reverte".
