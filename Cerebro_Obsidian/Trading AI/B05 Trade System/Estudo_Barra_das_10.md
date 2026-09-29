@@ -327,3 +327,36 @@ pernada (igual). 5 meses de 1 min, 3 contratos:
 - Adotado como o operador pediu (FVG ou OB), com a nota: no C2, preferir o FVG.
 
 **Ver também:** [[Estudo_Reversao_Abertura_Vista]] · [[Trade_System_Anderson]] · [[Controle_e_Processo]]
+
+**10. Sweep da barra que manipulou + BPR (28/09/2026)** (`profit/setup_bpr_sweep.py`)
+
+Ideia do operador no pregão de 28/09: "quando ele sweepa o fundo da barra que manipulou a barra
+das 10, deixa um BPR e paga mais de 8/1". Nesse dia: a barra das 10:15 varreu a mínima da barra
+das 10; às 10:57 o preço varreu a mínima da própria 10:15; BPR 182.915–183.015 às 11:00; compra
+11:01, stop 240 pts, máxima 184.980 às 11:40 = **8,2R** (o código reproduz o trade exato).
+
+Definições confirmadas antes de rodar: níveis = máx/mín da barra das 10 (a partir de 10:15) e o
+extremo da barra de 15 min que manipulou a barra das 10 (a partir do fechamento dela); sweep até
+11:14; BPR = primeiro FVG a favor da reversão que sobrepõe um FVG contrário da pernada do sweep;
+entrada na borda do BPR, **sem MSS** e **com MSS** (medidos separados); stop no extremo; entrada
+até 11:29; 3 alvos: próxima liquidez + trailing / fechamento do dia anterior (gap) / só trailing;
+saída até 12:00; custo 10 pts. 111 pregões (abr–28/09/2026), 1 min.
+
+| Nível varrido · entrada | n | Liquidez | Gap | Só trailing |
+|---|---|---|---|---|
+| **Barra que manipulou · sem MSS** | 57 | +0,30R (t 1,8) | **+0,50R** (t 1,8) | +0,43R (t 1,8) |
+| — sem o dia 28/09 | 56 | +0,26R | +0,38R | +0,33R |
+| Barra que manipulou · com MSS | 22 | +0,09R | −0,01R | +0,09R |
+| Barra das 10 · sem MSS | 93 | +0,09R | +0,04R | +0,01R |
+| Barra das 10 · com MSS | 49 | +0,16R | −0,07R | +0,01R |
+
+- **O segundo sweep (da barra que manipulou) é o que tem vantagem; o primeiro (da barra das 10),
+  com BPR, fica em zero.** Positivo nas duas metades da amostra.
+- **Esperar o MSS mata o setup**: o preço sai do BPR antes da confirmação (22 trades, ~0).
+- **Depende de poucos trades grandes**: sem os 3 maiores (22/05 +8,1R, 13/08 +5,7R, 15/06 +5,4R),
+  cai para +0,04R; mediana −0,04R; acerto 32–47%. Perfil de trade de "pegar a pernada": perde
+  pouco e muitas vezes, ganha grande às vezes. t = 1,5–1,8: ainda não é prova.
+- Alvo no gap ou só trailing pagam mais que o alvo curto — é onde estão os 5–8R.
+- Recorte nascido de um dia visto (28/09); as definições foram fechadas antes de rodar e o dia foi
+  medido à parte. **Próximo:** mais histórico de 1 min ("Expandir base" no Profit, antes de abr/2026)
+  e rodar sem mudar nada; ou teste prospectivo em papel. Não entra no checklist ainda.
