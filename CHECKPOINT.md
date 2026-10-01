@@ -14,11 +14,11 @@ demonstração com trades fictícios. O Anderson começa a operar de verdade na 
   `/voz/manifest.json` e o `.ogg` certo; a Dora é a opção padrão do painel.
 - Modo demonstração — prova: prints de Visão Geral, Histórico e Estratégias com
   `?demo=1` (jul–set/2026, 63 trades, 51% de acerto).
+- `migration_primeira_perna.sql` rodada no Supabase em 01/10 — prova: KILL 6, PONTO 3 (soma 100).
 - `trading_live_checklist` com RLS por usuário: SQL em
   `cockpit/supabase/migration_checklist_ao_vivo.sql`.
 
 ## Próximo
-- [ ] Anderson roda `cockpit/supabase/migration_primeira_perna.sql` (janela ABERTURA, gatilho iFVG, estratégia Contra a Primeira Perna). Sem ela, registrar trade antes das 10:00 ou com iFVG falha no banco.
 - [ ] Testar o Setup V como trade nos 5 meses (entrada após o extremo, stop além da perna, alvo nos 75%).
 - [ ] Anderson roda `migration_checklist_ao_vivo.sql` no Supabase e testa "Salvar progresso".
 - [ ] Limpeza Passo 2 (apagar os 3 dias e o trade de teste) e DROP das views `v_copa_*`,
