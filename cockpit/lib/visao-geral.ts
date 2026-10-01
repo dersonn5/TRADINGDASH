@@ -130,7 +130,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   };
 
   // Por estrategia
-  const todasEstrategias = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf"];
+  const todasEstrategias = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf", "primeira_perna"];
   const ids = n ? todasEstrategias.filter((id) => trades.some((t) => t.strategy_id === id)) : todasEstrategias;
   const estr = ids.map((id) => {
     const ts = trades.filter((t) => t.strategy_id === id);

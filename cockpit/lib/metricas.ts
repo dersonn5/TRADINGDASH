@@ -30,6 +30,7 @@ export interface TradeMetricas {
 }
 
 export const NOMES_ESTRATEGIAS: Record<string, string> = {
+  primeira_perna: "Primeira perna",
   varrida_barra_10: "Varrida das 10",
   continuidade_tendencia: "Continuidade",
   reversao_htf: "Reversão HTF",
@@ -44,6 +45,7 @@ export const NOMES_GATILHOS: Record<string, string> = {
   BPR: "BPR",
   RISK_ENTRY: "Risk entry",
   FVG_POS_SWING: "FVG após swing",
+  IFVG: "iFVG",
 };
 
 export const NOMES_CONTEXTOS: Record<string, string> = {

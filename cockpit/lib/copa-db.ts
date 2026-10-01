@@ -1,8 +1,8 @@
 import { supabase } from "./supabase";
 import { modoDemo, tradesDemo, tradesDemoDoMes } from "./demo";
-import { mercadoPermitido } from "./gate";
+import { ESTRATEGIA_PRIMEIRA_PERNA, Janela, MAX_CONTRATOS, mercadoPermitido } from "./gate";
 
-export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "BPR" | "RISK_ENTRY" | "FVG_POS_SWING";
+export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "BPR" | "IFVG" | "RISK_ENTRY" | "FVG_POS_SWING";
 export type Contexto1h = "CONTINUACAO" | "REVERSAO" | "LATERAL";
 export type SetupCModo = "C1" | "C2";
 
@@ -10,7 +10,7 @@ export interface TradeInput {
   strategy_id: string;
   mercado: "WIN" | "WDO";
   direcao: "COMPRA" | "VENDA";
-  janela: "PRIME" | "VALIDA" | "FORA";
+  janela: Janela;
   score: number;
   score_minimo: number;
   grade: string;
@@ -32,15 +32,23 @@ export function validarCamposNovosTrade(input: {
   gatilho?: string | null;
   contexto_1h?: string | null;
   setup_c_modo?: string | null;
+  contratos?: number;
 }): void {
+  if (input.contratos !== undefined && input.contratos > MAX_CONTRATOS) {
+    throw new Error(`máximo de ${MAX_CONTRATOS} contratos por trade`);
+  }
   if (!input.gatilho) {
     throw new Error("gatilho é obrigatório para registrar o trade");
   }
-  const GATILHOS_VALIDOS: GatilhoTrade[] = ["MSS_FVG", "MSS_OB", "BPR", "RISK_ENTRY", "FVG_POS_SWING"];
+  const GATILHOS_VALIDOS: GatilhoTrade[] = ["MSS_FVG", "MSS_OB", "BPR", "IFVG", "RISK_ENTRY", "FVG_POS_SWING"];
   if (!GATILHOS_VALIDOS.includes(input.gatilho as GatilhoTrade)) {
     throw new Error(`gatilho inválido: ${input.gatilho}`);
   }
 
+  // O trade contra a primeira perna acontece antes das 10:00: a 1a hora ainda nao terminou
+  if (!input.contexto_1h && input.strategy_id === ESTRATEGIA_PRIMEIRA_PERNA) {
+    return;
+  }
   if (!input.contexto_1h) {
     throw new Error("contexto da 1ª hora é obrigatório para registrar o trade");
   }
@@ -65,6 +73,7 @@ export interface ResumoDoDia {
   trades_fechados: number;
   trades_abertos: number;
   operacoes_hoje: number; // fechados + abertos
+  operacoes_antes_10: number; // abertas antes das 10:00 (o trade contra a primeira perna)
   perdas_hoje: number;
   pnl_dia: number;
   ultimo_loss_em: Date | null;
@@ -181,6 +190,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
       trades_fechados: 0,
       trades_abertos: 0,
       operacoes_hoje: 0,
+      operacoes_antes_10: 0,
       perdas_hoje: 0,
       pnl_dia: 0,
       ultimo_loss_em: null,
@@ -204,6 +214,9 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
   let pnlDia = 0;
   let tradeAbertoId: string | null = null;
   let ultimoLossEm: Date | null = null;
+  const horaSP = (iso: string) =>
+    new Intl.DateTimeFormat("en-GB", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
+  const operacoesAntesDas10 = lista.filter((t) => t.hora_entrada && horaSP(t.hora_entrada) < "10:00").length;
 
   for (const t of lista) {
     if (t.status === "ABERTO") {
@@ -234,6 +247,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
     trades_fechados: tradesFechados,
     trades_abertos: tradesAbertos,
     operacoes_hoje: tradesFechados + tradesAbertos,
+    operacoes_antes_10: operacoesAntesDas10,
     perdas_hoje: perdasHoje,
     pnl_dia: Number(pnlDia.toFixed(2)),
     ultimo_loss_em: ultimoLossEm,
@@ -551,6 +565,8 @@ export function pendenciasDaPreSessao(p: PreSessao): string[] {
 
   if (p?.setup_do_dia !== "NENHUM" && (!p?.contratos_declarados || p.contratos_declarados <= 0)) {
     pendencias.push("tamanho não declarado");
+  } else if (p?.contratos_declarados && p.contratos_declarados > MAX_CONTRATOS) {
+    pendencias.push(`tamanho acima do máximo de ${MAX_CONTRATOS} contratos`);
   }
 
   return pendencias;

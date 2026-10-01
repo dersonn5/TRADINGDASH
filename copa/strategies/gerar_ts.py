@@ -1,4 +1,4 @@
-"""Gera cockpit/data/strategies.ts a partir dos tres JSONs desta pasta.
+"""Gera cockpit/data/strategies.ts a partir dos JSONs desta pasta.
 
 Os JSONs sao a fonte: nunca editar o strategies.ts a mao. Rodar depois de mudar
 qualquer JSON:  python copa/strategies/gerar_ts.py
@@ -13,6 +13,7 @@ BLOCOS = [
     ("REVERSAO_HTF", "reversao_htf.json"),
     ("CONTINUIDADE_TENDENCIA", "continuidade_tendencia.json"),
     ("VARRIDA_BARRA_10", "varrida_barra_10.json"),
+    ("PRIMEIRA_PERNA", "primeira_perna.json"),
 ]
 
 

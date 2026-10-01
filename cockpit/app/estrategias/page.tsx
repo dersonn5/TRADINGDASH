@@ -3,20 +3,23 @@
 import * as React from "react";
 import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
+import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS, MAX_OPERACOES_DIA, MAX_PERDAS_DIA } from "@/lib/gate";
 import { listarTradesDoMes, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
 import { calcularRTrade, calcularRiscoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
 import { CARD, LBL, H2 } from "@/components/v2/estilos";
 
 // Espelho de design/v2/Estrategias.dc.html.
 
-const TAG: Record<string, string> = { varrida_barra_10: "SETUP C", continuidade_tendencia: "SETUP B", reversao_htf: "SETUP A" };
+const TAG: Record<string, string> = { primeira_perna: "SETUP V", varrida_barra_10: "SETUP C", continuidade_tendencia: "SETUP B", reversao_htf: "SETUP A" };
 const NOME: Record<string, string> = {
+  primeira_perna: "Contra a Primeira Perna",
   varrida_barra_10: "Varrida da Barra das 10",
   continuidade_tendencia: "Continuidade de Tendência",
   reversao_htf: "Reversão HTF",
 };
 const STATUS: Record<string, string> = { EM_CALIBRACAO: "Em calibração", NAO_CALIBRADO: "Não calibrado", CALIBRADO: "Calibrado" };
-const ORDEM = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf"];
+// Na ordem do pregao: o trade da abertura (antes das 10:00) e depois os setups do dia.
+const ORDEM = ["primeira_perna", "varrida_barra_10", "continuidade_tendencia", "reversao_htf"];
 
 export default function EstrategiasPage() {
   const estrategias = ORDEM.map((id) => DEFAULT_STRATEGIES.find((s) => s.id === id)).filter(Boolean) as typeof DEFAULT_STRATEGIES;
@@ -44,14 +47,17 @@ export default function EstrategiasPage() {
   const fatos = [
     { l: "Mercado", v: d.mercado.join(" · ") || "WIN" },
     { l: "Entrada", v: horario },
-    { l: "Score mínimo", v: `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h` },
-    { l: "Limites", v: "3 perdas · 5 operações" },
+    {
+      l: "Score mínimo",
+      v: d.id === ESTRATEGIA_PRIMEIRA_PERNA ? `${d.score_minimo} · 1 trade por dia` : `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h`,
+    },
+    { l: "Limites", v: `${MAX_PERDAS_DIA} stops · ${MAX_OPERACOES_DIA} operações · até ${MAX_CONTRATOS} contratos` },
   ];
 
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Os três setups do trade system · regras vigentes</span>
+        <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Os quatro setups do trade system · regras vigentes</span>
         <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Estratégias</h1>
       </div>
 

@@ -27,7 +27,7 @@ export const REVERSAO_HTF: Strategy = {
     "Preco no meio do range, longe de qualquer array",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "10:00", fim: "11:30" }],
+  horarios_validos: [{ inicio: "10:00", fim: "12:00" }],
   regras_ambiente: [
     {
       campo: "niveis_marcados",
@@ -205,7 +205,7 @@ export const CONTINUIDADE_TENDENCIA: Strategy = {
     "Preco longe de qualquer array da tendencia",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "10:00", fim: "11:30" }],
+  horarios_validos: [{ inicio: "10:00", fim: "12:00" }],
   regras_ambiente: [
     {
       campo: "contexto",
@@ -383,7 +383,7 @@ export const VARRIDA_BARRA_10: Strategy = {
     "Stop largo demais para o tamanho declarado",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "10:00", fim: "11:30" }],
+  horarios_validos: [{ inicio: "10:00", fim: "12:00" }],
   regras_ambiente: [
     {
       campo: "tilt",
@@ -500,4 +500,114 @@ export const VARRIDA_BARRA_10: Strategy = {
   ] as any,
 };
 
-export const DEFAULT_STRATEGIES: Strategy[] = [REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10];
+export const PRIMEIRA_PERNA: Strategy = {
+  id: "primeira_perna",
+  ordem: 4,
+  nome: "Contra a Primeira Perna",
+  mercado: ["WIN"],
+  descricao:
+    "O único trade antes das 10:00. A abertura das 09:00 faz uma perna forte (800 pts ou mais) e, em 2026, volta 75% dela em ~3 de cada 4 dias (o V das 09:00). Operar contra a perna depois do extremo, com stop além do topo/fundo da perna e alvo fixo nos 75% da perna. Um trade por dia.",
+  score_minimo: 65,
+  calibracao: {
+    status: "EM_CALIBRACAO",
+    observacao:
+      "Padrão medido (Estudo_Reversao_Abertura_Vista, itens 7 e 9): perna de 800 pts e volta de 75% até 12:00 em 75% dos dias de 2026 (1 min) e 74% (15 min); 45–72% por ano de 2021 a 2025 com o tamanho em %. Perna que chega aos 800 até 09:29 volta mais, em todos os anos. A entrada com stop no extremo ainda não foi testada como trade. Pesos dos pontos estimados.",
+    atualizado_em: "2026-10-01",
+  },
+  ambiente_favoravel: [
+    "Perna de 800+ pts a partir da abertura das 09:00, rápida (chegou aos 800 até 09:29)",
+    "Extremo da perna com rejeição clara no 1 min",
+    "Alvo dos 75% a uma distância que paga o stop no extremo",
+  ],
+  ambiente_desfavoravel: [
+    "Perna menor que 800 pts",
+    "Perna lenta, arrastada até depois das 09:30",
+    "Preço ainda fazendo extremo novo: sem virada, não há trade",
+    "Stop no extremo largo demais para o alvo dos 75%",
+    "Operador em tilt",
+  ],
+  horarios_validos: [{ inicio: "09:00", fim: "10:00" }],
+  regras_ambiente: [
+    {
+      campo: "tilt",
+      op: ">=",
+      valor: 3,
+      efeito: "DESFAVORAVEL",
+      motivo: "tilt alto: risco de romper o plano",
+    },
+    {
+      campo: "sono",
+      op: "<=",
+      valor: 2,
+      efeito: "DESFAVORAVEL",
+      motivo: "sono baixo degrada leitura",
+    },
+  ],
+  checklist: [
+    {
+      id: "k1",
+      tipo: "KILL",
+      peso: 0,
+      label: "A primeira perna andou 800 pts ou mais a partir da abertura das 09:00",
+      ajuda: "Anotar a abertura das 09:00 e o extremo da perna. Menos de 800 pts não é este setup.",
+    },
+    {
+      id: "k2",
+      tipo: "KILL",
+      peso: 0,
+      label: "Nível dos 75% da perna marcado (o alvo)",
+      ajuda: "Alvo = extremo − 75% × (extremo − abertura). Ex.: abriu 187.250, topo 189.365 → alvo 187.779.",
+    },
+    {
+      id: "k3",
+      tipo: "KILL",
+      peso: 0,
+      label: "Direção contra a perna: perna de alta = venda, perna de baixa = compra",
+      ajuda: "Só depois que o preço parar de fazer extremo novo.",
+    },
+    {
+      id: "k4",
+      tipo: "KILL",
+      peso: 0,
+      label: "Gatilho de reversão no 1 min (MSS + FVG, BPR, iFVG ou risk entry)",
+      ajuda: "Perdeu a entrada, perdeu o trade: não entrar mais longe do extremo para alcançar o preço.",
+    },
+    {
+      id: "k5",
+      tipo: "KILL",
+      peso: 0,
+      label: "Stop além do topo/fundo da perna · alvo fixo nos 75%",
+      ajuda: "Stop no extremo da perna + 1 tick, não na estrutura curta do gatilho. Sair no alvo dos 75%, sempre.",
+    },
+    {
+      id: "k6",
+      tipo: "KILL",
+      peso: 0,
+      label: "Antes das 10:00 e primeiro trade do dia",
+      ajuda: "Um trade antes das 10:00, só este. Stopou, a abertura acabou: esperar as 10:00.",
+    },
+    {
+      id: "p1",
+      tipo: "PONTO",
+      peso: 40,
+      label: "A perna chegou aos 800 pts até 09:29",
+      ajuda: "No estudo, a perna rápida volta mais em todos os anos de 2021 a 2026.",
+    },
+    {
+      id: "p2",
+      tipo: "PONTO",
+      peso: 30,
+      label: "Extremo com rejeição clara no 1 min (pavio longo, candle de força contra)",
+      ajuda: "O preço tenta continuar e volta rápido.",
+    },
+    {
+      id: "p3",
+      tipo: "PONTO",
+      peso: 30,
+      label: "O alvo dos 75% está a pelo menos 2R",
+      ajuda: "Com o stop no extremo, o alvo precisa pagar o risco.",
+    },
+  ] as any,
+};
+
+export const DEFAULT_STRATEGIES: Strategy[] = [REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10, PRIMEIRA_PERNA];

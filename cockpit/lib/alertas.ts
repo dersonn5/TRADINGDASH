@@ -84,7 +84,7 @@ export function horaFalada(hora: string): string {
 // Frases com nome ou numero variavel. Exportadas para o script que lista o que precisa de
 // audio (scripts/listar-frases-voz.ts): mudou um texto aqui, regerar os audios.
 export const FRASE_TESTE = "Alertas de voz ativados. Eu aviso a abertura do pregão e as notícias do dia.";
-export const FRASE_BOM_DIA = "Bom dia. O pregão abriu. Até as dez, só observar e marcar.";
+export const FRASE_BOM_DIA = "Bom dia. O pregão abriu. Antes das dez, só o trade contra a primeira perna, com alvo nos setenta e cinco por cento.";
 export const FRASE_SEM_NOTICIA = "Hoje não tem notícia de impacto alto.";
 export const fraseQuantasNoticias = (n: number) => `Hoje tem ${numeroPorExtenso(n, true)} ${n === 1 ? "notícia" : "notícias"} de impacto alto.`;
 export const frasePrimeira = (nome: string) => `A primeira é ${nome},`;
@@ -116,12 +116,15 @@ export function alertasDoDia(dataISO: string, agenda: EventoAgenda[], preSessaoF
     [somarMinutos(ny, -5), "Cinco minutos para a abertura de Nova York.", 0],
     [ny, "Abertura de Nova York.", 0],
     ["11:00", "Fim da janela nobre. A partir de agora, só com score oitenta.", 1],
-    ["11:25", "Cinco minutos para fechar a janela de entrada.", 1],
-    ["11:30", "Janela de entrada fechada. Agora é só gerenciar o que está aberto.", 1],
     ["11:55", "Faltam cinco minutos. Ao meio-dia, feche o Profit.", 1],
     ["12:00", "Fim do pregão do plano. Feche o Profit.", 1],
   ];
-  if (!preSessaoFechada) rotina.push(["09:45", "Faltam quinze minutos para a janela. A pré-sessão ainda não foi fechada.", 1]);
+  // Desde 01/10/2026 a janela abre as 09:00 para o trade contra a primeira perna, e entradas
+  // vao ate 11:59: sairam os avisos de 11:25 e 11:30.
+  if (!preSessaoFechada) {
+    rotina.push(["09:00", "A pré-sessão ainda não foi fechada. Sem ela, não tem trade.", 2]);
+    rotina.push(["09:45", "Faltam quinze minutos para a janela. A pré-sessão ainda não foi fechada.", 1]);
+  }
 
   const alertas: Alerta[] = rotina.map(([hora, fala, ordem, som]) => {
     const segmentos = typeof fala === "string" ? [fala] : fala;

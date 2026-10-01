@@ -12,52 +12,56 @@
 
 ## 1. Janela
 
-> **Atualizado em 22/09/2026 — teste de 2 semanas (até ~06/10).** Fonte: trades
-> reais exportados do Profit, 22/08–22/09 (conta real e conta da Copa). Script:
-> `profit/analise_trades.py`.
+> **Atualizado em 01/10/2026** pelo operador, depois dos 4 primeiros pregões do
+> sistema (28/09–01/10). Antes valia: 09:00–10:00 sem entrada e entradas até 11:29.
 
 | Horário | O que fazer |
 |---|---|
-| **09:00 – 10:00** | **Só observar e marcar**: micro tendência, lado manipulado, liquidez. **Sem entrada.** |
-| 10:00 | Ler o rótulo do indicador: 1ª hora COMPRIMIDA ou ESTICADA |
+| **09:00 – 09:59** | **Um trade só: contra a primeira perna** (Setup V, abaixo). Fora ele, só observar e marcar. |
 | **10:00 – 11:00** | **Janela nobre de entrada**: abertura do à vista (10:00) e de NY (10:30) |
-| **11:00 – 11:30** | Entrada ainda válida (score maior) |
-| **11:30 – 12:00** | **Sem entrada nova.** Só gerenciar o que está aberto |
+| **11:00 – 11:59** | Entrada ainda válida (score maior: 80) |
 | **12:00** | **FIM.** Fecha o Profit |
 
-**O norte, em três linhas** (definido pelo operador em 22/09/2026):
+**O norte** (01/10/2026):
 1. Tela só de **09:00 a 12:00**, sempre.
-2. Abrir posição só de **10:00 a 11:30**.
-3. Só **WIN**.
+2. Antes das 10:00, **só o trade contra a primeira perna** — e só um.
+3. Só **WIN**, **no máximo 3 contratos**.
+4. **Alvo escrito antes de entrar.** Trade da primeira perna: sai nos 75% da perna,
+   sempre. Trade de sweep HTF: alongar com trailing, mas visando um alvo HTF consciente.
 
-**Por quê** (só WIN, entradas por horário):
+**Por quê:**
 
 | | 09:00–09:59 | 10:00–10:59 | 11:00–11:59 | 14:00+ |
 |---|---|---|---|---|
-| Conta real | −R$ 800 (19% acerto) | +R$ 526 | +R$ 1.916 | −R$ 1.669 |
+| Conta real (22/08–22/09) | −R$ 800 (19% acerto) | +R$ 526 | +R$ 1.916 | −R$ 1.669 |
 | Copa | +R$ 2.970 (4 trades) | +R$ 11.755 | +R$ 6.375 | −R$ 2.009 |
 
-- 09:00–10:00 é quando o índice faz a **manipulação da abertura**, antes de o volume
-  do à vista e de NY definir um lado. Entrar ali muitas vezes é ser a liquidez.
-- WDO e Bitcoin: na Copa, WIN fez +R$ 20.576; WDO + BIT tiraram R$ 7.137.
+- 09:00–10:00 é a **manipulação da abertura**: trades livres ali perderam −R$ 376 de
+  28/09 a 01/10. O que se aproveita dela é a volta da primeira perna (o V das 09:00):
+  em 2026, perna de 800+ pts volta 75% em ~3 de cada 4 dias
+  ([[Estudo_Reversao_Abertura_Vista]], itens 7 e 9). Em 01/10, o alvo dos 75% teria
+  fechado a venda das 09:08 com +489 pts; segurar virou −132 pts.
+- 11:30–11:59 voltou a ter entrada: nos dias 29/09 e 30/09 os melhores trades vieram
+  entre 11:00 e 11:59.
 
-O cockpit trava: entrada só de 10:00 a 11:29, e só WIN. O Profit não trava o horário
-nem o ativo — tirar WDO/BIT do layout e fechar o Profit às 12:00.
-
-**Decisão ao fim do teste:** comparar os trades das 2 semanas (registrados no cockpit)
-com o período anterior. Se 10:00–12:00 mantiver o resultado com menos operações, fica.
+O cockpit trava: antes das 10:00 só a estratégia "Contra a Primeira Perna", 1 trade;
+entradas normais 10:00–11:59; só WIN; até 3 contratos. O Profit não trava horário nem
+ativo — fechar o Profit às 12:00.
 
 ## 2. Gerenciamento de risco
 
-Configurado no próprio Profit, e ele trava:
+Configurado no próprio Profit, e ele trava (01/10/2026):
 
 | Limite | Valor |
 |---|---|
-| Perdas no dia | **3** |
-| Operações no dia | **5** |
+| Stops no dia | **4** |
+| Operações no dia | **6** |
+| Contratos por trade | **até 3** |
+| Pausa depois de loss | **nenhuma** |
 
-Esses são os números da plataforma. O sistema respeita exatamente eles — regra
-que contradiz a plataforma vira regra ignorada.
+Configura **antes das 09:00 e não mexe durante o pregão**. Mudar a trava no meio do
+pregão é desvio de plano (29/09). Esses são os números da plataforma; o cockpit usa os
+mesmos — regra que contradiz a plataforma vira regra ignorada.
 
 ## 3. Timeframes
 
@@ -72,6 +76,30 @@ que contradiz a plataforma vira regra ignorada.
 O LTF existe para uma coisa só: ver **como é a briga dentro da região** marcada
 no HTF. Mesma lógica de leitura que o campeão do Robbins World Cup descreve —
 ele olha absorção e troca de dominância; aqui se olha estrutura, indução e MSS.
+
+---
+
+# Setup V — CONTRA A PRIMEIRA PERNA *(desde 01/10/2026)*
+
+O único trade antes das 10:00.
+
+## Regras
+1. A primeira perna anda **800 pts ou mais** a partir da abertura das 09:00.
+2. Marcar o **nível dos 75%** da perna: alvo = extremo − 75% × (extremo − abertura).
+3. Direção **contra a perna**, depois que o preço parar de fazer extremo novo.
+4. Gatilho de reversão no 1 min: MSS + FVG, BPR, iFVG ou risk entry.
+   **Perdeu a entrada, perdeu o trade.**
+5. **Stop além do topo/fundo da perna** + 1 tick (não na estrutura curta do gatilho).
+6. **Alvo fixo nos 75%. Sai lá, sempre.**
+7. Um trade por dia, antes das 10:00. Stopou: esperar as 10:00.
+
+Pontos de qualidade (pesos estimados): perna chegou aos 800 até 09:29 (40) — no estudo,
+a perna rápida volta mais em todos os anos; rejeição clara no extremo (30); alvo a 2R+ (30).
+
+## Evidência e o que falta
+- O padrão: [[Estudo_Reversao_Abertura_Vista]] itens 7 e 9 — 75% dos dias em 2026.
+- **Ainda não testado como trade** (entrada + stop no extremo + alvo nos 75%). Próximo
+  estudo: rodar essa regra exata nos 5 meses de 1 min.
 
 ---
 

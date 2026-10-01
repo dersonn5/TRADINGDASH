@@ -1,4 +1,4 @@
-export type Janela = "PRIME" | "VALIDA" | "FORA";
+export type Janela = "ABERTURA" | "PRIME" | "VALIDA" | "FORA";
 
 export interface ItemAvaliado {
   id: string;
@@ -21,10 +21,16 @@ export interface GateResult {
 export const SCORE_MINIMO_PRIME = 65;
 export const BONUS_FORA_DA_PRIME = 15; // VALIDA exige 65 + 15 = 80
 
-/** Limites espelhados do Profit Chart, que trava nestes números. */
-export const MAX_PERDAS_DIA = 3;
-export const MAX_OPERACOES_DIA = 5;
-export const COOLDOWN_APOS_LOSS_MIN = 30;
+/**
+ * Limites espelhados do Profit Chart, que trava nestes números (decisão do operador
+ * em 01/10/2026, depois de 4 pregões: 6 operações, 4 stops, sem pausa depois de loss).
+ */
+export const MAX_PERDAS_DIA = 4;
+export const MAX_OPERACOES_DIA = 6;
+export const MAX_CONTRATOS = 3;
+
+/** O único trade permitido antes das 10:00: contra a primeira perna do dia. */
+export const ESTRATEGIA_PRIMEIRA_PERNA = "primeira_perna";
 
 /**
  * Mercados liberados para operar. So WIN.
@@ -44,36 +50,15 @@ export interface LimitesDia {
   motivos: string[];
 }
 
-/** Minutos que faltam do cooldown, ou 0. */
-export function cooldownRestante(ultimoLossEm: Date | null, agora: Date): number {
-  if (!ultimoLossEm) return 0;
-  const diffMs = agora.getTime() - ultimoLossEm.getTime();
-  if (diffMs < 0) return COOLDOWN_APOS_LOSS_MIN;
-  const passedMinutes = diffMs / (1000 * 60);
-  // Fronteira inclusiva: se passou exatamente 30 min (ou mais), o cooldown acabou
-  if (passedMinutes >= COOLDOWN_APOS_LOSS_MIN) return 0;
-  return Math.ceil(COOLDOWN_APOS_LOSS_MIN - passedMinutes);
-}
-
-export function avaliarLimitesDia(
-  perdasHoje: number,
-  operacoesHoje: number,
-  ultimoLossEm: Date | null,
-  agora: Date
-): LimitesDia {
+export function avaliarLimitesDia(perdasHoje: number, operacoesHoje: number): LimitesDia {
   const motivos: string[] = [];
 
   if (perdasHoje >= MAX_PERDAS_DIA) {
-    motivos.push("3 perdas no dia: pregão encerrado");
+    motivos.push(`${MAX_PERDAS_DIA} perdas no dia: pregão encerrado`);
   }
 
   if (operacoesHoje >= MAX_OPERACOES_DIA) {
-    motivos.push("5 operações no dia: limite atingido");
-  }
-
-  const rest = cooldownRestante(ultimoLossEm, agora);
-  if (rest > 0) {
-    motivos.push(`pausa após loss: faltam ${rest} min`);
+    motivos.push(`${MAX_OPERACOES_DIA} operações no dia: limite atingido`);
   }
 
   return {
@@ -84,18 +69,17 @@ export function avaliarLimitesDia(
 
 /**
  * Converte agora para America/Sao_Paulo e classifica a janela de operação:
+ * - ABERTURA: 09:00-09:59 — só o trade contra a primeira perna (1 por dia)
  * - PRIME: de 10:00 (inclusive) a 11:00 (exclusive)
- * - VALIDA: de 11:00 (inclusive) a 11:30 (exclusive)
- * - FORA: qualquer outro horário, inclusive 09:00-09:59 e 11:30-12:00
+ * - VALIDA: de 11:00 (inclusive) a 12:00 (exclusive) — exige score maior
+ * - FORA: qualquer outro horário
  *
- * 09:00-09:59 saiu da janela em 22/09/2026 (teste de 2 semanas). E a hora em que
- * o indice faz a manipulacao da abertura, antes de o volume do a vista (10:00) e
- * de NY (10:30) definir um lado. Nos trades reais de WIN: 19% de acerto e
- * -R$ 800 nessa hora na conta real; 10:00-11:59 foi o melhor trecho nas duas contas.
+ * 09:00-09:59 tinha saido em 22/09/2026 (19% de acerto e -R$ 800 nessa hora na conta
+ * real; de 28/09 a 01/10, -R$ 376 em trades antes das 10:00). Em 01/10/2026 o operador
+ * liberou UM trade nela: contra a primeira perna do dia (800+ pts a partir das 09:00),
+ * alvo nos 75% da perna — o V das 09:00 (Estudo_Reversao_Abertura_Vista, itens 7 e 9).
  *
- * Abertura de posicao so ate 11:29 (decisao do operador, 22/09/2026). A tela fica
- * aberta ate 12:00 para gerenciar o que ja esta posicionado. 11:30-11:59 foi misto:
- * +R$ 1.087 na conta real, -R$ 3.240 na Copa (a sequencia de stops de 22/09).
+ * Entradas ate 11:59 desde 01/10/2026 (antes: 11:29). A tela fecha as 12:00.
  */
 export function classificarJanela(agora: Date): Janela {
   const formatter = new Intl.DateTimeFormat("pt-BR", {
@@ -111,13 +95,17 @@ export function classificarJanela(agora: Date): Janela {
   const minute = parseInt(minuteStr, 10);
   const minutos = hour * 60 + minute;
 
+  if (minutos >= 540 && minutos < 600) {
+    return "ABERTURA";
+  }
+
   // PRIME: de 10:00 (inclusive, 600 min) a 11:00 (exclusive, 660 min)
   if (minutos >= 600 && minutos < 660) {
     return "PRIME";
   }
 
-  // VALIDA: de 11:00 (inclusive, 660 min) a 11:30 (exclusive, 690 min)
-  if (minutos >= 660 && minutos < 690) {
+  // VALIDA: de 11:00 (inclusive, 660 min) a 12:00 (exclusive, 720 min)
+  if (minutos >= 660 && minutos < 720) {
     return "VALIDA";
   }
 
@@ -127,12 +115,12 @@ export function classificarJanela(agora: Date): Janela {
 
 /**
  * Retorna o score mínimo exigido pela janela:
- * - PRIME -> base (65)
+ * - ABERTURA, PRIME -> base (65)
  * - VALIDA -> base + 15 (80)
  * - FORA -> Infinity (bloqueado)
  */
 export function scoreMinimoEfetivo(janela: Janela, base: number = SCORE_MINIMO_PRIME): number {
-  if (janela === "PRIME") return base;
+  if (janela === "PRIME" || janela === "ABERTURA") return base;
   if (janela === "VALIDA") return base + BONUS_FORA_DA_PRIME;
   return Number.POSITIVE_INFINITY;
 }
@@ -149,7 +137,8 @@ export function avaliarGate(
   limites?: LimitesDia,
   tradeAbertoId?: string | null,
   preSessaoFechada?: boolean,
-  temPrint?: boolean
+  temPrint?: boolean,
+  primeiraPerna?: { estrategiaId: string; operacoesAntesDas10: number }
 ): GateResult {
   const janela = classificarJanela(agora);
   const scoreMinimo = scoreMinimoEfetivo(janela, scoreMinimoBase);
@@ -168,7 +157,22 @@ export function avaliarGate(
   }
 
   if (janela === "FORA") {
-    motivos.push("fora da janela de entrada 10:00–11:30");
+    motivos.push("fora da janela de entrada 09:00–12:00");
+  }
+
+  if (primeiraPerna) {
+    const ehPrimeiraPerna = primeiraPerna.estrategiaId === ESTRATEGIA_PRIMEIRA_PERNA;
+    if (janela === "ABERTURA" && !ehPrimeiraPerna) {
+      motivos.push("antes das 10:00, só o trade contra a primeira perna");
+    }
+    if (janela === "ABERTURA" && ehPrimeiraPerna && primeiraPerna.operacoesAntesDas10 >= 1) {
+      motivos.push("o trade contra a primeira perna já foi feito hoje");
+    }
+    if ((janela === "PRIME" || janela === "VALIDA") && ehPrimeiraPerna) {
+      motivos.push("o trade contra a primeira perna é só antes das 10:00");
+    }
+  } else if (janela === "ABERTURA") {
+    motivos.push("antes das 10:00, só o trade contra a primeira perna");
   }
 
   for (const label of killsFaltando) {
@@ -180,7 +184,7 @@ export function avaliarGate(
   }
 
   if (janela === "VALIDA") {
-    avisos.push("fora da janela nobre 10:00–11:00 — exige score 80");
+    avisos.push("depois das 11:00 — exige score 80");
   }
 
   if (limites && limites.bloqueado) {

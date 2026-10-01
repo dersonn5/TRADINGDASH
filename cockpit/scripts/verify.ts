@@ -19,8 +19,9 @@ import {
   Janela,
   avaliarLimitesDia,
   mercadoPermitido,
+  MAX_CONTRATOS,
 } from "../lib/gate";
-import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10 } from "../data/strategies";
+import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10, PRIMEIRA_PERNA } from "../data/strategies";
 import { gradeFor, pendenciasDaPreSessao, PreSessao, validarCamposNovosTrade } from "../lib/copa-db";
 import {
   TradeMetricas,
@@ -73,11 +74,11 @@ const casosJanela: Array<{
   { horaSP: "10:00", hour: 10, minute: 0, janelaEsperada: "PRIME", scoreMinEsperado: 65 },
   { horaSP: "10:59", hour: 10, minute: 59, janelaEsperada: "PRIME", scoreMinEsperado: 65 },
   { horaSP: "11:00", hour: 11, minute: 0, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
-  { horaSP: "09:30", hour: 9, minute: 30, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
-  { horaSP: "09:59", hour: 9, minute: 59, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
+  { horaSP: "09:00", hour: 9, minute: 0, janelaEsperada: "ABERTURA", scoreMinEsperado: 65 },
+  { horaSP: "09:59", hour: 9, minute: 59, janelaEsperada: "ABERTURA", scoreMinEsperado: 65 },
   { horaSP: "11:29", hour: 11, minute: 29, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
-  { horaSP: "11:30", hour: 11, minute: 30, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
-  { horaSP: "11:59", hour: 11, minute: 59, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
+  { horaSP: "11:59", hour: 11, minute: 59, janelaEsperada: "VALIDA", scoreMinEsperado: 80 },
+  { horaSP: "12:00", hour: 12, minute: 0, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
   { horaSP: "08:59", hour: 8, minute: 59, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
   { horaSP: "13:00", hour: 13, minute: 0, janelaEsperada: "FORA", scoreMinEsperado: Number.POSITIVE_INFINITY },
 ];
@@ -224,11 +225,12 @@ function checarEstrategia(
 const resRev = checarEstrategia("reversao_htf.json", REVERSAO_HTF, 7, 6, 100);
 const resCont = checarEstrategia("continuidade_tendencia.json", CONTINUIDADE_TENDENCIA, 6, 6, 100);
 const resVarr = checarEstrategia("varrida_barra_10.json", VARRIDA_BARRA_10, 7, 5, 100);
-const sincroniaOk = resRev.ok && resCont.ok && resVarr.ok;
-const detalheSincronia = [resRev.detalhe, resCont.detalhe, resVarr.detalhe].filter(Boolean).join(" | ");
+const resPerna = checarEstrategia("primeira_perna.json", PRIMEIRA_PERNA, 6, 3, 100);
+const sincroniaOk = resRev.ok && resCont.ok && resVarr.ok && resPerna.ok;
+const detalheSincronia = [resRev.detalhe, resCont.detalhe, resVarr.detalhe, resPerna.detalhe].filter(Boolean).join(" | ");
 
 report(
-  "Sincronia: três estratégias idênticas aos JSONs e pesos somando 100",
+  "Sincronia: quatro estratégias idênticas aos JSONs e pesos somando 100",
   sincroniaOk,
   detalheSincronia
 );
@@ -326,79 +328,28 @@ report(
 );
 
 // -------------------------------------------------------------
-// 5. CASOS DE AVALIAR LIMITES DIA (8 casos)
+// 5. CASOS DE AVALIAR LIMITES DIA (01/10/2026: 6 operações, 4 stops, sem pausa)
 // -------------------------------------------------------------
 const baseTime = makeSPDate(10, 30);
-
-// Caso 1: 0 perdas, 0 operações, sem loss -> liberado
-const lim1 = avaliarLimitesDia(0, 0, null, baseTime);
-report(
-  "Limites Caso 1: 0 perdas, 0 operacoes, sem loss -> liberado",
-  !lim1.bloqueado && lim1.motivos.length === 0,
-  JSON.stringify(lim1.motivos)
-);
-
-// Caso 2: 2 perdas, 3 operações, loss há 40 min -> liberado
-const loss40 = new Date(baseTime.getTime() - 40 * 60 * 1000);
-const lim2 = avaliarLimitesDia(2, 3, loss40, baseTime);
-report(
-  "Limites Caso 2: 2 perdas, 3 operacoes, loss ha 40 min -> liberado",
-  !lim2.bloqueado && lim2.motivos.length === 0,
-  JSON.stringify(lim2.motivos)
-);
-
-// Caso 3: 3 perdas -> bloqueado, motivo cita pregão encerrado
-const lim3 = avaliarLimitesDia(3, 3, null, baseTime);
-report(
-  "Limites Caso 3: 3 perdas -> bloqueado, motivo cita pregao encerrado",
-  lim3.bloqueado && lim3.motivos.some((m) => m.includes("pregão encerrado")),
-  JSON.stringify(lim3.motivos)
-);
-
-// Caso 4: 5 operações -> bloqueado, motivo cita limite de operações
-const lim4 = avaliarLimitesDia(0, 5, null, baseTime);
-report(
-  "Limites Caso 4: 5 operacoes -> bloqueado, motivo cita limite de operacoes",
-  lim4.bloqueado && lim4.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operações")),
-  JSON.stringify(lim4.motivos)
-);
-
-// Caso 5: 1 perda, loss há 10 min -> bloqueado, motivo cita 20 min restantes
-const loss10 = new Date(baseTime.getTime() - 10 * 60 * 1000);
-const lim5 = avaliarLimitesDia(1, 1, loss10, baseTime);
-report(
-  "Limites Caso 5: 1 perda, loss ha 10 min -> bloqueado, motivo cita 20 min restantes",
-  lim5.bloqueado && lim5.motivos.some((m) => m.includes("faltam 20 min")),
-  JSON.stringify(lim5.motivos)
-);
-
-// Caso 6: 1 perda, loss há 31 min -> liberado
-const loss31 = new Date(baseTime.getTime() - 31 * 60 * 1000);
-const lim6 = avaliarLimitesDia(1, 1, loss31, baseTime);
-report(
-  "Limites Caso 6: 1 perda, loss ha 31 min -> liberado",
-  !lim6.bloqueado && lim6.motivos.length === 0,
-  JSON.stringify(lim6.motivos)
-);
-
-// Caso 7: loss há exatamente 30 min -> liberado (fronteira inclusiva)
-const loss30 = new Date(baseTime.getTime() - 30 * 60 * 1000);
-const lim7 = avaliarLimitesDia(1, 1, loss30, baseTime);
-report(
-  "Limites Caso 7: loss ha exatamente 30 min -> liberado (fronteira inclusiva)",
-  !lim7.bloqueado && lim7.motivos.length === 0,
-  JSON.stringify(lim7.motivos)
-);
-
-// Caso 8: 3 perdas e 5 operações -> bloqueado com os dois motivos
-const lim8 = avaliarLimitesDia(3, 5, null, baseTime);
-const citaPregao = lim8.motivos.some((m) => m.includes("pregão encerrado"));
-const citaOps = lim8.motivos.some((m) => m.includes("limite atingido") || m.includes("5 operações"));
-report(
-  "Limites Caso 8: 3 perdas e 5 operacoes -> bloqueado com os dois motivos",
-  lim8.bloqueado && citaPregao && citaOps,
-  JSON.stringify(lim8.motivos)
-);
+const lim1 = avaliarLimitesDia(0, 0);
+report("Limites Caso 1: 0 perdas, 0 operacoes -> liberado", !lim1.bloqueado && lim1.motivos.length === 0, JSON.stringify(lim1.motivos));
+const lim2 = avaliarLimitesDia(3, 5);
+report("Limites Caso 2: 3 perdas e 5 operacoes -> liberado (sem pausa depois de loss)", !lim2.bloqueado, JSON.stringify(lim2.motivos));
+const lim3 = avaliarLimitesDia(4, 4);
+report("Limites Caso 3: 4 perdas -> bloqueado, motivo cita pregao encerrado",
+  lim3.bloqueado && lim3.motivos.some((m) => m.includes("4 perdas") && m.includes("pregão encerrado")), JSON.stringify(lim3.motivos));
+const lim4 = avaliarLimitesDia(0, 6);
+report("Limites Caso 4: 6 operacoes -> bloqueado", lim4.bloqueado && lim4.motivos.some((m) => m.includes("6 operações")), JSON.stringify(lim4.motivos));
+const lim5 = avaliarLimitesDia(4, 6);
+report("Limites Caso 5: 4 perdas e 6 operacoes -> os dois motivos", lim5.bloqueado && lim5.motivos.length === 2, JSON.stringify(lim5.motivos));
+report("Limites: maximo de 3 contratos", MAX_CONTRATOS === 3, String(MAX_CONTRATOS));
+let erroContratos = "";
+try {
+  validarCamposNovosTrade({ strategy_id: "reversao_htf", gatilho: "MSS_FVG", contexto_1h: "REVERSAO", contratos: 4 });
+} catch (e) {
+  erroContratos = (e as Error).message;
+}
+report("Gravacao: 4 contratos recusado", erroContratos.includes("3 contratos"), erroContratos);
 
 // -------------------------------------------------------------
 // 6. CASOS DE AVALIAR GATE INTEGRADO (3 casos)
@@ -434,26 +385,30 @@ report(
   JSON.stringify(gate11.motivos)
 );
 
-// Regras tiradas dos trades reais (22/08-22/09/2026): so WIN, entradas 10:00-11:29.
-const gate0930 = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null);
-report(
-  "Operacional: 09:30 bloqueado (hora da manipulacao da abertura)",
-  gate0930.liberado === false && gate0930.motivos.some((m) => m.includes("10:00–11:30")),
-  JSON.stringify(gate0930.motivos)
-);
+// Regras do operador (01/10/2026): antes das 10:00 so o trade contra a primeira perna, 1 por dia.
+const ctx = (estrategiaId: string, operacoesAntesDas10 = 0) => ({ estrategiaId, operacoesAntesDas10 });
+const g0930outro = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null, true, true, ctx("reversao_htf"));
+report("Operacional: 09:30 com outro setup -> bloqueado",
+  !g0930outro.liberado && g0930outro.motivos.some((m) => m.includes("só o trade contra a primeira perna")), JSON.stringify(g0930outro.motivos));
+const g0930perna = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null, true, true, ctx("primeira_perna"));
+report("Operacional: 09:30 contra a primeira perna, primeiro trade -> liberado", g0930perna.liberado, JSON.stringify(g0930perna.motivos));
+const g0930segundo = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null, true, true, ctx("primeira_perna", 1));
+report("Operacional: 09:30 contra a primeira perna, ja feito hoje -> bloqueado",
+  !g0930segundo.liberado && g0930segundo.motivos.some((m) => m.includes("já foi feito")), JSON.stringify(g0930segundo.motivos));
+const g1030perna = avaliarGate(itens80, "BULLISH", makeSPDate(10, 30), 65, limLiberado, null, true, true, ctx("primeira_perna"));
+report("Operacional: primeira perna depois das 10:00 -> bloqueado",
+  !g1030perna.liberado && g1030perna.motivos.some((m) => m.includes("só antes das 10:00")), JSON.stringify(g1030perna.motivos));
 report(
   "Operacional: so WIN -> WIN permitido, WDO e BIT bloqueados",
   mercadoPermitido("WIN") && !mercadoPermitido("WDO") && !mercadoPermitido("BIT"),
   `WIN=${mercadoPermitido("WIN")} WDO=${mercadoPermitido("WDO")} BIT=${mercadoPermitido("BIT")}`
 );
-const gate1129 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 29), 65, limLiberado, null);
-const gate1130 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 30), 65, limLiberado, null);
+const gate1159 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 59), 65, limLiberado, null);
+const gate1200 = avaliarGate(itens80, "BULLISH", makeSPDate(12, 0), 65, limLiberado, null);
 report(
-  "Operacional: 11:29 ainda abre posicao, 11:30 bloqueado",
-  gate1129.janela !== "FORA" &&
-    gate1130.liberado === false &&
-    gate1130.motivos.some((m) => m.includes("fora da janela")),
-  `11:29=${gate1129.janela} 11:30 liberado=${gate1130.liberado} motivos=${JSON.stringify(gate1130.motivos)}`
+  "Operacional: 11:59 ainda abre posicao, 12:00 bloqueado",
+  gate1159.liberado === true && gate1200.liberado === false && gate1200.motivos.some((m) => m.includes("fora da janela")),
+  `11:59=${gate1159.janela} ${JSON.stringify(gate1159.motivos)} 12:00 liberado=${gate1200.liberado}`
 );
 
 
@@ -900,8 +855,12 @@ report(
     abertura);
 
   const nyInverno = alertasDoDia("2026-01-15", [], true).filter((a) => a.hora === "11:30").map((a) => a.texto);
-  report("Alertas: no inverno dos EUA, NY (11:30) fala antes do fim da janela", nyInverno[0] === "Abertura de Nova York." && nyInverno.length === 2,
+  report("Alertas: no inverno dos EUA, NY abre as 11:30 (sem aviso de fim de janela desde 01/10)", nyInverno[0] === "Abertura de Nova York." && nyInverno.length === 1,
     JSON.stringify(nyInverno));
+  const doDiaRotina = alertasDoDia("2026-10-01", [], true).map((a) => a.hora);
+  report("Alertas: sem 11:25 e 11:30; 11:55 e 12:00 continuam",
+    !doDiaRotina.includes("11:25") && !doDiaRotina.includes("11:30") && doDiaRotina.includes("11:55") && doDiaRotina.includes("12:00"),
+    JSON.stringify(doDiaRotina));
 
   const comSino = doDia.filter((a) => a.som === "sino").map((a) => a.hora);
   const caminhoSino = path.resolve(__dirname, "../public/sons/sino-pregao.ogg");

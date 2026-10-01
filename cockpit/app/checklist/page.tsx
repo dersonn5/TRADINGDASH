@@ -13,6 +13,9 @@ import {
   estadoDosPassos,
   alternarPasso,
   avaliarLimitesDia,
+  classificarJanela,
+  ESTRATEGIA_PRIMEIRA_PERNA,
+  MAX_CONTRATOS,
   GateResult,
   ItemAvaliado,
   LimitesDia,
@@ -23,6 +26,7 @@ import {
   REVERSAO_HTF,
   CONTINUIDADE_TENDENCIA,
   VARRIDA_BARRA_10,
+  PRIMEIRA_PERNA,
 } from "@/data/strategies";
 import { Strategy } from "@/lib/types";
 import {
@@ -147,13 +151,6 @@ export default function ChecklistPage() {
       const ps = await getPreSessaoDeHoje();
       setPreSessao(ps);
       if (ps.fechada_em) {
-        if (ps.setup_do_dia === "reversao_htf") {
-          setSelectedStrategy(REVERSAO_HTF);
-        } else if (ps.setup_do_dia === "continuidade_tendencia") {
-          setSelectedStrategy(CONTINUIDADE_TENDENCIA);
-        } else if (ps.setup_do_dia === "varrida_barra_10") {
-          setSelectedStrategy(VARRIDA_BARRA_10);
-        }
         if (ps.contratos_declarados) {
           setContratos(String(ps.contratos_declarados));
         }
@@ -168,6 +165,21 @@ export default function ChecklistPage() {
   useEffect(() => {
     loadPreSessao();
   }, [loadPreSessao]);
+
+  // Antes das 10:00 a tela e do trade contra a primeira perna; a partir das 10:00, do
+  // setup escolhido na pre-sessao. Troca sozinha quando o relogio passa das 10:00.
+  const ehAbertura = classificarJanela(now) === "ABERTURA";
+  useEffect(() => {
+    if (!preSessao?.fechada_em) return;
+    const doDia =
+      preSessao.setup_do_dia === "continuidade_tendencia"
+        ? CONTINUIDADE_TENDENCIA
+        : preSessao.setup_do_dia === "varrida_barra_10"
+          ? VARRIDA_BARRA_10
+          : REVERSAO_HTF;
+    const alvo = ehAbertura ? PRIMEIRA_PERNA : doDia;
+    setSelectedStrategy((atual) => (atual.id === alvo.id ? atual : alvo));
+  }, [ehAbertura, preSessao]);
 
   useEffect(() => {
     loadChecklist(selectedStrategy);
@@ -206,13 +218,13 @@ export default function ChecklistPage() {
   // Avaliação dos limites diários espelhados do Profit Chart
   const limites: LimitesDia = useMemo(() => {
     if (!resumo) return { bloqueado: false, motivos: [] };
-    return avaliarLimitesDia(
-      resumo.perdas_hoje,
-      resumo.operacoes_hoje,
-      resumo.ultimo_loss_em,
-      now
-    );
-  }, [resumo, now]);
+    return avaliarLimitesDia(resumo.perdas_hoje, resumo.operacoes_hoje);
+  }, [resumo]);
+
+  const ctxPerna = useMemo(
+    () => ({ estrategiaId: selectedStrategy.id, operacoesAntesDas10: resumo?.operacoes_antes_10 ?? 0 }),
+    [selectedStrategy.id, resumo?.operacoes_antes_10]
+  );
 
   // Avaliação do Gate em tempo real com regras de horário, confluência e limites
   const gate: GateResult = useMemo(() => {
@@ -241,9 +253,10 @@ export default function ChecklistPage() {
       limites,
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
-      Boolean(tradePrintPath)
+      Boolean(tradePrintPath),
+      ctxPerna
     );
-  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath]);
+  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath, ctxPerna]);
 
   const itensAvaliados: ItemAvaliado[] = useMemo(() => {
     if (!checklist) return [];
@@ -296,7 +309,8 @@ export default function ChecklistPage() {
       limites,
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
-      Boolean(tradePrintPath)
+      Boolean(tradePrintPath),
+      ctxPerna
     );
 
     setChecklist({
@@ -327,7 +341,8 @@ export default function ChecklistPage() {
       limites,
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
-      Boolean(tradePrintPath)
+      Boolean(tradePrintPath),
+      ctxPerna
     );
 
     setChecklist({
@@ -348,7 +363,8 @@ export default function ChecklistPage() {
       limites,
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
-      Boolean(tradePrintPath)
+      Boolean(tradePrintPath),
+      ctxPerna
     );
     setChecklist({
       ...checklist,
@@ -374,7 +390,8 @@ export default function ChecklistPage() {
       limites,
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
-      Boolean(tradePrintPath)
+      Boolean(tradePrintPath),
+      ctxPerna
     );
     setChecklist({
       ...checklist,
@@ -405,6 +422,12 @@ export default function ChecklistPage() {
   // Informações de cores da janela de operação
   const janelaInfo = useMemo(() => {
     switch (gate.janela) {
+      case "ABERTURA":
+        return {
+          cor: "var(--inst-now)",
+          texto: "ABERTURA · 09:00–10:00",
+          nota: "só o trade contra a primeira perna · alvo nos 75%",
+        };
       case "PRIME":
         return {
           cor: "var(--inst-ok)",
@@ -415,14 +438,14 @@ export default function ChecklistPage() {
         return {
           cor: "var(--inst-now)",
           texto: "FORA DA NOBRE",
-          nota: "11:00–11:30 · exige score maior",
+          nota: "11:00–12:00 · exige score maior",
         };
       case "FORA":
       default:
         return {
           cor: "var(--inst-block)",
           texto: "FORA DA JANELA",
-          nota: "entrada só das 10:00 às 11:30 · 09:00–10:00 observar · até 12:00 só gerenciar",
+          nota: "entrada 10:00–11:59 · antes das 10:00 só a primeira perna",
         };
     }
   }, [gate.janela]);
@@ -482,13 +505,14 @@ export default function ChecklistPage() {
     return { distStop, distAlvo, riscoReais, retornoReais, rr };
   }, [precosPreenchidos, mercado, numEntrada, numStop, numAlvo, numContratos]);
 
+  const ehPrimeiraPerna = selectedStrategy.id === ESTRATEGIA_PRIMEIRA_PERNA;
   const novosCamposValidos =
     Boolean(gatilho) &&
-    Boolean(contexto1h) &&
+    (Boolean(contexto1h) || ehPrimeiraPerna) &&
     (selectedStrategy.id !== "varrida_barra_10" || Boolean(setupCModo));
 
   const formularioValido =
-    precosPreenchidos && validacaoDirecao.ok && numContratos >= 1 && novosCamposValidos;
+    precosPreenchidos && validacaoDirecao.ok && numContratos >= 1 && numContratos <= MAX_CONTRATOS && novosCamposValidos;
 
   // Handler para abrir ordem
   async function handleAbrirOrdem() {
@@ -522,7 +546,7 @@ export default function ChecklistPage() {
         notas: checklist.notes || "",
         screenshot_path: tradePrintPath,
         gatilho,
-        contexto_1h: contexto1h,
+        contexto_1h: contexto1h || null,
         setup_c_modo: selectedStrategy.id === "varrida_barra_10" ? setupCModo : null,
       });
 
@@ -659,14 +683,16 @@ export default function ChecklistPage() {
 
   const totalKills = killItems.length;
   const trilhaFrase = feitos >= totalKills ? "Trilha completa" : `Agora: passo ${feitos + 1} de ${totalKills}`;
-  const tagSetup = selectedStrategy.id === "varrida_barra_10" ? "C" : selectedStrategy.id === "continuidade_tendencia" ? "B" : "A";
+  const tagSetup = ehPrimeiraPerna ? "V" : selectedStrategy.id === "varrida_barra_10" ? "C" : selectedStrategy.id === "continuidade_tendencia" ? "B" : "A";
   const minimoMarcador = gate.scoreMinimo === Infinity ? selectedStrategy.score_minimo || 65 : gate.scoreMinimo;
   const janelaCard =
-    gate.janela === "PRIME"
+    gate.janela === "ABERTURA"
+      ? { rot: "Abertura · 1ª perna", txt: `09:00–09:59 · 1 trade · mínimo ${gate.scoreMinimo}`, destaque: true }
+      : gate.janela === "PRIME"
       ? { rot: "Janela · Prime", txt: `10:00–10:59 · mínimo ${gate.scoreMinimo}`, destaque: true }
       : gate.janela === "VALIDA"
-        ? { rot: "Janela · Válida", txt: `11:00–11:29 · mínimo ${gate.scoreMinimo}`, destaque: true }
-        : { rot: "Fora da janela", txt: "entrada só 10:00–11:30", destaque: false };
+        ? { rot: "Janela · Válida", txt: `11:00–11:59 · mínimo ${gate.scoreMinimo}`, destaque: true }
+        : { rot: "Fora da janela", txt: "entrada 10:00–11:59", destaque: false };
   const pnlDia = resumo?.pnl_dia ?? 0;
   const podeRegistrar = gate.liberado && formularioValido && !submittingOrdem && !resumo?.trade_aberto_id;
   const motivosGate = gate.motivos.map((m) => m.replace(/^falta obrigatório: .*/, "")).filter(Boolean);
@@ -874,6 +900,7 @@ export default function ChecklistPage() {
               {campo("Contratos", contratos, setContratos, contratosTravados ? { disabled: true, nota: "da pré-sessão" } : undefined)}
             </div>
             {validacaoDirecao.erro && <span style={{ fontSize: "13px", color: "var(--negtx)" }}>{validacaoDirecao.erro}</span>}
+            {numContratos > MAX_CONTRATOS && <span style={{ fontSize: "13px", color: "var(--negtx)" }}>Máximo de {MAX_CONTRATOS} contratos por trade</span>}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Gatilho</span>
               {chips(
@@ -881,6 +908,7 @@ export default function ChecklistPage() {
                   { v: "MSS_FVG" as GatilhoTrade, l: "MSS + FVG" },
                   { v: "MSS_OB" as GatilhoTrade, l: "MSS + OB" },
                   { v: "BPR" as GatilhoTrade, l: "BPR" },
+                  { v: "IFVG" as GatilhoTrade, l: "iFVG" },
                   { v: "RISK_ENTRY" as GatilhoTrade, l: "Risk entry" },
                   { v: "FVG_POS_SWING" as GatilhoTrade, l: "FVG após swing" },
                 ],
@@ -889,7 +917,7 @@ export default function ChecklistPage() {
               )}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: selectedStrategy.id === "varrida_barra_10" ? "1.6fr 1fr" : "1fr", gap: "16px" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {!ehPrimeiraPerna && <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Contexto da 1ª hora</span>
                 {chips(
                   [
@@ -900,7 +928,7 @@ export default function ChecklistPage() {
                   contexto1h,
                   setContexto1h
                 )}
-              </div>
+              </div>}
               {selectedStrategy.id === "varrida_barra_10" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Modo do Setup C</span>
