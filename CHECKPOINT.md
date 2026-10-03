@@ -1,6 +1,6 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 01/10/2026 · Claude
+Atualizado: 03/10/2026 · Claude
 
 ## Onde estamos
 Cockpit v2 no ar e commitado. Voz Dora (Kokoro) integrada nos alertas. Modo
@@ -19,6 +19,7 @@ demonstração com trades fictícios. O Anderson começa a operar de verdade na 
   `cockpit/supabase/migration_checklist_ao_vivo.sql`.
 
 ## Próximo
+- [ ] Anderson roda `cockpit/supabase/migration_plano_por_hora.sql` (pré-sessão aceita POR_HORA; item k7 do Setup C). Sem ela, fechar a pré-sessão com o plano por hora falha.
 - [ ] Testar o Setup V como trade nos 5 meses (entrada após o extremo, stop além da perna, alvo nos 75%).
 - [ ] Anderson roda `migration_checklist_ao_vivo.sql` no Supabase e testa "Salvar progresso".
 - [ ] Limpeza Passo 2 (apagar os 3 dias e o trade de teste) e DROP das views `v_copa_*`,
@@ -38,7 +39,7 @@ demonstração com trades fictícios. O Anderson começa a operar de verdade na 
   aquele pedaço. Por isso o campo Evento da pré-sessão sugere os nomes gravados.
 
 ## Decisões que não se recuperam lendo o código
-- Regras de 01/10/2026 (operador, depois de 4 pregões): antes das 10:00 só 1 trade, contra a primeira perna (800+ pts), stop além da perna, alvo nos 75%; entradas 10:00–11:59; 6 operações, 4 stops, sem pausa; até 3 contratos. Fonte: Trade_System_Anderson.md §1–2 e Setup V.
+- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade, alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (1). 3 stops encerram; 5 trades; 2–3 contratos; Setup A fora. Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
 - Voz: áudios pré-gerados na GPU do operador, tocados como arquivo estático. Sem
   servidor de voz. O manifest é indexado pelo texto normalizado (o hash só dá nome ao
   arquivo), então o navegador não precisa calcular SHA-1.

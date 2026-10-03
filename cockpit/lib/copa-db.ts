@@ -73,7 +73,7 @@ export interface ResumoDoDia {
   trades_fechados: number;
   trades_abertos: number;
   operacoes_hoje: number; // fechados + abertos
-  operacoes_antes_10: number; // abertas antes das 10:00 (o trade contra a primeira perna)
+  operacoes_por_hora: { ABERTURA: number; PRIME: number; VALIDA: number }; // trades abertos em cada hora (cotas 1 · 3 · 1)
   perdas_hoje: number;
   pnl_dia: number;
   ultimo_loss_em: Date | null;
@@ -190,7 +190,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
       trades_fechados: 0,
       trades_abertos: 0,
       operacoes_hoje: 0,
-      operacoes_antes_10: 0,
+      operacoes_por_hora: { ABERTURA: 0, PRIME: 0, VALIDA: 0 },
       perdas_hoje: 0,
       pnl_dia: 0,
       ultimo_loss_em: null,
@@ -216,7 +216,14 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
   let ultimoLossEm: Date | null = null;
   const horaSP = (iso: string) =>
     new Intl.DateTimeFormat("en-GB", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
-  const operacoesAntesDas10 = lista.filter((t) => t.hora_entrada && horaSP(t.hora_entrada) < "10:00").length;
+  const porHora = { ABERTURA: 0, PRIME: 0, VALIDA: 0 };
+  for (const t of lista) {
+    if (!t.hora_entrada) continue;
+    const h = horaSP(t.hora_entrada);
+    if (h >= "09:00" && h < "10:00") porHora.ABERTURA++;
+    else if (h >= "10:00" && h < "11:00") porHora.PRIME++;
+    else if (h >= "11:00" && h < "12:00") porHora.VALIDA++;
+  }
 
   for (const t of lista) {
     if (t.status === "ABERTO") {
@@ -247,7 +254,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
     trades_fechados: tradesFechados,
     trades_abertos: tradesAbertos,
     operacoes_hoje: tradesFechados + tradesAbertos,
-    operacoes_antes_10: operacoesAntesDas10,
+    operacoes_por_hora: porHora,
     perdas_hoje: perdasHoje,
     pnl_dia: Number(pnlDia.toFixed(2)),
     ultimo_loss_em: ultimoLossEm,
@@ -529,7 +536,7 @@ export interface PreSessao {
   sono: number;
   tilt: number;
   pressao: number;
-  setup_do_dia: "reversao_htf" | "continuidade_tendencia" | "varrida_barra_10" | "NENHUM" | null;
+  setup_do_dia: "POR_HORA" | "reversao_htf" | "continuidade_tendencia" | "varrida_barra_10" | "NENHUM" | null;
   contratos_declarados: number | null;
   screenshot_path: string | null;
   fechada_em: string | null;
@@ -560,7 +567,7 @@ export function pendenciasDaPreSessao(p: PreSessao): string[] {
   }
 
   if (!p?.setup_do_dia) {
-    pendencias.push("setup do dia não escolhido");
+    pendencias.push("plano do dia não escolhido");
   }
 
   if (p?.setup_do_dia !== "NENHUM" && (!p?.contratos_declarados || p.contratos_declarados <= 0)) {

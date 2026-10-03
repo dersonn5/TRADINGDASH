@@ -22,15 +22,42 @@ export const SCORE_MINIMO_PRIME = 65;
 export const BONUS_FORA_DA_PRIME = 15; // VALIDA exige 65 + 15 = 80
 
 /**
- * Limites espelhados do Profit Chart, que trava nestes números (decisão do operador
- * em 01/10/2026, depois de 4 pregões: 6 operações, 4 stops, sem pausa depois de loss).
+ * Limites do dia (decisão do operador em 03/10/2026, depois da semana de 28/09 a 02/10):
+ * 3 stops encerram o dia; no máximo 5 trades, distribuídos por hora (1 + 3 + 1);
+ * 2 a 3 contratos; sem pausa depois de loss. O Profit trava os mesmos números.
  */
-export const MAX_PERDAS_DIA = 4;
-export const MAX_OPERACOES_DIA = 6;
+export const MAX_PERDAS_DIA = 3;
+export const MAX_OPERACOES_DIA = 5;
 export const MAX_CONTRATOS = 3;
 
 /** O único trade permitido antes das 10:00: contra a primeira perna do dia. */
 export const ESTRATEGIA_PRIMEIRA_PERNA = "primeira_perna";
+export const ESTRATEGIA_BARRA_10 = "varrida_barra_10";
+export const ESTRATEGIA_CONTINUIDADE = "continuidade_tendencia";
+
+/**
+ * Setups e cota de trades por hora (03/10/2026). O checklist muda a cada hora.
+ * - 1ª hora (09:00-09:59): só o trade contra a primeira perna, 1 trade.
+ * - 2ª hora (10:00-10:59): setup das 10 ou continuidade, até 3 trades (abertura de NY).
+ * - 3ª hora (11:00-11:59): só continuidade, 1 trade.
+ */
+export const REGRAS_DA_HORA: Record<"ABERTURA" | "PRIME" | "VALIDA", { setups: string[]; maxTrades: number; nome: string }> = {
+  ABERTURA: { setups: [ESTRATEGIA_PRIMEIRA_PERNA], maxTrades: 1, nome: "1ª hora" },
+  PRIME: { setups: [ESTRATEGIA_BARRA_10, ESTRATEGIA_CONTINUIDADE], maxTrades: 3, nome: "2ª hora" },
+  VALIDA: { setups: [ESTRATEGIA_CONTINUIDADE], maxTrades: 1, nome: "3ª hora" },
+};
+
+const NOME_SETUP: Record<string, string> = {
+  [ESTRATEGIA_PRIMEIRA_PERNA]: "contra a primeira perna",
+  [ESTRATEGIA_BARRA_10]: "setup das 10",
+  [ESTRATEGIA_CONTINUIDADE]: "continuidade",
+};
+
+/** O que o gate precisa saber da hora: qual setup está na tela e quantos trades a hora já teve. */
+export interface ContextoHora {
+  estrategiaId: string;
+  operacoesNaHora: number;
+}
 
 /**
  * Mercados liberados para operar. So WIN.
@@ -69,10 +96,11 @@ export function avaliarLimitesDia(perdasHoje: number, operacoesHoje: number): Li
 
 /**
  * Converte agora para America/Sao_Paulo e classifica a janela de operação:
- * - ABERTURA: 09:00-09:59 — só o trade contra a primeira perna (1 por dia)
- * - PRIME: de 10:00 (inclusive) a 11:00 (exclusive)
- * - VALIDA: de 11:00 (inclusive) a 12:00 (exclusive) — exige score maior
+ * - ABERTURA: 09:00-09:59 (1ª hora) — só o trade contra a primeira perna, 1 trade
+ * - PRIME: 10:00-10:59 (2ª hora) — setup das 10 ou continuidade, até 3 trades
+ * - VALIDA: 11:00-11:59 (3ª hora) — só continuidade, 1 trade, score maior
  * - FORA: qualquer outro horário
+ * Setups e cotas por hora: REGRAS_DA_HORA (03/10/2026).
  *
  * 09:00-09:59 tinha saido em 22/09/2026 (19% de acerto e -R$ 800 nessa hora na conta
  * real; de 28/09 a 01/10, -R$ 376 em trades antes das 10:00). Em 01/10/2026 o operador
@@ -138,7 +166,7 @@ export function avaliarGate(
   tradeAbertoId?: string | null,
   preSessaoFechada?: boolean,
   temPrint?: boolean,
-  primeiraPerna?: { estrategiaId: string; operacoesAntesDas10: number }
+  hora?: ContextoHora
 ): GateResult {
   const janela = classificarJanela(agora);
   const scoreMinimo = scoreMinimoEfetivo(janela, scoreMinimoBase);
@@ -160,19 +188,14 @@ export function avaliarGate(
     motivos.push("fora da janela de entrada 09:00–12:00");
   }
 
-  if (primeiraPerna) {
-    const ehPrimeiraPerna = primeiraPerna.estrategiaId === ESTRATEGIA_PRIMEIRA_PERNA;
-    if (janela === "ABERTURA" && !ehPrimeiraPerna) {
-      motivos.push("antes das 10:00, só o trade contra a primeira perna");
+  if (janela !== "FORA") {
+    const regra = REGRAS_DA_HORA[janela];
+    const permitidos = regra.setups.map((id) => NOME_SETUP[id]).join(" ou ");
+    if (!hora || !regra.setups.includes(hora.estrategiaId)) {
+      motivos.push(`${regra.nome}: só ${permitidos}`);
+    } else if (hora.operacoesNaHora >= regra.maxTrades) {
+      motivos.push(`${regra.nome}: limite de ${regra.maxTrades} ${regra.maxTrades === 1 ? "trade" : "trades"} atingido`);
     }
-    if (janela === "ABERTURA" && ehPrimeiraPerna && primeiraPerna.operacoesAntesDas10 >= 1) {
-      motivos.push("o trade contra a primeira perna já foi feito hoje");
-    }
-    if ((janela === "PRIME" || janela === "VALIDA") && ehPrimeiraPerna) {
-      motivos.push("o trade contra a primeira perna é só antes das 10:00");
-    }
-  } else if (janela === "ABERTURA") {
-    motivos.push("antes das 10:00, só o trade contra a primeira perna");
   }
 
   for (const label of killsFaltando) {

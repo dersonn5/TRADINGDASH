@@ -166,39 +166,35 @@ export default function ChecklistPage() {
     loadPreSessao();
   }, [loadPreSessao]);
 
-  // Antes das 10:00 a tela e do trade contra a primeira perna; a partir das 10:00, do
-  // setup escolhido na pre-sessao. Troca sozinha quando o relogio passa das 10:00.
-  const ehAbertura = classificarJanela(now) === "ABERTURA";
+  // O checklist muda a cada hora (REGRAS_DA_HORA): 1a hora = contra a primeira perna;
+  // 2a hora = setup das 10 ou continuidade (o operador escolhe); 3a hora = continuidade.
+  const janelaAgora = classificarJanela(now);
+  const [setupHora2, setSetupHora2] = useState<Strategy>(VARRIDA_BARRA_10);
+  const estrategiaDaHora: Strategy =
+    janelaAgora === "ABERTURA"
+      ? PRIMEIRA_PERNA
+      : janelaAgora === "PRIME"
+        ? setupHora2
+        : janelaAgora === "VALIDA"
+          ? CONTINUIDADE_TENDENCIA
+          : now.getHours() < 10
+            ? PRIMEIRA_PERNA
+            : setupHora2;
   useEffect(() => {
-    if (!preSessao?.fechada_em) return;
-    const doDia =
-      preSessao.setup_do_dia === "continuidade_tendencia"
-        ? CONTINUIDADE_TENDENCIA
-        : preSessao.setup_do_dia === "varrida_barra_10"
-          ? VARRIDA_BARRA_10
-          : REVERSAO_HTF;
-    const alvo = ehAbertura ? PRIMEIRA_PERNA : doDia;
-    setSelectedStrategy((atual) => (atual.id === alvo.id ? atual : alvo));
-  }, [ehAbertura, preSessao]);
+    setSelectedStrategy((atual) => (atual.id === estrategiaDaHora.id ? atual : estrategiaDaHora));
+  }, [estrategiaDaHora]);
+
+  function escolherSetupHora2(strat: Strategy) {
+    if (strat.id === setupHora2.id) return;
+    const hasCheckedItems = checklist?.items?.some((i) => i.checked);
+    if (hasCheckedItems && !window.confirm("Existem itens marcados. Trocar de setup reseta o checklist. Continuar?")) return;
+    setSetupHora2(strat);
+  }
 
   useEffect(() => {
     loadChecklist(selectedStrategy);
     loadResumo();
   }, [loadChecklist, loadResumo, selectedStrategy]);
-
-  // Troca de estratégia com confirmação se houver itens marcados
-  async function handleSelectStrategy(strat: Strategy) {
-    if (strat.id === selectedStrategy.id) return;
-    const hasCheckedItems = checklist?.items?.some((i) => i.checked);
-    if (hasCheckedItems) {
-      const confirmReset = window.confirm(
-        "Existem itens marcados no checklist. Trocar de estratégia vai resetar o checklist. Deseja continuar?"
-      );
-      if (!confirmReset) return;
-    }
-    setSelectedStrategy(strat);
-    await loadChecklist(strat);
-  }
 
   // Hora corrente formatada em America/Sao_Paulo
   const spTimeStr = useMemo(() => {
@@ -221,9 +217,12 @@ export default function ChecklistPage() {
     return avaliarLimitesDia(resumo.perdas_hoje, resumo.operacoes_hoje);
   }, [resumo]);
 
-  const ctxPerna = useMemo(
-    () => ({ estrategiaId: selectedStrategy.id, operacoesAntesDas10: resumo?.operacoes_antes_10 ?? 0 }),
-    [selectedStrategy.id, resumo?.operacoes_antes_10]
+  const ctxHora = useMemo(
+    () => ({
+      estrategiaId: selectedStrategy.id,
+      operacoesNaHora: janelaAgora === "FORA" ? 0 : resumo?.operacoes_por_hora?.[janelaAgora] ?? 0,
+    }),
+    [selectedStrategy.id, janelaAgora, resumo?.operacoes_por_hora]
   );
 
   // Avaliação do Gate em tempo real com regras de horário, confluência e limites
@@ -254,9 +253,9 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxPerna
+      ctxHora
     );
-  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath, ctxPerna]);
+  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath, ctxHora]);
 
   const itensAvaliados: ItemAvaliado[] = useMemo(() => {
     if (!checklist) return [];
@@ -310,7 +309,7 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxPerna
+      ctxHora
     );
 
     setChecklist({
@@ -342,7 +341,7 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxPerna
+      ctxHora
     );
 
     setChecklist({
@@ -364,7 +363,7 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxPerna
+      ctxHora
     );
     setChecklist({
       ...checklist,
@@ -391,7 +390,7 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxPerna
+      ctxHora
     );
     setChecklist({
       ...checklist,
@@ -793,6 +792,15 @@ export default function ChecklistPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <span style={LBL}>Trilha do Setup {tagSetup} · obrigatórios</span>
                 <span style={H2}>{trilhaFrase}</span>
+                {janelaAgora === "PRIME" && (
+                  <div style={{ ...SEGMENTADO, marginTop: "6px", alignSelf: "flex-start" }}>
+                    {[VARRIDA_BARRA_10, CONTINUIDADE_TENDENCIA].map((st) => (
+                      <button key={st.id} type="button" onClick={() => escolherSetupHora2(st)} style={opcaoSegmentada(setupHora2.id === st.id, false)}>
+                        {st.id === VARRIDA_BARRA_10.id ? "Setup das 10" : "Continuidade"}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <span style={{ flexShrink: 0, fontSize: "13px", fontWeight: 600, color: "var(--actx)" }}>{feitos} / {totalKills}</span>
             </div>

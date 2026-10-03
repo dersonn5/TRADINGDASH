@@ -10,58 +10,49 @@
 
 ---
 
-## 1. Janela
+## 1. Plano por hora
 
-> **Atualizado em 01/10/2026** pelo operador, depois dos 4 primeiros pregões do
-> sistema (28/09–01/10). Antes valia: 09:00–10:00 sem entrada e entradas até 11:29.
+> **Atualizado em 03/10/2026** pelo operador, depois da primeira semana do sistema
+> (28/09–02/10). Em todos os 5 dias o plano foi furado; na sexta (payroll), 6 trades
+> antes das 10:00 custaram −R$ 577 de um dia de −R$ 833 — num pregão que entregou
+> todos os setups. Decisão: o operacional funciona; segui-lo à risca, com cotas por hora.
 
-| Horário | O que fazer |
-|---|---|
-| **09:00 – 09:59** | **Um trade só: contra a primeira perna** (Setup V, abaixo). Fora ele, só observar e marcar. |
-| **10:00 – 11:00** | **Janela nobre de entrada**: abertura do à vista (10:00) e de NY (10:30) |
-| **11:00 – 11:59** | Entrada ainda válida (score maior: 80) |
-| **12:00** | **FIM.** Fecha o Profit |
+| Hora | Setup (o checklist muda sozinho) | Trades |
+|---|---|---|
+| **09:00 – 09:59** | **Contra a primeira perna** (Setup V) — alvo nos 75% da perna | **1** |
+| **10:00 – 10:59** | **Setup das 10** (à vista manipulando ou manipulado) **ou continuidade** — abertura de NY a favor | **até 3** |
+| **11:00 – 11:59** | **Só continuidade** (score 80) | **1** |
+| **12:00** | **FIM.** Fecha o Profit | |
 
-**O norte** (01/10/2026):
-1. Tela só de **09:00 a 12:00**, sempre.
-2. Antes das 10:00, **só o trade contra a primeira perna** — e só um.
-3. Só **WIN**, **no máximo 3 contratos**.
-4. **Alvo escrito antes de entrar.** Trade da primeira perna: sai nos 75% da perna,
-   sempre. Trade de sweep HTF: alongar com trailing, mas visando um alvo HTF consciente.
+**O norte:**
+1. Tela só de **09:00 a 12:00**.
+2. **Três setups**, um por hora: V, setup das 10 e continuidade. Reversão HTF (Setup A)
+   saiu do sistema ativo.
+3. **Cotas por hora: 1 · 3 · 1.** Fora delas, não existe trade.
+4. **Alvo escrito antes de entrar.** Setup V: sai nos 75% da perna, sempre. Sweep HTF:
+   alongar com trailing, visando um alvo HTF consciente.
+5. **Toda entrada catalogada no setup**, pelo checklist.
 
-**Por quê:**
+**Por quê:** de 28/09 a 02/10, trades antes das 10:00 fora do Setup V somaram −R$ 953
+(+216, −225, −129, −238, −577). A hora das 09:00 é a manipulação da abertura; o que se
+aproveita dela é a volta da primeira perna ([[Estudo_Reversao_Abertura_Vista]], itens 7 e 9).
 
-| | 09:00–09:59 | 10:00–10:59 | 11:00–11:59 | 14:00+ |
-|---|---|---|---|---|
-| Conta real (22/08–22/09) | −R$ 800 (19% acerto) | +R$ 526 | +R$ 1.916 | −R$ 1.669 |
-| Copa | +R$ 2.970 (4 trades) | +R$ 11.755 | +R$ 6.375 | −R$ 2.009 |
-
-- 09:00–10:00 é a **manipulação da abertura**: trades livres ali perderam −R$ 376 de
-  28/09 a 01/10. O que se aproveita dela é a volta da primeira perna (o V das 09:00):
-  em 2026, perna de 800+ pts volta 75% em ~3 de cada 4 dias
-  ([[Estudo_Reversao_Abertura_Vista]], itens 7 e 9). Em 01/10, o alvo dos 75% teria
-  fechado a venda das 09:08 com +489 pts; segurar virou −132 pts.
-- 11:30–11:59 voltou a ter entrada: nos dias 29/09 e 30/09 os melhores trades vieram
-  entre 11:00 e 11:59.
-
-O cockpit trava: antes das 10:00 só a estratégia "Contra a Primeira Perna", 1 trade;
-entradas normais 10:00–11:59; só WIN; até 3 contratos. O Profit não trava horário nem
-ativo — fechar o Profit às 12:00.
+O cockpit trava: setup e cota de cada hora, só WIN, até 3 contratos. O Profit não trava
+horário nem setup — fechar o Profit às 12:00.
 
 ## 2. Gerenciamento de risco
 
-Configurado no próprio Profit, e ele trava (01/10/2026):
+Configurado no próprio Profit, e ele trava (03/10/2026):
 
 | Limite | Valor |
 |---|---|
-| Stops no dia | **4** |
-| Operações no dia | **6** |
-| Contratos por trade | **até 3** |
-| Pausa depois de loss | **nenhuma** |
+| Stops no dia | **3** — encerram o dia |
+| Trades no dia | **5** (1 + 3 + 1) |
+| Contratos por trade | **2 a 3** |
+| Pausa depois de loss | nenhuma |
 
 Configura **antes das 09:00 e não mexe durante o pregão**. Mudar a trava no meio do
-pregão é desvio de plano (29/09). Esses são os números da plataforma; o cockpit usa os
-mesmos — regra que contradiz a plataforma vira regra ignorada.
+pregão é desvio de plano (29/09).
 
 ## 3. Timeframes
 
@@ -103,7 +94,7 @@ a perna rápida volta mais em todos os anos; rejeição clara no extremo (30); a
 
 ---
 
-# Setup A — REVERSÃO
+# Setup A — REVERSÃO *(fora do sistema ativo desde 03/10/2026 — mantido como referência)*
 
 Opera contra o movimento que acabou de acontecer, depois que ele varreu
 liquidez.

@@ -130,8 +130,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   };
 
   // Por estrategia
-  const todasEstrategias = ["varrida_barra_10", "continuidade_tendencia", "reversao_htf", "primeira_perna"];
-  const ids = n ? todasEstrategias.filter((id) => trades.some((t) => t.strategy_id === id)) : todasEstrategias;
+  const ativas = ["varrida_barra_10", "continuidade_tendencia", "primeira_perna"]; // Reversao HTF saiu em 03/10/2026
+  const todasEstrategias = [...ativas, "reversao_htf"];
+  const ids = n ? todasEstrategias.filter((id) => trades.some((t) => t.strategy_id === id)) : ativas;
   const estr = ids.map((id) => {
     const ts = trades.filter((t) => t.strategy_id === id);
     const p = somar(ts.map(pnl));

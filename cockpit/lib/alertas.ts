@@ -112,10 +112,10 @@ export function alertasDoDia(dataISO: string, agenda: EventoAgenda[], preSessaoF
   const rotina: Array<[string, string | string[], number, SomAlerta?]> = [
     ["09:00", [FRASE_BOM_DIA, ...resumo], 1, "sino"],
     ["09:55", "Cinco minutos para a abertura do mercado à vista.", 1],
-    ["10:00", "Abertura do mercado à vista. Janela de entrada aberta.", 1, "sino"],
+    ["10:00", "Abertura do mercado à vista. Até três trades: setup das dez ou continuidade.", 1, "sino"],
     [somarMinutos(ny, -5), "Cinco minutos para a abertura de Nova York.", 0],
     [ny, "Abertura de Nova York.", 0],
-    ["11:00", "Fim da janela nobre. A partir de agora, só com score oitenta.", 1],
+    ["11:00", "Terceira hora. Um trade só, de continuidade, com score oitenta.", 1],
     ["11:55", "Faltam cinco minutos. Ao meio-dia, feche o Profit.", 1],
     ["12:00", "Fim do pregão do plano. Feche o Profit.", 1],
   ];

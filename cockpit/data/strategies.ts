@@ -383,7 +383,7 @@ export const VARRIDA_BARRA_10: Strategy = {
     "Stop largo demais para o tamanho declarado",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "10:00", fim: "12:00" }],
+  horarios_validos: [{ inicio: "10:00", fim: "11:00" }],
   regras_ambiente: [
     {
       campo: "tilt",
@@ -454,8 +454,8 @@ export const VARRIDA_BARRA_10: Strategy = {
       id: "k7",
       tipo: "KILL",
       peso: 0,
-      label: "Primeiro trade do Setup C hoje",
-      ajuda: "Um trade do Setup C por dia. Stopou, o setup acabou no dia.",
+      label: "Dentro da cota da 2ª hora (até 3 trades, somando setup das 10 e continuidade)",
+      ajuda: "10:00–10:59: até 3 trades. A abertura de NY (10:30) entra na conta. Bateu 3 stops no dia, acabou.",
     },
     {
       id: "p1",

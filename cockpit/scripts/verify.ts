@@ -114,7 +114,8 @@ const itensCaso1: ItemAvaliado[] = [
   ...killsBase,
   { id: "p_test_70", tipo: "PONTO", label: "Confluências 70", checked: true, peso: 70 },
 ];
-const gate1 = avaliarGate(itensCaso1, "BULLISH", makeSPDate(10, 30));
+const HORA_OK = { estrategiaId: "varrida_barra_10", operacoesNaHora: 0 };
+const gate1 = avaliarGate(itensCaso1, "BULLISH", makeSPDate(10, 30), 65, undefined, undefined, undefined, undefined, HORA_OK);
 report("Gate Caso 1: 7 KILLs + 70 pts às 10:30 -> liberado === true", gate1.liberado === true, JSON.stringify(gate1.motivos));
 
 // Cenário 2: Mesmo conjunto às 11:15 -> liberado === false, motivo cita score 70 e mínimo 80
@@ -328,24 +329,24 @@ report(
 );
 
 // -------------------------------------------------------------
-// 5. CASOS DE AVALIAR LIMITES DIA (01/10/2026: 6 operações, 4 stops, sem pausa)
+// 5. CASOS DE AVALIAR LIMITES DIA (03/10/2026: 3 stops, 5 trades, sem pausa)
 // -------------------------------------------------------------
 const baseTime = makeSPDate(10, 30);
 const lim1 = avaliarLimitesDia(0, 0);
 report("Limites Caso 1: 0 perdas, 0 operacoes -> liberado", !lim1.bloqueado && lim1.motivos.length === 0, JSON.stringify(lim1.motivos));
-const lim2 = avaliarLimitesDia(3, 5);
-report("Limites Caso 2: 3 perdas e 5 operacoes -> liberado (sem pausa depois de loss)", !lim2.bloqueado, JSON.stringify(lim2.motivos));
-const lim3 = avaliarLimitesDia(4, 4);
-report("Limites Caso 3: 4 perdas -> bloqueado, motivo cita pregao encerrado",
-  lim3.bloqueado && lim3.motivos.some((m) => m.includes("4 perdas") && m.includes("pregão encerrado")), JSON.stringify(lim3.motivos));
-const lim4 = avaliarLimitesDia(0, 6);
-report("Limites Caso 4: 6 operacoes -> bloqueado", lim4.bloqueado && lim4.motivos.some((m) => m.includes("6 operações")), JSON.stringify(lim4.motivos));
-const lim5 = avaliarLimitesDia(4, 6);
-report("Limites Caso 5: 4 perdas e 6 operacoes -> os dois motivos", lim5.bloqueado && lim5.motivos.length === 2, JSON.stringify(lim5.motivos));
+const lim2 = avaliarLimitesDia(2, 4);
+report("Limites Caso 2: 2 perdas e 4 operacoes -> liberado (sem pausa depois de loss)", !lim2.bloqueado, JSON.stringify(lim2.motivos));
+const lim3 = avaliarLimitesDia(3, 3);
+report("Limites Caso 3: 3 perdas -> bloqueado, motivo cita pregao encerrado",
+  lim3.bloqueado && lim3.motivos.some((m) => m.includes("3 perdas") && m.includes("pregão encerrado")), JSON.stringify(lim3.motivos));
+const lim4 = avaliarLimitesDia(0, 5);
+report("Limites Caso 4: 5 operacoes -> bloqueado", lim4.bloqueado && lim4.motivos.some((m) => m.includes("5 operações")), JSON.stringify(lim4.motivos));
+const lim5 = avaliarLimitesDia(3, 5);
+report("Limites Caso 5: 3 perdas e 5 operacoes -> os dois motivos", lim5.bloqueado && lim5.motivos.length === 2, JSON.stringify(lim5.motivos));
 report("Limites: maximo de 3 contratos", MAX_CONTRATOS === 3, String(MAX_CONTRATOS));
 let erroContratos = "";
 try {
-  validarCamposNovosTrade({ strategy_id: "reversao_htf", gatilho: "MSS_FVG", contexto_1h: "REVERSAO", contratos: 4 });
+  validarCamposNovosTrade({ strategy_id: "continuidade_tendencia", gatilho: "MSS_FVG", contexto_1h: "REVERSAO", contratos: 4 });
 } catch (e) {
   erroContratos = (e as Error).message;
 }
@@ -361,7 +362,7 @@ const itens80: ItemAvaliado[] = [
 const limLiberado = { bloqueado: false, motivos: [] };
 
 // Caso 9: 7 KILL, 80 pontos, 10:30, limites liberados -> liberado
-const gate9 = avaliarGate(itens80, "BULLISH", baseTime, 65, limLiberado, null);
+const gate9 = avaliarGate(itens80, "BULLISH", baseTime, 65, limLiberado, null, undefined, undefined, HORA_OK);
 report(
   "Gate Integrado Caso 9: 7 KILL, 80 pts, 10:30, limites liberados -> liberado",
   gate9.liberado === true,
@@ -385,26 +386,32 @@ report(
   JSON.stringify(gate11.motivos)
 );
 
-// Regras do operador (01/10/2026): antes das 10:00 so o trade contra a primeira perna, 1 por dia.
-const ctx = (estrategiaId: string, operacoesAntesDas10 = 0) => ({ estrategiaId, operacoesAntesDas10 });
-const g0930outro = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null, true, true, ctx("reversao_htf"));
-report("Operacional: 09:30 com outro setup -> bloqueado",
-  !g0930outro.liberado && g0930outro.motivos.some((m) => m.includes("só o trade contra a primeira perna")), JSON.stringify(g0930outro.motivos));
-const g0930perna = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null, true, true, ctx("primeira_perna"));
-report("Operacional: 09:30 contra a primeira perna, primeiro trade -> liberado", g0930perna.liberado, JSON.stringify(g0930perna.motivos));
-const g0930segundo = avaliarGate(itens80, "BULLISH", makeSPDate(9, 30), 65, limLiberado, null, true, true, ctx("primeira_perna", 1));
-report("Operacional: 09:30 contra a primeira perna, ja feito hoje -> bloqueado",
-  !g0930segundo.liberado && g0930segundo.motivos.some((m) => m.includes("já foi feito")), JSON.stringify(g0930segundo.motivos));
-const g1030perna = avaliarGate(itens80, "BULLISH", makeSPDate(10, 30), 65, limLiberado, null, true, true, ctx("primeira_perna"));
-report("Operacional: primeira perna depois das 10:00 -> bloqueado",
-  !g1030perna.liberado && g1030perna.motivos.some((m) => m.includes("só antes das 10:00")), JSON.stringify(g1030perna.motivos));
+// Setups e cotas por hora (03/10/2026): 1a hora V (1), 2a hora C ou B (3), 3a hora B (1).
+const ctx = (estrategiaId: string, operacoesNaHora = 0) => ({ estrategiaId, operacoesNaHora });
+const gh = (h: number, m: number, c: ReturnType<typeof ctx>) => avaliarGate(itens80, "BULLISH", makeSPDate(h, m), 65, limLiberado, null, true, true, c);
+const casosHora: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]> = [
+  ["09:30 setup das 10 -> bloqueado", false, gh(9, 30, ctx("varrida_barra_10")), "só contra a primeira perna"],
+  ["09:30 primeira perna, 1o trade -> liberado", true, gh(9, 30, ctx("primeira_perna")), ""],
+  ["09:30 primeira perna, ja feito -> bloqueado", false, gh(9, 30, ctx("primeira_perna", 1)), "limite de 1 trade"],
+  ["10:30 primeira perna -> bloqueado", false, gh(10, 30, ctx("primeira_perna")), "setup das 10 ou continuidade"],
+  ["10:30 setup das 10, 2 feitos -> liberado", true, gh(10, 30, ctx("varrida_barra_10", 2)), ""],
+  ["10:30 continuidade -> liberado", true, gh(10, 30, ctx("continuidade_tendencia")), ""],
+  ["10:30 setup das 10, 3 feitos -> bloqueado", false, gh(10, 30, ctx("varrida_barra_10", 3)), "limite de 3 trades"],
+  ["10:30 reversao HTF (fora do sistema) -> bloqueado", false, gh(10, 30, ctx("reversao_htf")), "2ª hora"],
+  ["11:15 continuidade -> liberado", true, gh(11, 15, ctx("continuidade_tendencia")), ""],
+  ["11:15 setup das 10 -> bloqueado", false, gh(11, 15, ctx("varrida_barra_10")), "só continuidade"],
+  ["11:15 continuidade, 1 feito -> bloqueado", false, gh(11, 15, ctx("continuidade_tendencia", 1)), "limite de 1 trade"],
+];
+for (const [nome, esperado, g, trecho] of casosHora) {
+  report(`Hora: ${nome}`, g.liberado === esperado && (esperado || g.motivos.some((m) => m.includes(trecho))), JSON.stringify(g.motivos));
+}
 report(
   "Operacional: so WIN -> WIN permitido, WDO e BIT bloqueados",
   mercadoPermitido("WIN") && !mercadoPermitido("WDO") && !mercadoPermitido("BIT"),
   `WIN=${mercadoPermitido("WIN")} WDO=${mercadoPermitido("WDO")} BIT=${mercadoPermitido("BIT")}`
 );
-const gate1159 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 59), 65, limLiberado, null);
-const gate1200 = avaliarGate(itens80, "BULLISH", makeSPDate(12, 0), 65, limLiberado, null);
+const gate1159 = avaliarGate(itens80, "BULLISH", makeSPDate(11, 59), 65, limLiberado, null, true, true, ctx("continuidade_tendencia"));
+const gate1200 = avaliarGate(itens80, "BULLISH", makeSPDate(12, 0), 65, limLiberado, null, true, true, ctx("continuidade_tendencia"));
 report(
   "Operacional: 11:59 ainda abre posicao, 12:00 bloqueado",
   gate1159.liberado === true && gate1200.liberado === false && gate1200.motivos.some((m) => m.includes("fora da janela")),
@@ -586,7 +593,8 @@ const gateAmbosTrue = avaliarGate(
   limLiberado,
   null,
   true,
-  true
+  true,
+  HORA_OK
 );
 const caso9Ok = gateAmbosTrue.liberado === true && gateAmbosTrue.motivos.length === 0;
 report(

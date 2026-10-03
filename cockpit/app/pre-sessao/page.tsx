@@ -11,6 +11,7 @@ import {
   PreSessao,
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
+import { MAX_CONTRATOS } from "@/lib/gate";
 import { EVENTO_PRESESSAO_SALVA } from "@/components/layout/alertas-voz";
 import { mesclarAgenda, EventoCalendario, EVENTOS_BRASIL, NOMES_EUA } from "@/lib/calendario";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
@@ -224,7 +225,7 @@ export default function PreSessaoPage() {
     { l: "Bias H1", ok: sessao.bias_h1 !== "INDEFINIDO" },
     { l: "Contexto", ok: sessao.contexto !== "INDEFINIDO" },
     { l: "2 níveis", ok: sessao.niveis.length >= 2 },
-    { l: "Setup do dia", ok: Boolean(sessao.setup_do_dia) },
+    { l: "Plano do dia", ok: Boolean(sessao.setup_do_dia) },
     { l: "Tamanho", ok: sessao.setup_do_dia === "NENHUM" || (sessao.contratos_declarados ?? 0) > 0 },
   ];
 
@@ -238,11 +239,11 @@ export default function PreSessaoPage() {
     { v: "RANGE", l: "Range" },
     { v: "INDEFINIDO", l: "Indefinido" },
   ] as const;
+  // Desde 03/10/2026 o setup vem da hora (o checklist muda sozinho); a pre-sessao so decide
+  // se o dia e de operar. Sessoes antigas com setup do dia continuam validas no banco.
   const SETUPS = [
-    { v: "reversao_htf", tag: "SETUP A", l: "Reversão HTF", d: "Sweep de liquidez HTF e MSS no 1m" },
-    { v: "continuidade_tendencia", tag: "SETUP B", l: "Continuidade", d: "Captura do extremo do swing a favor da tendência" },
-    { v: "varrida_barra_10", tag: "SETUP C", l: "Varrida das 10", d: "A barra das 10 varre ou é varrida" },
-    { v: "NENHUM", tag: "SEM SETUP", l: "Não operar hoje", d: "Dia fora do plano" },
+    { v: "POR_HORA", tag: "OPERAR", l: "Plano por hora", d: "09h: contra a 1ª perna (1) · 10h: setup das 10 ou continuidade (3) · 11h: continuidade (1)" },
+    { v: "NENHUM", tag: "NÃO OPERAR", l: "Não operar hoje", d: "Dia fora do plano" },
   ] as const;
   const IMPACTO: Record<string, { l: string; bg: string; cor: string }> = {
     ALTO: { l: "Alto", bg: "var(--ac)", cor: "var(--onac)" },
@@ -479,7 +480,7 @@ export default function PreSessaoPage() {
           </section>
 
           <section style={CARD}>
-            {cabecalhoCard("4 · Setup do dia", "Um setup por dia, escolhido agora — não no calor")}
+            {cabecalhoCard("4 · Plano do dia", "O setup muda a cada hora — decidido agora, não no calor")}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
               {SETUPS.map((o) => {
                 const sel = sessao.setup_do_dia === o.v;
@@ -502,12 +503,12 @@ export default function PreSessaoPage() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "14px", borderTop: "1px solid var(--bd)", opacity: semSetup ? 0.4 : 1 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 <span style={{ fontSize: "14px", fontWeight: 500 }}>Contratos declarados</span>
-                <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{semSetup ? "não se aplica: dia sem setup" : "tamanho fixo para o dia"}</span>
+                <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{semSetup ? "não se aplica: dia sem operar" : "2 a 3 contratos, fixo para o dia"}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px", borderRadius: "12px", border: "1px solid var(--bd)", background: "var(--bg)" }}>
                 <button type="button" aria-label="Menos um contrato" disabled={isFechada || semSetup} onClick={() => updateField("contratos_declarados", contratos > 1 ? contratos - 1 : null)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>−</button>
                 <span style={{ width: "44px", textAlign: "center", fontSize: "20px", fontWeight: 600 }}>{contratos}</span>
-                <button type="button" aria-label="Mais um contrato" disabled={isFechada || semSetup} onClick={() => updateField("contratos_declarados", contratos + 1)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>+</button>
+                <button type="button" aria-label="Mais um contrato" disabled={isFechada || semSetup || contratos >= MAX_CONTRATOS} onClick={() => updateField("contratos_declarados", contratos + 1)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>+</button>
               </div>
             </div>
           </section>
