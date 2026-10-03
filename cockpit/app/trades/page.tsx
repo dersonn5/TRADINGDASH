@@ -38,9 +38,9 @@ function dataCurta(iso: string) {
 
 const FILTROS = [
   { v: "TODOS", l: "Todos" },
-  { v: "reversao_htf", l: "Reversão HTF" },
-  { v: "continuidade_tendencia", l: "Continuidade" },
-  { v: "varrida_barra_10", l: "Varrida das 10" },
+  { v: "primeira_perna", l: "RPP" },
+  { v: "varrida_barra_10", l: "MAV" },
+  { v: "continuidade_tendencia", l: "CSI" },
 ];
 
 export default function HistoricoPage() {

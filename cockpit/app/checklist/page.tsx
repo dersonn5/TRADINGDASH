@@ -46,7 +46,7 @@ import {
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, chip, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
-import { formatarBRL } from "@/lib/metricas";
+import { formatarBRL, NOMES_COMPLETOS, SIGLAS } from "@/lib/metricas";
 
 export default function ChecklistPage() {
   // Estratégia selecionada (padrão: REVERSAO_HTF)
@@ -425,7 +425,7 @@ export default function ChecklistPage() {
         return {
           cor: "var(--inst-now)",
           texto: "ABERTURA · 09:00–10:00",
-          nota: "só o trade contra a primeira perna · alvo nos 75%",
+          nota: "só a RPP · alvo nos 75% da perna",
         };
       case "PRIME":
         return {
@@ -682,7 +682,7 @@ export default function ChecklistPage() {
 
   const totalKills = killItems.length;
   const trilhaFrase = feitos >= totalKills ? "Trilha completa" : `Agora: passo ${feitos + 1} de ${totalKills}`;
-  const tagSetup = ehPrimeiraPerna ? "V" : selectedStrategy.id === "varrida_barra_10" ? "C" : selectedStrategy.id === "continuidade_tendencia" ? "B" : "A";
+  const tagSetup = SIGLAS[selectedStrategy.id] ?? selectedStrategy.id;
   const minimoMarcador = gate.scoreMinimo === Infinity ? selectedStrategy.score_minimo || 65 : gate.scoreMinimo;
   const janelaCard =
     gate.janela === "ABERTURA"
@@ -790,13 +790,13 @@ export default function ChecklistPage() {
           <section style={CARD}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <span style={LBL}>Trilha do Setup {tagSetup} · obrigatórios</span>
+                <span style={LBL}>Trilha da {tagSetup} · obrigatórios</span>
                 <span style={H2}>{trilhaFrase}</span>
                 {janelaAgora === "PRIME" && (
                   <div style={{ ...SEGMENTADO, marginTop: "6px", alignSelf: "flex-start" }}>
                     {[VARRIDA_BARRA_10, CONTINUIDADE_TENDENCIA].map((st) => (
                       <button key={st.id} type="button" onClick={() => escolherSetupHora2(st)} style={opcaoSegmentada(setupHora2.id === st.id, false)}>
-                        {st.id === VARRIDA_BARRA_10.id ? "Setup das 10" : "Continuidade"}
+                        {SIGLAS[st.id]}
                       </button>
                     ))}
                   </div>
@@ -939,7 +939,7 @@ export default function ChecklistPage() {
               </div>}
               {selectedStrategy.id === "varrida_barra_10" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Modo do Setup C</span>
+                  <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Modo da MAV</span>
                   {chips(
                     [
                       { v: "C1" as SetupCModo, l: "C1" },
@@ -1040,8 +1040,4 @@ export default function ChecklistPage() {
   );
 }
 
-const NOME_CURTO: Record<string, string> = {
-  varrida_barra_10: "Varrida das 10",
-  continuidade_tendencia: "Continuidade",
-  reversao_htf: "Reversão HTF",
-};
+const NOME_CURTO = NOMES_COMPLETOS;

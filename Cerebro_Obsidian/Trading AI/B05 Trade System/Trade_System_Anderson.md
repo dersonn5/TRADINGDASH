@@ -19,15 +19,15 @@
 
 | Hora | Setup (o checklist muda sozinho) | Trades |
 |---|---|---|
-| **09:00 – 09:59** | **Contra a primeira perna** (Setup V) — alvo nos 75% da perna | **1** |
-| **10:00 – 10:59** | **Setup das 10** (à vista manipulando ou manipulado) **ou continuidade** — abertura de NY a favor | **até 3** |
-| **11:00 – 11:59** | **Só continuidade** (score 80) | **1** |
+| **09:00 – 09:59** | **RPP** — Reversão da Primeira Perna, alvo nos 75% da perna | **1** |
+| **10:00 – 10:59** | **MAV** — Manipulação do À Vista (manipulando ou manipulado) **ou CSI** — abertura de NY a favor | **até 3** |
+| **11:00 – 11:59** | **Só CSI** — Continuação por Sweep de Indução (score 80) | **1** |
 | **12:00** | **FIM.** Fecha o Profit | |
 
 **O norte:**
 1. Tela só de **09:00 a 12:00**.
-2. **Três setups**, um por hora: V, setup das 10 e continuidade. Reversão HTF (Setup A)
-   saiu do sistema ativo.
+2. **Três setups**, um por hora: **RPP**, **MAV** e **CSI** (siglas de 03/10/2026). Reversão
+   HTF (antigo Setup A) saiu do sistema ativo.
 3. **Cotas por hora: 1 · 3 · 1.** Fora delas, não existe trade.
 4. **Alvo escrito antes de entrar.** Setup V: sai nos 75% da perna, sempre. Sweep HTF:
    alongar com trailing, visando um alvo HTF consciente.
@@ -70,7 +70,7 @@ ele olha absorção e troca de dominância; aqui se olha estrutura, indução e 
 
 ---
 
-# Setup V — CONTRA A PRIMEIRA PERNA *(desde 01/10/2026)*
+# RPP — Reversão da Primeira Perna *(desde 01/10/2026; era "Setup V")*
 
 O único trade antes das 10:00.
 
@@ -139,7 +139,7 @@ Além do extremo do swing que originou o MSS. **Não** na barra do FVG.
 
 ---
 
-# Setup B — CONTINUIDADE DE TENDÊNCIA
+# CSI — Continuação por Sweep de Indução *(era "Setup B — Continuidade de Tendência")*
 
 Opera a favor do movimento, entrando na correção.
 
@@ -182,7 +182,7 @@ continuidade em tendência. Escolher na pré-sessão, não no calor.
 
 ---
 
-# Setup C — VARRIDA DA BARRA DAS 10 *(em teste desde 23/09/2026)*
+# MAV — Manipulação do À Vista *(era "Setup C — Varrida da Barra das 10", em teste desde 23/09/2026)*
 
 Observado pelo operador no gráfico de 15 min: *"a barra das 10 ou manipula ou é
 manipulada, deixando máxima e mínima"*. A abertura do à vista é o momento da

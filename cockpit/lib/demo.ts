@@ -52,7 +52,7 @@ function sorteio(semente: number) {
 const ESTRATEGIAS = [
   { id: "varrida_barra_10", gatilhos: ["MSS_FVG", "MSS_OB"] },
   { id: "continuidade_tendencia", gatilhos: ["FVG_POS_SWING", "MSS_FVG"] },
-  { id: "reversao_htf", gatilhos: ["BPR", "MSS_FVG", "RISK_ENTRY"] },
+  { id: "primeira_perna", gatilhos: ["BPR", "MSS_FVG", "RISK_ENTRY"] },
 ];
 const VALOR_PONTO = 0.2; // R$ por ponto por contrato no WIN
 const CONTRATOS = 3;
@@ -84,8 +84,9 @@ export function tradesDemoDoMes(ano: number, mes: number, ate: string): TradeHis
       const est = x < 0.5 ? ESTRATEGIAS[0] : x < 0.8 ? ESTRATEGIAS[1] : ESTRATEGIAS[2];
       minuto = Math.max(minuto + 15, Math.floor(r() * 80));
       if (minuto > 88) break; // entrada so ate 11:28
-      const hh = 10 + Math.floor(minuto / 60);
-      const mm = minuto % 60;
+      // a RPP e o trade da 1a hora (09:00-09:59); os outros, da janela das 10:00
+      const hh = est.id === "primeira_perna" ? 9 : 10 + Math.floor(minuto / 60);
+      const mm = est.id === "primeira_perna" ? 5 + (minuto % 50) : minuto % 60;
       const duracao = 8 + Math.floor(r() * 40);
       const venda = r() < 0.45;
       const sinal = venda ? -1 : 1;
@@ -107,7 +108,7 @@ export function tradesDemoDoMes(ano: number, mes: number, ate: string): TradeHis
         strategy_id: est.id,
         mercado: "WIN",
         direcao: venda ? "VENDA" : "COMPRA",
-        janela: hh === 10 ? "PRIME" : "VALIDA",
+        janela: hh === 9 ? "ABERTURA" : hh === 10 ? "PRIME" : "VALIDA",
         status: "FECHADO",
         hora_entrada: utc(hh, mm),
         hora_saida: utc(hh + Math.floor(fim / 60), fim % 60),

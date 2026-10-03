@@ -99,7 +99,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const series = {
     C: acum((t) => t.strategy_id === "varrida_barra_10"),
     B: acum((t) => t.strategy_id === "continuidade_tendencia"),
-    A: acum((t) => t.strategy_id === "reversao_htf"),
+    A: acum((t) => t.strategy_id === "primeira_perna"), // a serie A virou a RPP em 03/10/2026
   };
   const todos = [...cum, ...series.A, ...series.B, ...series.C];
   const amplitude = Math.max(...todos) - Math.min(0, ...todos) || 1;
@@ -301,7 +301,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const ctx = Object.keys(NOMES_CONTEXTOS).map((k) => grupo(trades.filter((t) => t.contexto_1h === k), NOMES_CONTEXTOS[k]));
   const sc = {
     modos, ctx,
-    frase: tsC.length ? `C1 ${modos[0].rm} × C2 ${modos[1].rm} por trade` : "Sem trades do Setup C ainda",
+    frase: tsC.length ? `C1 ${modos[0].rm} × C2 ${modos[1].rm} por trade` : "Sem trades da MAV ainda",
     pequena: tsC.length > 0 && tsC.length < 10,
   };
 

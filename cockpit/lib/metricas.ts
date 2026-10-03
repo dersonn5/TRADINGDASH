@@ -29,14 +29,33 @@ export interface TradeMetricas {
   mudou_alvo?: boolean | null;
 }
 
-export const NOMES_ESTRATEGIAS: Record<string, string> = {
-  primeira_perna: "Primeira perna",
-  varrida_barra_10: "Varrida das 10",
-  continuidade_tendencia: "Continuidade",
+/**
+ * Siglas dos setups (03/10/2026, escolhidas pelo operador). Os ids no banco nao mudam.
+ * RPP = Reversao da Primeira Perna (09h) · MAV = Manipulacao do A Vista (10h) ·
+ * CSI = Continuacao por Sweep de Inducao (10h-11h). Reversao HTF saiu do sistema ativo.
+ */
+export const SIGLAS: Record<string, string> = {
+  primeira_perna: "RPP",
+  varrida_barra_10: "MAV",
+  continuidade_tendencia: "CSI",
+  reversao_htf: "RHTF",
+};
+
+/** Nome completo: tela de Estratégias e ao lado do selo da sigla. */
+export const NOMES_COMPLETOS: Record<string, string> = {
+  primeira_perna: "Reversão da Primeira Perna",
+  varrida_barra_10: "Manipulação do À Vista",
+  continuidade_tendencia: "Continuação por Sweep de Indução",
   reversao_htf: "Reversão HTF",
-  C: "Varrida das 10",
-  B: "Continuidade",
-  A: "Reversão HTF",
+};
+
+/** Nome nos lugares compactos (gráficos, tabelas, frases): a sigla. */
+export const NOMES_ESTRATEGIAS: Record<string, string> = {
+  ...SIGLAS,
+  V: "RPP",
+  C: "MAV",
+  B: "CSI",
+  A: "RHTF",
 };
 
 export const NOMES_GATILHOS: Record<string, string> = {

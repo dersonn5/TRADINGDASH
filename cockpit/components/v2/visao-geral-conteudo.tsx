@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { NOMES_COMPLETOS } from "@/lib/metricas";
 import type { VisaoGeral } from "@/lib/visao-geral";
 import { CARD, LBL, H2, PILL_PEQUENA } from "@/components/v2/estilos";
 
@@ -24,15 +25,16 @@ function AmostraPequena() {
 
 const CONFIG_SERIES = [
   { id: "Total", label: "Total", cor: "var(--tx)", dash: undefined, dot: true },
-  { id: "C", stratId: "varrida_barra_10", label: "Varrida das 10", cor: "var(--strat-c)", dash: undefined, dot: false },
-  { id: "B", stratId: "continuidade_tendencia", label: "Continuidade", cor: "var(--strat-b)", dash: "6 3", dot: false },
-  { id: "A", stratId: "reversao_htf", label: "Reversão HTF", cor: "var(--strat-a)", dash: "2 4", dot: false },
+  { id: "C", stratId: "varrida_barra_10", label: "MAV", cor: "var(--strat-c)", dash: undefined, dot: false },
+  { id: "B", stratId: "continuidade_tendencia", label: "CSI", cor: "var(--strat-b)", dash: "6 3", dot: false },
+  { id: "A", stratId: "primeira_perna", label: "RPP", cor: "var(--strat-a)", dash: "2 4", dot: false },
 ];
 
 const MAPA_ESTRAT: Record<string, { serieId: string; tag: string; cor: string }> = {
-  varrida_barra_10: { serieId: "C", tag: "SETUP C", cor: "var(--strat-c)" },
-  continuidade_tendencia: { serieId: "B", tag: "SETUP B", cor: "var(--strat-b)" },
-  reversao_htf: { serieId: "A", tag: "SETUP A", cor: "var(--strat-a)" },
+  varrida_barra_10: { serieId: "C", tag: "MAV", cor: "var(--strat-c)" },
+  continuidade_tendencia: { serieId: "B", tag: "CSI", cor: "var(--strat-b)" },
+  primeira_perna: { serieId: "A", tag: "RPP", cor: "var(--strat-a)" },
+  reversao_htf: { serieId: "-", tag: "RHTF", cor: "var(--tx3)" },
 };
 
 export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
@@ -225,10 +227,11 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
                   transition: "background 0.15s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
                     <span
                       style={{
+                        flexShrink: 0,
                         fontSize: "11px",
                         fontWeight: 700,
                         padding: "2px 6px",
@@ -241,9 +244,9 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
                     >
                       {meta.tag}
                     </span>
-                    <span style={{ fontSize: "14px", fontWeight: isRowHighlighted ? 600 : 500 }}>{e.nome}</span>
+                    <span style={{ fontSize: "14px", fontWeight: isRowHighlighted ? 600 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={NOMES_COMPLETOS[e.id] ?? e.nome}>{NOMES_COMPLETOS[e.id] ?? e.nome}</span>
                   </div>
-                  <span style={{ fontSize: "15px", fontWeight: 600, color: e.cor }}>{e.pnlTxt}</span>
+                  <span style={{ flexShrink: 0, whiteSpace: "nowrap", fontSize: "15px", fontWeight: 600, color: e.cor }}>{e.pnlTxt}</span>
                 </div>
                 <svg width="100%" height="8" viewBox="0 0 300 8" preserveAspectRatio="none" aria-hidden="true">
                   <rect x="0" y="0" width="300" height="8" rx="4" style={{ fill: "var(--s2)" }} />
@@ -396,9 +399,9 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
         </section>
 
         <section style={CARD}>
-          <Cabecalho label="Setup C e contexto" frase={vg.sc.frase} direita={vg.sc.pequena ? <AmostraPequena /> : null} />
+          <Cabecalho label="MAV e contexto" frase={vg.sc.frase} direita={vg.sc.pequena ? <AmostraPequena /> : null} />
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <span style={{ fontSize: "12px", color: "var(--tx3)", paddingBottom: "4px" }}>Modo (Varrida das 10)</span>
+            <span style={{ fontSize: "12px", color: "var(--tx3)", paddingBottom: "4px" }}>Modo da MAV</span>
             {vg.sc.modos.map((m) => (
               <div key={m.nome} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", borderTop: "1px solid var(--bd)", fontSize: "13px" }}>
                 <span style={{ width: "28px", fontWeight: 600 }}>{m.nome}</span>

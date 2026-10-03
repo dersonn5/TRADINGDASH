@@ -48,9 +48,9 @@ export const REGRAS_DA_HORA: Record<"ABERTURA" | "PRIME" | "VALIDA", { setups: s
 };
 
 const NOME_SETUP: Record<string, string> = {
-  [ESTRATEGIA_PRIMEIRA_PERNA]: "contra a primeira perna",
-  [ESTRATEGIA_BARRA_10]: "setup das 10",
-  [ESTRATEGIA_CONTINUIDADE]: "continuidade",
+  [ESTRATEGIA_PRIMEIRA_PERNA]: "RPP",
+  [ESTRATEGIA_BARRA_10]: "MAV",
+  [ESTRATEGIA_CONTINUIDADE]: "CSI",
 };
 
 /** O que o gate precisa saber da hora: qual setup está na tela e quantos trades a hora já teve. */

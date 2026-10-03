@@ -59,11 +59,11 @@ export function validarCamposNovosTrade(input: {
 
   if (input.strategy_id === "varrida_barra_10") {
     if (!input.setup_c_modo) {
-      throw new Error("modo do Setup C (C1 ou C2) é obrigatório para a estratégia varrida_barra_10");
+      throw new Error("modo da MAV (C1 ou C2) é obrigatório");
     }
     const MODOS_VALIDOS: SetupCModo[] = ["C1", "C2"];
     if (!MODOS_VALIDOS.includes(input.setup_c_modo as SetupCModo)) {
-      throw new Error(`modo do Setup C inválido: ${input.setup_c_modo}`);
+      throw new Error(`modo da MAV inválido: ${input.setup_c_modo}`);
     }
   }
 }

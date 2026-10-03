@@ -390,16 +390,16 @@ report(
 const ctx = (estrategiaId: string, operacoesNaHora = 0) => ({ estrategiaId, operacoesNaHora });
 const gh = (h: number, m: number, c: ReturnType<typeof ctx>) => avaliarGate(itens80, "BULLISH", makeSPDate(h, m), 65, limLiberado, null, true, true, c);
 const casosHora: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]> = [
-  ["09:30 setup das 10 -> bloqueado", false, gh(9, 30, ctx("varrida_barra_10")), "só contra a primeira perna"],
+  ["09:30 setup das 10 -> bloqueado", false, gh(9, 30, ctx("varrida_barra_10")), "só RPP"],
   ["09:30 primeira perna, 1o trade -> liberado", true, gh(9, 30, ctx("primeira_perna")), ""],
   ["09:30 primeira perna, ja feito -> bloqueado", false, gh(9, 30, ctx("primeira_perna", 1)), "limite de 1 trade"],
-  ["10:30 primeira perna -> bloqueado", false, gh(10, 30, ctx("primeira_perna")), "setup das 10 ou continuidade"],
+  ["10:30 primeira perna -> bloqueado", false, gh(10, 30, ctx("primeira_perna")), "MAV ou CSI"],
   ["10:30 setup das 10, 2 feitos -> liberado", true, gh(10, 30, ctx("varrida_barra_10", 2)), ""],
   ["10:30 continuidade -> liberado", true, gh(10, 30, ctx("continuidade_tendencia")), ""],
   ["10:30 setup das 10, 3 feitos -> bloqueado", false, gh(10, 30, ctx("varrida_barra_10", 3)), "limite de 3 trades"],
   ["10:30 reversao HTF (fora do sistema) -> bloqueado", false, gh(10, 30, ctx("reversao_htf")), "2ª hora"],
   ["11:15 continuidade -> liberado", true, gh(11, 15, ctx("continuidade_tendencia")), ""],
-  ["11:15 setup das 10 -> bloqueado", false, gh(11, 15, ctx("varrida_barra_10")), "só continuidade"],
+  ["11:15 setup das 10 -> bloqueado", false, gh(11, 15, ctx("varrida_barra_10")), "só CSI"],
   ["11:15 continuidade, 1 feito -> bloqueado", false, gh(11, 15, ctx("continuidade_tendencia", 1)), "limite de 1 trade"],
 ];
 for (const [nome, esperado, g, trecho] of casosHora) {
@@ -639,9 +639,9 @@ try {
     contexto_1h: "REVERSAO",
   });
 } catch (e: any) {
-  erroModo = e.message.includes("modo do Setup C");
+  erroModo = e.message.includes("modo da MAV");
 }
-report("Campos Novos Caso 3: varrida_barra_10 sem modo -> lança erro citando modo do Setup C", erroModo);
+report("Campos Novos Caso 3: varrida_barra_10 sem modo -> lança erro citando modo da MAV", erroModo);
 
 // Caso 4: reversao_htf sem setup_c_modo -> válido (passa sem erro)
 let revSemModoOk = false;
@@ -822,7 +822,7 @@ report(
   report(
     "Visão Geral: 16 trades do design (resultado +R$ 1.604, DD R$ 222, 13 de 16 no plano, calendário começa em 31/08)",
     vg.kpis[0].valor === "+R$ 1.604" && vg.kpis[4].valor === "−R$ 222" && vg.disc.pct === "81%" &&
-      vg.estr[0].nome === "Varrida das 10" && vg.estr[0].n === 8 && dias.startsWith("31") && vg.cal.cells.length === 25,
+      vg.estr[0].nome === "MAV" && vg.estr[0].n === 8 && dias.startsWith("31") && vg.cal.cells.length === 25,
     `resultado=${vg.kpis[0].valor} dd=${vg.kpis[4].valor} disciplina=${vg.disc.pct} estr0=${vg.estr[0].nome}/${vg.estr[0].n} celulas=${vg.cal.cells.length} dias=${dias}`
   );
   const vazio = montarVisaoGeral([], [], 2026, 9, "2026-09-25");

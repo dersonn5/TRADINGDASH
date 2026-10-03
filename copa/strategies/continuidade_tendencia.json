@@ -1,7 +1,7 @@
 {
   "id": "continuidade_tendencia",
   "ordem": 2,
-  "nome": "Continuidade de Tendência",
+  "nome": "Continuação por Sweep de Indução",
   "mercado": [
     "WIN"
   ],

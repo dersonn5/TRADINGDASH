@@ -23,8 +23,14 @@ UPDATE copa_strategy_items i
   FROM copa_strategy_versions v
  WHERE i.version_id = v.id AND v.strategy_id = 'varrida_barra_10' AND v.versao = 1 AND i.item_id = 'k7';
 
--- 3. Conferencia: a constraint nova e o item atualizado.
+-- 3. Siglas dos setups (03/10/2026). Os ids nao mudam; so o nome exibido.
+UPDATE copa_strategies SET nome = 'RPP - Reversao da Primeira Perna' WHERE id = 'primeira_perna';
+UPDATE copa_strategies SET nome = 'MAV - Manipulacao do A Vista' WHERE id = 'varrida_barra_10';
+UPDATE copa_strategies SET nome = 'CSI - Continuacao por Sweep de Inducao' WHERE id = 'continuidade_tendencia';
+
+-- 4. Conferencia: a constraint nova, o item atualizado e os nomes.
 SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'copa_sessions_setup_do_dia_check';
 SELECT i.item_id, i.label
   FROM copa_strategy_items i JOIN copa_strategy_versions v ON v.id = i.version_id
  WHERE v.strategy_id = 'varrida_barra_10' AND v.versao = 1 AND i.item_id = 'k7';
+SELECT id, nome FROM copa_strategies ORDER BY id;

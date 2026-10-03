@@ -183,7 +183,7 @@ export const REVERSAO_HTF: Strategy = {
 export const CONTINUIDADE_TENDENCIA: Strategy = {
   id: "continuidade_tendencia",
   ordem: 2,
-  nome: "Continuidade de Tendência",
+  nome: "Continuação por Sweep de Indução",
   mercado: ["WIN"],
   descricao:
     "Opera a favor da tendência, entrando na correção: o mercado forma um swing, captura o extremo oposto dele e a entrada é no array (FVG ou bloco de ordem) da retomada.",
@@ -361,7 +361,7 @@ export const CONTINUIDADE_TENDENCIA: Strategy = {
 export const VARRIDA_BARRA_10: Strategy = {
   id: "varrida_barra_10",
   ordem: 3,
-  nome: "Varrida da Barra das 10",
+  nome: "Manipulação do À Vista",
   mercado: ["WIN"],
   descricao:
     "A abertura do à vista é o momento da manipulação. C1: entre 10:15 e 11:14 o preço passa da máxima ou da mínima da barra das 10. C2: a própria barra das 10 varre o topo ou o fundo de uma barra de 15 min anterior e devolve. Operar contra o lado varrido, sem esperar o 15 min fechar.",
@@ -503,7 +503,7 @@ export const VARRIDA_BARRA_10: Strategy = {
 export const PRIMEIRA_PERNA: Strategy = {
   id: "primeira_perna",
   ordem: 4,
-  nome: "Contra a Primeira Perna",
+  nome: "Reversão da Primeira Perna",
   mercado: ["WIN"],
   descricao:
     "O único trade antes das 10:00. A abertura das 09:00 faz uma perna forte (800 pts ou mais) e, em 2026, volta 75% dela em ~3 de cada 4 dias (o V das 09:00). Operar contra a perna depois do extremo, com stop além do topo/fundo da perna e alvo fixo nos 75% da perna. Um trade por dia.",

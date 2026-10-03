@@ -5,18 +5,13 @@ import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
 import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS, MAX_OPERACOES_DIA, MAX_PERDAS_DIA } from "@/lib/gate";
 import { listarTradesDoMes, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
-import { calcularRTrade, calcularRiscoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
+import { NOMES_COMPLETOS, SIGLAS, calcularRTrade, calcularRiscoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
 import { CARD, LBL, H2 } from "@/components/v2/estilos";
 
 // Espelho de design/v2/Estrategias.dc.html.
 
-const TAG: Record<string, string> = { primeira_perna: "SETUP V", varrida_barra_10: "SETUP C", continuidade_tendencia: "SETUP B", reversao_htf: "SETUP A" };
-const NOME: Record<string, string> = {
-  primeira_perna: "Contra a Primeira Perna",
-  varrida_barra_10: "Varrida da Barra das 10",
-  continuidade_tendencia: "Continuidade de Tendência",
-  reversao_htf: "Reversão HTF",
-};
+const TAG = SIGLAS;
+const NOME = NOMES_COMPLETOS;
 const STATUS: Record<string, string> = { EM_CALIBRACAO: "Em calibração", NAO_CALIBRADO: "Não calibrado", CALIBRADO: "Calibrado" };
 // Na ordem do pregao: o trade da abertura (antes das 10:00) e depois os setups do dia.
 const ORDEM = ["primeira_perna", "varrida_barra_10", "continuidade_tendencia"]; // Reversao HTF saiu em 03/10/2026

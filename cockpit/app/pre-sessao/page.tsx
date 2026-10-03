@@ -242,7 +242,7 @@ export default function PreSessaoPage() {
   // Desde 03/10/2026 o setup vem da hora (o checklist muda sozinho); a pre-sessao so decide
   // se o dia e de operar. Sessoes antigas com setup do dia continuam validas no banco.
   const SETUPS = [
-    { v: "POR_HORA", tag: "OPERAR", l: "Plano por hora", d: "09h: contra a 1ª perna (1) · 10h: setup das 10 ou continuidade (3) · 11h: continuidade (1)" },
+    { v: "POR_HORA", tag: "OPERAR", l: "Plano por hora", d: "09h: RPP (1) · 10h: MAV ou CSI (3) · 11h: CSI (1)" },
     { v: "NENHUM", tag: "NÃO OPERAR", l: "Não operar hoje", d: "Dia fora do plano" },
   ] as const;
   const IMPACTO: Record<string, { l: string; bg: string; cor: string }> = {
