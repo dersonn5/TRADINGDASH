@@ -27,7 +27,7 @@ export const REVERSAO_HTF: Strategy = {
     "Preco no meio do range, longe de qualquer array",
     "Operador em tilt",
   ],
-  horarios_validos: [{ inicio: "10:00", fim: "12:00" }],
+  horarios_validos: [{ inicio: "09:00", fim: "12:00" }],
   regras_ambiente: [
     {
       campo: "niveis_marcados",

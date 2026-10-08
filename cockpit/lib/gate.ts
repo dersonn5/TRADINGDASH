@@ -34,23 +34,27 @@ export const MAX_CONTRATOS = 3;
 export const ESTRATEGIA_PRIMEIRA_PERNA = "primeira_perna";
 export const ESTRATEGIA_BARRA_10 = "varrida_barra_10";
 export const ESTRATEGIA_CONTINUIDADE = "continuidade_tendencia";
+export const ESTRATEGIA_REVERSAO_HTF = "reversao_htf";
 
 /**
  * Setups e cota de trades por hora (03/10/2026). O checklist muda a cada hora.
  * - 1ª hora (09:00-09:59): só o trade contra a primeira perna, 1 trade.
  * - 2ª hora (10:00-10:59): setup das 10 ou continuidade, até 3 trades (abertura de NY).
  * - 3ª hora (11:00-11:59): só continuidade, 1 trade.
+ * A Reversão HTF (RHT) vale em qualquer hora, das 09:00 às 12:00, dentro da cota da hora
+ * (decisão do operador em 03/10/2026).
  */
 export const REGRAS_DA_HORA: Record<"ABERTURA" | "PRIME" | "VALIDA", { setups: string[]; maxTrades: number; nome: string }> = {
-  ABERTURA: { setups: [ESTRATEGIA_PRIMEIRA_PERNA], maxTrades: 1, nome: "1ª hora" },
-  PRIME: { setups: [ESTRATEGIA_BARRA_10, ESTRATEGIA_CONTINUIDADE], maxTrades: 3, nome: "2ª hora" },
-  VALIDA: { setups: [ESTRATEGIA_CONTINUIDADE], maxTrades: 1, nome: "3ª hora" },
+  ABERTURA: { setups: [ESTRATEGIA_PRIMEIRA_PERNA, ESTRATEGIA_REVERSAO_HTF], maxTrades: 1, nome: "1ª hora" },
+  PRIME: { setups: [ESTRATEGIA_BARRA_10, ESTRATEGIA_CONTINUIDADE, ESTRATEGIA_REVERSAO_HTF], maxTrades: 3, nome: "2ª hora" },
+  VALIDA: { setups: [ESTRATEGIA_CONTINUIDADE, ESTRATEGIA_REVERSAO_HTF], maxTrades: 1, nome: "3ª hora" },
 };
 
 const NOME_SETUP: Record<string, string> = {
   [ESTRATEGIA_PRIMEIRA_PERNA]: "RPP",
   [ESTRATEGIA_BARRA_10]: "MAV",
   [ESTRATEGIA_CONTINUIDADE]: "CSI",
+  [ESTRATEGIA_REVERSAO_HTF]: "RHT",
 };
 
 /** O que o gate precisa saber da hora: qual setup está na tela e quantos trades a hora já teve. */

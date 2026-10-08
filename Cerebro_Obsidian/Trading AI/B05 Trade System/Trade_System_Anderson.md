@@ -22,12 +22,13 @@
 | **09:00 – 09:59** | **RPP** — Reversão da Primeira Perna, alvo nos 75% da perna | **1** |
 | **10:00 – 10:59** | **MAV** — Manipulação do À Vista (manipulando ou manipulado) **ou CSI** — abertura de NY a favor | **até 3** |
 | **11:00 – 11:59** | **Só CSI** — Continuação por Sweep de Indução (score 80) | **1** |
+| **Qualquer hora (09:00–11:59)** | **RHT** — Reversão HTF, dentro da cota da hora em que entrar | — |
 | **12:00** | **FIM.** Fecha o Profit | |
 
 **O norte:**
 1. Tela só de **09:00 a 12:00**.
-2. **Três setups**, um por hora: **RPP**, **MAV** e **CSI** (siglas de 03/10/2026). Reversão
-   HTF (antigo Setup A) saiu do sistema ativo.
+2. **Setups:** **RPP**, **MAV** e **CSI**, um por hora (siglas de 03/10/2026), e a **RHT**
+   (Reversão HTF, antigo Setup A) em qualquer hora de 09:00 a 12:00, dentro da cota da hora.
 3. **Cotas por hora: 1 · 3 · 1.** Fora delas, não existe trade.
 4. **Alvo escrito antes de entrar.** Setup V: sai nos 75% da perna, sempre. Sweep HTF:
    alongar com trailing, visando um alvo HTF consciente.
@@ -94,7 +95,7 @@ a perna rápida volta mais em todos os anos; rejeição clara no extremo (30); a
 
 ---
 
-# Setup A — REVERSÃO *(fora do sistema ativo desde 03/10/2026 — mantido como referência)*
+# RHT — Reversão HTF *(era "Setup A"; qualquer hora de 09:00 a 12:00, dentro da cota da hora)*
 
 Opera contra o movimento que acabou de acontecer, depois que ele varreu
 liquidez.

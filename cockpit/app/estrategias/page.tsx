@@ -14,7 +14,7 @@ const TAG = SIGLAS;
 const NOME = NOMES_COMPLETOS;
 const STATUS: Record<string, string> = { EM_CALIBRACAO: "Em calibração", NAO_CALIBRADO: "Não calibrado", CALIBRADO: "Calibrado" };
 // Na ordem do pregao: o trade da abertura (antes das 10:00) e depois os setups do dia.
-const ORDEM = ["primeira_perna", "varrida_barra_10", "continuidade_tendencia"]; // Reversao HTF saiu em 03/10/2026
+const ORDEM = ["primeira_perna", "varrida_barra_10", "continuidade_tendencia", "reversao_htf"];
 
 export default function EstrategiasPage() {
   const estrategias = ORDEM.map((id) => DEFAULT_STRATEGIES.find((s) => s.id === id)).filter(Boolean) as typeof DEFAULT_STRATEGIES;
@@ -48,6 +48,8 @@ export default function EstrategiasPage() {
         ? `${d.score_minimo} · 1 trade na 1ª hora`
         : d.id === "varrida_barra_10"
           ? `${d.score_minimo} · até 3 trades na 2ª hora`
+          : d.id === "reversao_htf"
+            ? `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h · qualquer hora, na cota`
           : `${d.score_minimo} · ${d.score_minimo + 15} na 3ª hora (1 trade)`,
     },
     { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 1) · 2 a ${MAX_CONTRATOS} contratos` },
@@ -56,7 +58,7 @@ export default function EstrategiasPage() {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Os três setups do trade system · um por hora</span>
+        <span style={{ fontSize: "13px", color: "var(--tx3)" }}>Os setups do trade system · um por hora, e a RHT em qualquer hora</span>
         <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.02em" }}>Estratégias</h1>
       </div>
 

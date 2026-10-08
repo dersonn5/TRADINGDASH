@@ -32,13 +32,13 @@ export interface TradeMetricas {
 /**
  * Siglas dos setups (03/10/2026, escolhidas pelo operador). Os ids no banco nao mudam.
  * RPP = Reversao da Primeira Perna (09h) · MAV = Manipulacao do A Vista (10h) ·
- * CSI = Continuacao por Sweep de Inducao (10h-11h). Reversao HTF saiu do sistema ativo.
+ * CSI = Continuacao por Sweep de Inducao (10h-11h) · RHT = Reversao HTF (qualquer hora).
  */
 export const SIGLAS: Record<string, string> = {
   primeira_perna: "RPP",
   varrida_barra_10: "MAV",
   continuidade_tendencia: "CSI",
-  reversao_htf: "RHTF",
+  reversao_htf: "RHT",
 };
 
 /** Nome completo: tela de Estratégias e ao lado do selo da sigla. */
@@ -55,7 +55,7 @@ export const NOMES_ESTRATEGIAS: Record<string, string> = {
   V: "RPP",
   C: "MAV",
   B: "CSI",
-  A: "RHTF",
+  A: "RHT",
 };
 
 export const NOMES_GATILHOS: Record<string, string> = {

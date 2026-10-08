@@ -28,13 +28,14 @@ const CONFIG_SERIES = [
   { id: "C", stratId: "varrida_barra_10", label: "MAV", cor: "var(--strat-c)", dash: undefined, dot: false },
   { id: "B", stratId: "continuidade_tendencia", label: "CSI", cor: "var(--strat-b)", dash: "6 3", dot: false },
   { id: "A", stratId: "primeira_perna", label: "RPP", cor: "var(--strat-a)", dash: "2 4", dot: false },
+  { id: "R", stratId: "reversao_htf", label: "RHT", cor: "var(--k5)", dash: "8 3 2 3", dot: false },
 ];
 
 const MAPA_ESTRAT: Record<string, { serieId: string; tag: string; cor: string }> = {
   varrida_barra_10: { serieId: "C", tag: "MAV", cor: "var(--strat-c)" },
   continuidade_tendencia: { serieId: "B", tag: "CSI", cor: "var(--strat-b)" },
   primeira_perna: { serieId: "A", tag: "RPP", cor: "var(--strat-a)" },
-  reversao_htf: { serieId: "-", tag: "RHTF", cor: "var(--tx3)" },
+  reversao_htf: { serieId: "R", tag: "RHT", cor: "var(--k5)" },
 };
 
 export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
@@ -136,6 +137,18 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
                 fill: "var(--ac)",
                 fillOpacity: highlightSerie && highlightSerie !== "Total" ? 0.03 : 0.08,
                 transition: "fill-opacity 0.2s ease",
+              }}
+            />
+            <path
+              d={vg.curva.R}
+              style={{
+                fill: "none",
+                stroke: "var(--k5)",
+                strokeWidth: highlightSerie === "R" ? 2.8 : 1.8,
+                strokeDasharray: "8 3 2 3",
+                strokeLinecap: "round",
+                opacity: highlightSerie && highlightSerie !== "R" ? 0.2 : 1,
+                transition: "opacity 0.2s ease, stroke-width 0.2s ease",
               }}
             />
             <path

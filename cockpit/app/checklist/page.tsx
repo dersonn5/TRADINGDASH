@@ -16,6 +16,7 @@ import {
   classificarJanela,
   ESTRATEGIA_PRIMEIRA_PERNA,
   MAX_CONTRATOS,
+  REGRAS_DA_HORA,
   GateResult,
   ItemAvaliado,
   LimitesDia,
@@ -24,8 +25,6 @@ import Link from "next/link";
 import {
   DEFAULT_STRATEGIES,
   REVERSAO_HTF,
-  CONTINUIDADE_TENDENCIA,
-  VARRIDA_BARRA_10,
   PRIMEIRA_PERNA,
 } from "@/data/strategies";
 import { Strategy } from "@/lib/types";
@@ -166,29 +165,26 @@ export default function ChecklistPage() {
     loadPreSessao();
   }, [loadPreSessao]);
 
-  // O checklist muda a cada hora (REGRAS_DA_HORA): 1a hora = contra a primeira perna;
-  // 2a hora = setup das 10 ou continuidade (o operador escolhe); 3a hora = continuidade.
+  // O checklist muda a cada hora (REGRAS_DA_HORA): 1a hora RPP; 2a hora MAV ou CSI;
+  // 3a hora CSI. A RHT vale em qualquer hora. Quando a hora tem mais de um setup, o
+  // operador escolhe; o padrao e o primeiro da lista.
   const janelaAgora = classificarJanela(now);
-  const [setupHora2, setSetupHora2] = useState<Strategy>(VARRIDA_BARRA_10);
+  const janelaDeRegra = janelaAgora === "FORA" ? (now.getHours() < 10 ? "ABERTURA" : "VALIDA") : janelaAgora;
+  const setupsDaHora = REGRAS_DA_HORA[janelaDeRegra].setups
+    .map((id) => DEFAULT_STRATEGIES.find((s) => s.id === id))
+    .filter(Boolean) as Strategy[];
+  const [escolhaPorHora, setEscolhaPorHora] = useState<Record<string, string>>({});
   const estrategiaDaHora: Strategy =
-    janelaAgora === "ABERTURA"
-      ? PRIMEIRA_PERNA
-      : janelaAgora === "PRIME"
-        ? setupHora2
-        : janelaAgora === "VALIDA"
-          ? CONTINUIDADE_TENDENCIA
-          : now.getHours() < 10
-            ? PRIMEIRA_PERNA
-            : setupHora2;
+    setupsDaHora.find((s) => s.id === escolhaPorHora[janelaDeRegra]) ?? setupsDaHora[0] ?? PRIMEIRA_PERNA;
   useEffect(() => {
     setSelectedStrategy((atual) => (atual.id === estrategiaDaHora.id ? atual : estrategiaDaHora));
   }, [estrategiaDaHora]);
 
-  function escolherSetupHora2(strat: Strategy) {
-    if (strat.id === setupHora2.id) return;
+  function escolherSetupDaHora(strat: Strategy) {
+    if (strat.id === estrategiaDaHora.id) return;
     const hasCheckedItems = checklist?.items?.some((i) => i.checked);
     if (hasCheckedItems && !window.confirm("Existem itens marcados. Trocar de setup reseta o checklist. Continuar?")) return;
-    setSetupHora2(strat);
+    setEscolhaPorHora((e) => ({ ...e, [janelaDeRegra]: strat.id }));
   }
 
   useEffect(() => {
@@ -792,10 +788,10 @@ export default function ChecklistPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <span style={LBL}>Trilha da {tagSetup} · obrigatórios</span>
                 <span style={H2}>{trilhaFrase}</span>
-                {janelaAgora === "PRIME" && (
+                {setupsDaHora.length > 1 && (
                   <div style={{ ...SEGMENTADO, marginTop: "6px", alignSelf: "flex-start" }}>
-                    {[VARRIDA_BARRA_10, CONTINUIDADE_TENDENCIA].map((st) => (
-                      <button key={st.id} type="button" onClick={() => escolherSetupHora2(st)} style={opcaoSegmentada(setupHora2.id === st.id, false)}>
+                    {setupsDaHora.map((st) => (
+                      <button key={st.id} type="button" onClick={() => escolherSetupDaHora(st)} style={opcaoSegmentada(estrategiaDaHora.id === st.id, false)}>
                         {SIGLAS[st.id]}
                       </button>
                     ))}

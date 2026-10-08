@@ -100,8 +100,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     C: acum((t) => t.strategy_id === "varrida_barra_10"),
     B: acum((t) => t.strategy_id === "continuidade_tendencia"),
     A: acum((t) => t.strategy_id === "primeira_perna"), // a serie A virou a RPP em 03/10/2026
+    R: acum((t) => t.strategy_id === "reversao_htf"),
   };
-  const todos = [...cum, ...series.A, ...series.B, ...series.C];
+  const todos = [...cum, ...series.A, ...series.B, ...series.C, ...series.R];
   const amplitude = Math.max(...todos) - Math.min(0, ...todos) || 1;
   const passo = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000].find((p) => p >= amplitude / 3.5) ?? 20000;
   const top = Math.max(passo, Math.ceil(Math.max(...todos) / passo) * passo);
@@ -117,7 +118,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const temDD = D.maxDrawdown > 0;
   const curva = {
     W, H, vb: `0 0 ${W} ${H}`, x0: pl, x1: W - pr, lx: pl - 10,
-    d: path(cum), A: path(series.A), B: path(series.B), C: path(series.C),
+    d: path(cum), A: path(series.A), B: path(series.B), C: path(series.C), R: path(series.R),
     area: `${path(cum)} L${X(n).toFixed(1)} ${Y(0).toFixed(1)} L${X(0).toFixed(1)} ${Y(0).toFixed(1)} Z`,
     temDD, ddx: X(D.picoIndex).toFixed(1), ddw: (X(D.valeIndex) - X(D.picoIndex)).toFixed(1), ddy: 4, ddh: H - pb - 4,
     ddlx: ((X(D.picoIndex) + X(D.valeIndex)) / 2).toFixed(1), ddty: 16, ddTxt: formatarBRL(-D.maxDrawdown),
@@ -130,8 +131,8 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   };
 
   // Por estrategia
-  const ativas = ["varrida_barra_10", "continuidade_tendencia", "primeira_perna"]; // Reversao HTF saiu em 03/10/2026
-  const todasEstrategias = [...ativas, "reversao_htf"];
+  const ativas = ["varrida_barra_10", "continuidade_tendencia", "primeira_perna", "reversao_htf"];
+  const todasEstrategias = ativas;
   const ids = n ? todasEstrategias.filter((id) => trades.some((t) => t.strategy_id === id)) : ativas;
   const estr = ids.map((id) => {
     const ts = trades.filter((t) => t.strategy_id === id);

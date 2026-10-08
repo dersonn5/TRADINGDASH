@@ -41,6 +41,7 @@ const FILTROS = [
   { v: "primeira_perna", l: "RPP" },
   { v: "varrida_barra_10", l: "MAV" },
   { v: "continuidade_tendencia", l: "CSI" },
+  { v: "reversao_htf", l: "RHT" },
 ];
 
 export default function HistoricoPage() {

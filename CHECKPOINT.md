@@ -39,7 +39,7 @@ demonstração com trades fictícios. O Anderson começa a operar de verdade na 
   aquele pedaço. Por isso o campo Evento da pré-sessão sugere os nomes gravados.
 
 ## Decisões que não se recuperam lendo o código
-- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade, alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (1). 3 stops encerram; 5 trades; 2–3 contratos; Setup A fora. Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
+- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade, alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (1). 3 stops encerram; 5 trades; 2–3 contratos. RHT (Reversão HTF) em qualquer hora, dentro da cota. Siglas: RPP, MAV, CSI, RHT (lib/metricas SIGLAS). Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
 - Voz: áudios pré-gerados na GPU do operador, tocados como arquivo estático. Sem
   servidor de voz. O manifest é indexado pelo texto normalizado (o hash só dá nome ao
   arquivo), então o navegador não precisa calcular SHA-1.
