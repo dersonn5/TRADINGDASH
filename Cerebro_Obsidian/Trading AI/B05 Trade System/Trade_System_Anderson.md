@@ -169,6 +169,13 @@ A captura do extremo oposto do swing é o mesmo mecanismo do sweep, em escala
 menor: pega a liquidez de quem entrou na correção, e devolve o preço para a
 direção da tendência. O array (FVG ou OB) é onde se entra depois disso.
 
+## Atenção: 50% da perna *(observação do operador, 07/10/2026)*
+
+No índice, a retração de **50% da perna** é uma região muito forte de reação. Operando a
+continuação **de uma correção**, considerar o 50% da perna anterior como o lugar provável de
+o preço virar — mesmo com um PD array mais acima. Em 07/10, duas compras de continuação da
+correção pararam ali (−R$ 220). Não medido em backtest (decisão do operador).
+
 ## Diferença essencial para o Setup A
 
 | | Setup A — Reversão | Setup B — Continuidade |

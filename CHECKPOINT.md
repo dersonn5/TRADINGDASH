@@ -1,10 +1,11 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 03/10/2026 · Claude
+Atualizado: 08/10/2026 · Claude
 
 ## Onde estamos
-Cockpit v2 no ar e commitado. Voz Dora (Kokoro) integrada nos alertas. Modo
-demonstração com trades fictícios. O Anderson começa a operar de verdade na segunda (28/09).
+Plano por hora em operação. **Dia 1 do plano: 07/10/2026** (+R$ 548, plano seguido; diário em
+`Cerebro_Obsidian/Trading AI/A04 Diario de Trades/WIN_2026-10-07_Dia_01.md`). Os dias 28/09–02/10
+ficam fora das estatísticas (plano furado).
 
 ## Pronto e verificado
 - Visual v2 fiel a `design/v2/*.dc.html` nas 5 telas; telas zeradas sem dados — prova:
