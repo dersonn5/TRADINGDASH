@@ -45,7 +45,7 @@ import {
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, chip, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
-import { formatarBRL, NOMES_COMPLETOS, SIGLAS } from "@/lib/metricas";
+import { formatarBRL, lerPreco, NOMES_COMPLETOS, SIGLAS } from "@/lib/metricas";
 
 export default function ChecklistPage() {
   // Estratégia selecionada (padrão: REVERSAO_HTF)
@@ -460,9 +460,9 @@ export default function ChecklistPage() {
   }, [gate.motivos, gate.liberado]);
 
   // Cálculos dinâmicos e validação do formulário de trade
-  const numEntrada = parseFloat(entrada.replace(",", "."));
-  const numStop = parseFloat(stop.replace(",", "."));
-  const numAlvo = parseFloat(alvo.replace(",", "."));
+  const numEntrada = lerPreco(entrada);
+  const numStop = lerPreco(stop);
+  const numAlvo = lerPreco(alvo);
   const numContratos = parseInt(contratos, 10) || 1;
 
   const precosPreenchidos =
@@ -568,7 +568,7 @@ export default function ChecklistPage() {
   // Handler para fechar trade
   async function handleConfirmarFechamento() {
     if (!resumo?.trade_aberto_id) return;
-    const numSaida = parseFloat(saida.replace(",", "."));
+    const numSaida = lerPreco(saida);
     if (isNaN(numSaida) || numSaida <= 0) {
       setFechamentoError("Informe um preço de saída válido.");
       return;

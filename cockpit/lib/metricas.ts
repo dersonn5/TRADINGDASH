@@ -30,6 +30,17 @@ export interface TradeMetricas {
 }
 
 /**
+ * Le um preco digitado em pt-BR. O WIN e cotado em milhares, entao "204.967" e 204967
+ * (ponto de milhar), nao 204,967. Aceita "204967", "204.967", "204.967,5" e "5192,5".
+ */
+export function lerPreco(texto: string): number {
+  const s = texto.trim().replace(/\s/g, "");
+  if (!s) return NaN;
+  if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) return parseFloat(s.replace(/\./g, "").replace(",", "."));
+  return parseFloat(s.replace(",", "."));
+}
+
+/**
  * Siglas dos setups (03/10/2026, escolhidas pelo operador). Os ids no banco nao mudam.
  * RPP = Reversao da Primeira Perna (09h) · MAV = Manipulacao do A Vista (10h) ·
  * CSI = Continuacao por Sweep de Inducao (10h-11h) · RHT = Reversao HTF (qualquer hora).

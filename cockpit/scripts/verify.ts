@@ -1,5 +1,6 @@
 import fs from "fs";
 import { montarVisaoGeral } from "../lib/visao-geral";
+import { lerPreco } from "../lib/metricas";
 import { TRADES_DESIGN } from "./fixture-design";
 import {
   FRASE_TESTE, aberturaNY, alertasDoDia, alertasParaDisparar, fraseAs, fraseNoticiaAgora, fraseNoticiaAntes, fraseQuantasNoticias, frasePrimeira, horaFalada,
@@ -938,6 +939,13 @@ report(
   const mesc = mesclarAgenda([{ evento: "Payroll", horario: "09:30", impacto: "ALTO" }, { evento: "Copom", horario: "18:30", impacto: "ALTO" }], conv);
   report("Calendário: importar não duplica o que já está na agenda", mesc.length === 4 && mesc.filter((e) => e.evento === "Payroll").length === 1,
     JSON.stringify(mesc.map((e) => `${e.horario} ${e.evento}`)));
+}
+
+// Precos digitados em pt-BR (bug de 08/10: "204.967" virava 204,967)
+{
+  const casos: Array<[string, number]> = [["204.967", 204967], ["204967", 204967], ["204.967,5", 204967.5], ["5192,5", 5192.5], [" 206.323 ", 206323], ["", NaN]];
+  const ruins = casos.filter(([t, v]) => !(Number.isNaN(v) ? Number.isNaN(lerPreco(t)) : lerPreco(t) === v));
+  report("Preço: ponto de milhar lido como milhar", ruins.length === 0, JSON.stringify(ruins));
 }
 
 if (hasErrors) {
