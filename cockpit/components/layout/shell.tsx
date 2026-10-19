@@ -33,6 +33,7 @@ const PREGAO: Item[] = [
 
 const REGISTRO: Item[] = [
   { href: "/trades", label: "Histórico", icon: <svg {...svgProps}><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v4h4" /><path d="M12 7v5l3 2" /></svg> },
+  { href: "/calendario", label: "Calendário", icon: <svg {...svgProps}><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg> },
   { href: "/estrategias", label: "Estratégias", icon: <svg {...svgProps}><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 13l9 5 9-5" /></svg> },
 ];
 
@@ -234,7 +235,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </button>
         {demo && (
           <div role="status" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", padding: "12px 18px", borderRadius: "12px", border: "1px dashed var(--ac)", background: "var(--acs)", color: "var(--actx)", fontSize: "13px" }}>
-            <span>Demonstração: Visão Geral, Histórico e Estratégias mostram trades fictícios. Nada disso está no banco.</span>
+            <span>Demonstração: Visão Geral, Histórico, Calendário e Estratégias mostram trades fictícios. Nada disso está no banco.</span>
             <button type="button" onClick={sairDoDemo} style={{ flexShrink: 0, height: "32px", padding: "0 14px", borderRadius: "8px", border: "1px solid var(--ac)", background: "transparent", color: "var(--actx)", fontFamily: "inherit", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}>
               Sair da demonstração
             </button>

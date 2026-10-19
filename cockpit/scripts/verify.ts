@@ -1,5 +1,7 @@
 import fs from "fs";
 import { montarVisaoGeral } from "../lib/visao-geral";
+import { montarCalendarioMes } from "../lib/calendario-resultados";
+import { tradesDemoDoMes } from "../lib/demo";
 import { lerPreco } from "../lib/metricas";
 import { TRADES_DESIGN } from "./fixture-design";
 import {
@@ -946,6 +948,114 @@ report(
   const casos: Array<[string, number]> = [["204.967", 204967], ["204967", 204967], ["204.967,5", 204967.5], ["5192,5", 5192.5], [" 206.323 ", 206323], ["", NaN]];
   const ruins = casos.filter(([t, v]) => !(Number.isNaN(v) ? Number.isNaN(lerPreco(t)) : lerPreco(t) === v));
   report("Preço: ponto de milhar lido como milhar", ruins.length === 0, JSON.stringify(ruins));
+}
+
+// Calendário de resultados (SPEC_CALENDARIO.md)
+{
+  // 1. outubro/2026: 5 semanas, começa na quinta 01/10 com 28, 29 e 30/09 como doMes: false
+  const calVazio = montarCalendarioMes([], 2026, 10, "2026-10-19");
+  const s1 = calVazio.semanas[0];
+  const s1Ok =
+    calVazio.semanas.length === 5 &&
+    s1.dias.length === 5 &&
+    s1.dias[0].iso === "2026-09-28" && !s1.dias[0].doMes &&
+    s1.dias[1].iso === "2026-09-29" && !s1.dias[1].doMes &&
+    s1.dias[2].iso === "2026-09-30" && !s1.dias[2].doMes &&
+    s1.dias[3].iso === "2026-10-01" && s1.dias[3].doMes && s1.dias[3].dia === 1 &&
+    s1.dias[4].iso === "2026-10-02" && s1.dias[4].doMes && s1.dias[4].dia === 2;
+
+  report(
+    "Calendário de resultados: outubro/2026 tem 5 semanas e semana 1 começa com 28-30/09 fora do mês",
+    s1Ok,
+    `semanas: ${calVazio.semanas.length}, s1: ${JSON.stringify(s1.dias.map((d) => `${d.iso} doMes=${d.doMes}`))}`
+  );
+
+  // 2. Mês sem trade: semanas existem, tudo zerado, semanasComTrade = 0, WR e PF nulos
+  const vazioOk =
+    calVazio.semanasComTrade === 0 &&
+    calVazio.semanasPositivas === 0 &&
+    calVazio.total.trades === 0 &&
+    calVazio.total.pnl === 0 &&
+    calVazio.total.wr === null &&
+    calVazio.total.pf === null &&
+    calVazio.semanas.every((s) => s.trades === 0 && s.pnl === 0 && s.wr === null && s.pf === null);
+
+  report(
+    "Calendário de resultados: mês sem trade tem semanas zeradas, semanasComTrade=0 e WR/PF nulos",
+    vazioOk,
+    `semanasComTrade: ${calVazio.semanasComTrade}`
+  );
+
+  // 3. Feriado 12/10/2026
+  const diaFeriado = calVazio.semanas.flatMap((s) => s.dias).find((d) => d.iso === "2026-10-12");
+  const feriadoOk = diaFeriado?.feriado === true;
+  report(
+    "Calendário de resultados: 12/10/2026 (feriado B3) vem com feriado: true",
+    feriadoOk,
+    `12/10/2026 feriado=${diaFeriado?.feriado}`
+  );
+
+  // 4. 3 trades fictícios no mesmo dia (+100, −50, +30 R$)
+  const tradesFicticios = [
+    { data: "2026-10-07", pnl_real: 100, pontos_real: 200, entrada: 100000, stop: 99800, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const },
+    { data: "2026-10-07", pnl_real: -50, pontos_real: -100, entrada: 100000, stop: 99800, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const },
+    { data: "2026-10-07", pnl_real: 30, pontos_real: 60, entrada: 100000, stop: 99800, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const },
+  ];
+  const calTrades = montarCalendarioMes(tradesFicticios, 2026, 10, "2026-10-19");
+  const dia07 = calTrades.semanas.flatMap((s) => s.dias).find((d) => d.iso === "2026-10-07");
+  const sem07 = calTrades.semanas.find((s) => s.dias.some((d) => d.iso === "2026-10-07"));
+
+  const tradesOk =
+    dia07?.pnl === 80 &&
+    dia07?.trades === 3 &&
+    dia07?.ganhos === 2 &&
+    dia07?.perdas === 1 &&
+    sem07?.pnl === 80 &&
+    sem07?.trades === 3 &&
+    sem07?.ganhos === 2 &&
+    sem07?.perdas === 1 &&
+    calTrades.total.pnl === 80 &&
+    calTrades.total.trades === 3 &&
+    calTrades.total.ganhos === 2 &&
+    calTrades.total.perdas === 1 &&
+    calTrades.semanasComTrade === 1 &&
+    calTrades.semanasPositivas === 1;
+
+  report(
+    "Calendário de resultados: 3 trades (+100, -50, +30) somam pnl 80, 2W · 1L, semana e total batem",
+    Boolean(tradesOk),
+    `dia: pnl=${dia07?.pnl} W=${dia07?.ganhos} L=${dia07?.perdas}, sem: pnl=${sem07?.pnl}, tot: pnl=${calTrades.total.pnl}`
+  );
+
+  // 5. PF de semana sem perda é null; WR de semana sem trade é null
+  const tradesSemPerda = [
+    { data: "2026-10-07", pnl_real: 100, pontos_real: 200, entrada: 100000, stop: 99800, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const },
+    { data: "2026-10-07", pnl_real: 50, pontos_real: 100, entrada: 100000, stop: 99800, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const },
+  ];
+  const calSemPerda = montarCalendarioMes(tradesSemPerda, 2026, 10, "2026-10-19");
+  const semGanhos = calSemPerda.semanas.find((s) => s.dias.some((d) => d.iso === "2026-10-07"));
+  const semVazia = calSemPerda.semanas.find((s) => s.trades === 0);
+
+  const pfWrOk = semGanhos?.pf === null && semGanhos?.wr === 1 && semVazia?.wr === null && semVazia?.pf === null;
+
+  report(
+    "Calendário de resultados: PF de semana sem perda é null; WR de semana sem trade é null",
+    Boolean(pfWrOk),
+    `semGanhos: pf=${semGanhos?.pf} wr=${semGanhos?.wr}, semVazia: pf=${semVazia?.pf} wr=${semVazia?.wr}`
+  );
+
+  // 6. Setembro/2026 demo: total no Calendário é igual ao da Visão Geral de setembro
+  const tradesSet = tradesDemoDoMes(2026, 9, "2026-10-19");
+  const tradesAgo = tradesDemoDoMes(2026, 8, "2026-10-19");
+  const calSet = montarCalendarioMes(tradesSet, 2026, 9, "2026-10-19");
+  const vgSet = montarVisaoGeral(tradesSet, tradesAgo, 2026, 9, "2026-10-19");
+  const setIgual = formatarBRL(calSet.total.pnl) === vgSet.kpis[0].valor && calSet.total.trades === vgSet.n;
+
+  report(
+    "Calendário de resultados: total de setembro/2026 no Calendário é igual ao da Visão Geral",
+    setIgual,
+    `Calendário: ${formatarBRL(calSet.total.pnl)} (${calSet.total.trades} trades) vs Visão Geral: ${vgSet.kpis[0].valor} (${vgSet.n} trades)`
+  );
 }
 
 if (hasErrors) {

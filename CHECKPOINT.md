@@ -19,6 +19,7 @@ ficam fora das estatísticas (plano furado).
 - `migration_primeira_perna.sql` rodada no Supabase em 01/10 — prova: KILL 6, PONTO 3 (soma 100).
 - `trading_live_checklist` com RLS por usuário: SQL em
   `cockpit/supabase/migration_checklist_ao_vivo.sql`.
+- Calendário de resultados (`/calendario`) — prova: `npx tsx scripts/verify.ts` (outubro/2026 com 5 semanas, feriado 12/10, dias com trade somando pnl e R, semana e total batendo, PF/WR nulos em zero trades/perdas, total de setembro demo idêntico à Visão Geral); verificação no navegador em `/calendario?demo=1` com navegação de mês, clique para detalhar trades do dia (03/09 com +R$ 910 batendo com a célula), responsivo sem rolagem horizontal em 1440px e 900px, temas claro/escuro e barra lateral retrátil; `npm run build` limpo (exit 0).
 
 ## Próximo
 - [ ] Testar o Setup V como trade nos 5 meses (entrada após o extremo, stop além da perna, alvo nos 75%).

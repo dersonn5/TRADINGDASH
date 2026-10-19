@@ -105,10 +105,10 @@ Ganho = trade com `pnl_real > 0`; perda = `pnl_real < 0`; zero a zero não conta
 ## 3. Roadmap
 
 ### Fase 1 — Modelo (lógica pura, com teste)
-- [ ] **TASK-101** — `lib/calendario-resultados.ts` com `montarCalendarioMes`.
+- [x] **TASK-101** — `lib/calendario-resultados.ts` com `montarCalendarioMes`.
   - Files: `lib/calendario-resultados.ts`
   - Verify: `npx tsc --noEmit` limpo.
-- [ ] **TASK-102** — Testes em `scripts/verify.ts` (bloco novo "Calendário de resultados"):
+- [x] **TASK-102** — Testes em `scripts/verify.ts` (bloco novo "Calendário de resultados"):
   - outubro/2026 começa na **quinta 01/10** → a 1ª semana tem seg 28/09, ter 29/09 e qua 30/09
     como `doMes: false`; o mês tem 5 semanas;
   - com 3 trades fictícios no mesmo dia (+100, −50, +30 R$), o dia soma `pnl 80`, `2W · 1L`, e a
@@ -120,25 +120,25 @@ Ganho = trade com `pnl_real > 0`; perda = `pnl_real < 0`; zero a zero não conta
   - Verify: `npx tsx scripts/verify.ts` termina com "✅ Todos os testes passaram com sucesso!".
 
 ### Fase 2 — Tela
-- [ ] **TASK-201** — `app/calendario/page.tsx`: carrega `listarTradesDoMes`, seletor de mês,
+- [x] **TASK-201** — `app/calendario/page.tsx`: carrega `listarTradesDoMes`, seletor de mês,
   cabeçalho (FR-002), grade + coluna de semanas (FR-003, FR-004), rodapé (FR-006). Estado de
   carregamento igual às outras páginas.
   - Files: `app/calendario/page.tsx` (e, se quiser separar, `components/v2/calendario-mes.tsx`)
   - Verify: `npx tsc --noEmit` limpo; `npm run dev` e abrir `/calendario?demo=1`.
-- [ ] **TASK-202** — Detalhe do dia ao clicar (FR-005).
+- [x] **TASK-202** — Detalhe do dia ao clicar (FR-005).
   - Files: os mesmos da TASK-201
   - Verify: no demo, clicar num dia com trade mostra a lista; a soma em R$ da lista = valor da célula.
-- [ ] **TASK-203** — Item "Calendário" no menu lateral (FR-001).
+- [x] **TASK-203** — Item "Calendário" no menu lateral (FR-001).
   - Files: `components/layout/shell.tsx`
   - Verify: o item aparece no grupo Registro, fica ativo em `/calendario` e funciona com a barra
     recolhida (só o ícone, com `title`).
 
 ### Fase 3 — Fechamento
-- [ ] **TASK-301** — `npx tsc --noEmit`, `npx tsx scripts/verify.ts` e `npm run build` limpos
+- [x] **TASK-301** — `npx tsc --noEmit`, `npx tsx scripts/verify.ts` e `npm run build` limpos
   (parar o `npm run dev` antes do build). Conferência visual com `?demo=1`, nos temas escuro e
   claro, em 1440 px e em ~900 px de largura: sem rolagem horizontal, semanas alinhadas às linhas.
   O total de setembro/2026 no Calendário é igual ao da Visão Geral de setembro.
   - Para ver a tela sem login: desvio temporário no `components/auth-gate.tsx` e **remover antes
     de terminar** (o `git diff` desse arquivo tem de vir vazio).
-- [ ] **TASK-302** — Atualizar `CHECKPOINT.md` (seção "Pronto e verificado": a tela e a prova).
+- [x] **TASK-302** — Atualizar `CHECKPOINT.md` (seção "Pronto e verificado": a tela e a prova).
   Não fazer commit nem push: o Anderson pede.
