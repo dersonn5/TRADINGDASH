@@ -189,21 +189,26 @@ export function classificarFaixaHorario(horaEntrada: string | Date | null | unde
   const minute = parseInt(mStr, 10);
   const totalMinutos = hour * 60 + minute;
 
-  // Janela operacional WIN: 10:00 (600 min) até 11:29 (689 min)
-  if (totalMinutos < 600 || totalMinutos >= 690) {
+  // Janela operacional WIN: 09:00 (540 min) até 11:59 (719 min), faixas de 30 min
+  // (desde 20/10/2026; antes era 10:00-11:29 em faixas de 15 min e os trades da RPP,
+  // antes das 10:00, ficavam fora do gráfico)
+  if (totalMinutos < 540 || totalMinutos >= 720) {
     return "fora da janela";
   }
 
-  const faixaMinutos = Math.floor(totalMinutos / 15) * 15;
+  const faixaMinutos = Math.floor(totalMinutos / 30) * 30;
   const fHour = Math.floor(faixaMinutos / 60);
   const fMin = faixaMinutos % 60;
   return `${String(fHour).padStart(2, "0")}:${String(fMin).padStart(2, "0")}`;
 }
 
+/** As 6 faixas de 30 min da janela 09:00-11:59. */
+export const FAIXAS_HORARIO = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"];
+
 export function fimDaFaixa(faixa: string): string {
   if (faixa === "fora da janela") return "";
   const [h, m] = faixa.split(":").map(Number);
-  const fim = h * 60 + m + 14;
+  const fim = h * 60 + m + 29;
   const fh = Math.floor(fim / 60);
   const fm = fim % 60;
   return `${String(fh).padStart(2, "0")}:${String(fm).padStart(2, "0")}`;
@@ -403,7 +408,7 @@ export function agruparPorHorario(trades: TradeMetricas[]): {
   frase: string;
   amostraPequena: boolean;
 } {
-  const faixasPadrao = ["10:00", "10:15", "10:30", "10:45", "11:00", "11:15"];
+  const faixasPadrao = FAIXAS_HORARIO;
   const itens = faixasPadrao.map((f) => {
     const ts = trades.filter((t) => classificarFaixaHorario(t.hora_entrada) === f);
     const pnl = somar(ts.map((t) => Number(t.pnl_real ?? 0)));

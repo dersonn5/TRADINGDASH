@@ -11,6 +11,7 @@ import {
   calcularDrawdown,
   calcularRTrade,
   calcularRiscoTrade,
+  FAIXAS_HORARIO,
   classificarFaixaHorario,
   fimDaFaixa,
   formatarBRL,
@@ -162,7 +163,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   };
 
   // Por horario (504 x 220)
-  const faixas = ["10:00", "10:15", "10:30", "10:45", "11:00", "11:15"];
+  const faixas = FAIXAS_HORARIO;
   const hb = faixas.map((f) => {
     const ts = trades.filter((t) => classificarFaixaHorario(t.hora_entrada) === f);
     return { f, n: ts.length, rm: ts.length ? media(ts.map(rDoTrade)) : 0 };

@@ -37,6 +37,7 @@ import {
   calcularDisciplina,
   agruparSetupCeContexto,
   classificarFaixaHorario,
+  fimDaFaixa,
   formatarBRL,
   formatarR,
   formatarNumero,
@@ -809,15 +810,18 @@ report(
 );
 
 // Faixa de horário em America/Sao_Paulo
-const f1000 = classificarFaixaHorario("2026-09-25T13:14:00Z");
-const f1015 = classificarFaixaHorario("2026-09-25T13:15:00Z");
-const fForaAntes = classificarFaixaHorario("2026-09-25T12:59:00Z");
-const fForaDepois = classificarFaixaHorario("2026-09-25T14:30:00Z");
+const f0906 = classificarFaixaHorario("2026-10-19T12:06:00Z"); // 09:06 (RPP)
+const f0959 = classificarFaixaHorario("2026-10-19T12:59:00Z"); // 09:59
+const f1029 = classificarFaixaHorario("2026-10-19T13:29:00Z"); // 10:29
+const f1159 = classificarFaixaHorario("2026-10-19T14:59:00Z"); // 11:59
+const fForaAntes = classificarFaixaHorario("2026-10-19T11:59:00Z"); // 08:59
+const fForaDepois = classificarFaixaHorario("2026-10-19T15:00:00Z"); // 12:00
 
 report(
-  "Métricas: Faixas de horário SP (13:14Z = 10:00, 13:15Z = 10:15, fora < 10:00 e >= 11:30)",
-  f1000 === "10:00" && f1015 === "10:15" && fForaAntes === "fora da janela" && fForaDepois === "fora da janela",
-  `13:14Z=${f1000}, 13:15Z=${f1015}, 12:59Z=${fForaAntes}, 14:30Z=${fForaDepois}`
+  "Métricas: faixas de 30 min de 09:00 a 11:59 em SP (08:59 e 12:00 fora)",
+  f0906 === "09:00" && f0959 === "09:30" && f1029 === "10:00" && f1159 === "11:30" &&
+    fForaAntes === "fora da janela" && fForaDepois === "fora da janela" && fimDaFaixa("09:30") === "09:59",
+  `09:06=${f0906}, 09:59=${f0959}, 10:29=${f1029}, 11:59=${f1159}, 08:59=${fForaAntes}, 12:00=${fForaDepois}`
 );
 
 // Visão Geral: os 16 trades de exemplo do design/v2/Main.dc.html
