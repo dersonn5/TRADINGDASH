@@ -1,11 +1,11 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 08/10/2026 · Claude
+Atualizado: 20/10/2026 · Claude
 
 ## Onde estamos
-Plano por hora em operação. **Dia 1 do plano: 07/10/2026** (+R$ 548, plano seguido; diário em
-`Cerebro_Obsidian/Trading AI/A04 Diario de Trades/WIN_2026-10-07_Dia_01.md`). Os dias 28/09–02/10
-ficam fora das estatísticas (plano furado).
+Plano por hora em operação. **Dia 1 do cockpit: 19/10/2026** — o operador pediu para apagar tudo antes
+dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3 RHT fora do plano
+(5 contratos, cota da 1ª hora estourada), dia +R$ 60. O diário de 07/10 fica só no Cerebro.
 
 ## Pronto e verificado
 - Visual v2 fiel a `design/v2/*.dc.html` nas 5 telas; telas zeradas sem dados — prova:
