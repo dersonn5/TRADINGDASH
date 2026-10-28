@@ -73,7 +73,7 @@ export interface ResumoDoDia {
   trades_fechados: number;
   trades_abertos: number;
   operacoes_hoje: number; // fechados + abertos
-  operacoes_por_hora: { ABERTURA: number; PRIME: number; VALIDA: number }; // trades abertos em cada hora (cotas 1 · 3 · 1)
+  operacoes_por_hora: { ABERTURA: number; PRIME: number; VALIDA: number }; // trades abertos em cada hora (cotas 1 · 3 · 2)
   perdas_hoje: number;
   pnl_dia: number;
   ultimo_loss_em: Date | null;

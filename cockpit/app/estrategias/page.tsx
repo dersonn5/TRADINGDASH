@@ -50,9 +50,9 @@ export default function EstrategiasPage() {
           ? `${d.score_minimo} · até 3 trades na 2ª hora`
           : d.id === "reversao_htf"
             ? `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h · qualquer hora, na cota`
-          : `${d.score_minimo} · ${d.score_minimo + 15} na 3ª hora (1 trade)`,
+          : `${d.score_minimo} · ${d.score_minimo + 15} na 3ª hora (2 trades)`,
     },
-    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 1) · 2 a ${MAX_CONTRATOS} contratos` },
+    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 2) · 2 a ${MAX_CONTRATOS} contratos` },
   ];
 
   return (

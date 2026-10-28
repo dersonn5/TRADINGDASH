@@ -390,7 +390,7 @@ report(
   JSON.stringify(gate11.motivos)
 );
 
-// Setups e cotas por hora (03/10/2026): 1a hora V (1), 2a hora C ou B (3), 3a hora B (1).
+// Setups e cotas por hora (03/10/2026): 1a hora V (1), 2a hora C ou B (3), 3a hora B (2, desde 28/10).
 const ctx = (estrategiaId: string, operacoesNaHora = 0) => ({ estrategiaId, operacoesNaHora });
 const gh = (h: number, m: number, c: ReturnType<typeof ctx>) => avaliarGate(itens80, "BULLISH", makeSPDate(h, m), 65, limLiberado, null, true, true, c);
 const casosHora: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]> = [
@@ -407,7 +407,8 @@ const casosHora: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]
   ["11:15 RHT -> liberado", true, gh(11, 15, ctx("reversao_htf")), ""],
   ["11:15 continuidade -> liberado", true, gh(11, 15, ctx("continuidade_tendencia")), ""],
   ["11:15 setup das 10 -> bloqueado", false, gh(11, 15, ctx("varrida_barra_10")), "só CSI"],
-  ["11:15 continuidade, 1 feito -> bloqueado", false, gh(11, 15, ctx("continuidade_tendencia", 1)), "limite de 1 trade"],
+  ["11:15 continuidade, 1 feito -> liberado", true, gh(11, 15, ctx("continuidade_tendencia", 1)), ""],
+  ["11:15 continuidade, 2 feitos -> bloqueado", false, gh(11, 15, ctx("continuidade_tendencia", 2)), "limite de 2 trades"],
 ];
 for (const [nome, esperado, g, trecho] of casosHora) {
   report(`Hora: ${nome}`, g.liberado === esperado && (esperado || g.motivos.some((m) => m.includes(trecho))), JSON.stringify(g.motivos));
