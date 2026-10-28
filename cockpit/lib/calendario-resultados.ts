@@ -8,8 +8,7 @@
 import { FERIADOS_B3 } from "./alertas";
 import {
   TradeMetricas,
-  calcularRTrade,
-  calcularRiscoTrade,
+  rDoTrade,
   somar,
 } from "./metricas";
 
@@ -126,12 +125,12 @@ export function montarCalendarioMes(
 
       for (const t of ts) {
         const pnl = Number(t.pnl_real ?? 0);
-        const pts = Number(t.pontos_real ?? 0);
-        const risco = calcularRiscoTrade(Number(t.entrada ?? 0), Number(t.stop ?? 0));
-        const r = calcularRTrade(pts, risco);
+        const r = rDoTrade(t);
 
         diaPnl += pnl;
-        diaR += r;
+        if (r !== null) {
+          diaR += r;
+        }
 
         if (pnl > 0) {
           diaGanhos++;

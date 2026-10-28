@@ -28,6 +28,8 @@ import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10, PRIMEIRA_PERNA 
 import { gradeFor, pendenciasDaPreSessao, PreSessao, validarCamposNovosTrade } from "../lib/copa-db";
 import {
   TradeMetricas,
+  rDoTrade,
+  calcularCustoDesvio,
   calcularKPIsGerais,
   calcularDrawdown,
   agruparPorEstrategia,
@@ -1062,6 +1064,87 @@ report(
     `Calendário: ${formatarBRL(calSet.total.pnl)} (${calSet.total.trades} trades) vs Visão Geral: ${vgSet.kpis[0].valor} (${vgSet.n} trades)`
   );
 }
+
+// -------------------------------------------------------------
+// 15. TASK-102 — R SEM STOP E CUSTO DO DESVIO
+// -------------------------------------------------------------
+console.log("\n=== TESTES TASK-102 (R SEM STOP E CUSTO DO DESVIO) ===\n");
+
+// 1. trade sem stop -> rDoTrade null
+const tradeSemStop: TradeMetricas = {
+  strategy_id: "varrida_barra_10",
+  direcao: "COMPRA",
+  entrada: 100000,
+  stop: null,
+  pontos_real: 200,
+  pnl_real: 120,
+};
+const rSemStop = rDoTrade(tradeSemStop);
+report(
+  "TASK-102: trade sem stop -> rDoTrade null",
+  rSemStop === null,
+  `obteve: ${rSemStop}`
+);
+
+// 2. média de R de [+2R, sem stop, −1R] = +0,5R e R$ total inclui os três
+const t1: TradeMetricas = {
+  strategy_id: "varrida_barra_10",
+  direcao: "COMPRA",
+  entrada: 100000,
+  stop: 99800, // risco 200 pts
+  pontos_real: 400, // +2R
+  pnl_real: 200,
+};
+const t2: TradeMetricas = {
+  strategy_id: "varrida_barra_10",
+  direcao: "COMPRA",
+  entrada: 100000,
+  stop: null, // sem stop
+  pontos_real: 300,
+  pnl_real: 150,
+};
+const t3: TradeMetricas = {
+  strategy_id: "varrida_barra_10",
+  direcao: "COMPRA",
+  entrada: 100000,
+  stop: 99800, // risco 200 pts
+  pontos_real: -200, // -1R
+  pnl_real: -100,
+};
+
+const tresTrades = [t1, t2, t3];
+const kpisTres = calcularKPIsGerais(tresTrades);
+// média de R: (+2 + (-1)) / 2 = +0.5R
+// R$ total: 200 + 150 - 100 = 250
+const mediaROk = Math.abs(kpisTres.expectativaR - 0.5) < 0.0001;
+const rTotalOk = kpisTres.resultadoReais === 250;
+report(
+  "TASK-102: média de R de [+2R, sem stop, −1R] = +0,5R",
+  mediaROk,
+  `expectativaR=${kpisTres.expectativaR}`
+);
+report(
+  "TASK-102: R$ total inclui os três",
+  rTotalOk,
+  `resultadoReais=${kpisTres.resultadoReais}`
+);
+
+// 3. custo de desvio com pnl_plano null -> null
+const tradeDesvioSemPlano: TradeMetricas = {
+  strategy_id: "varrida_barra_10",
+  direcao: "COMPRA",
+  entrada: 100000,
+  stop: 99800,
+  pnl_real: 100,
+  pnl_plano: null,
+  respeitou_plano: false,
+};
+const custoNull = calcularCustoDesvio(tradeDesvioSemPlano);
+report(
+  "TASK-102: custo de desvio com pnl_plano null -> null",
+  custoNull === null,
+  `obteve: ${custoNull}`
+);
 
 if (hasErrors) {
   console.error("\n❌ Verificação finalizou com ERROS.");

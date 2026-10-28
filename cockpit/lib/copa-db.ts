@@ -291,10 +291,10 @@ export interface TradeHistorico {
   score: number;
   grade: string;
   entrada: number;
-  stop: number;
-  alvo: number;
+  stop: number | null;
+  alvo: number | null;
   contratos: number;
-  rr_planejado: number;
+  rr_planejado: number | null;
   saida: number | null;
   motivo_saida: string | null;
   pontos_real: number | null;
@@ -308,6 +308,9 @@ export interface TradeHistorico {
   gatilho?: GatilhoTrade | null;
   contexto_1h?: Contexto1h | null;
   setup_c_modo?: SetupCModo | null;
+  origem?: "CHECKLIST" | "PROFIT" | "SQL" | null;
+  profit_chave?: string | null;
+  erro_tipo?: string | null;
 }
 
 /**

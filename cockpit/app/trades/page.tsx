@@ -8,6 +8,8 @@ import {
   NOMES_ESTRATEGIAS,
   NOMES_GATILHOS,
   formatarBRL,
+  rDoTrade,
+  somar,
   temDesvio,
 } from "@/lib/metricas";
 
@@ -20,7 +22,8 @@ function hora(iso: string | null) {
   }).format(new Date(iso));
 }
 
-function sinalR(r: number) {
+function sinalR(r: number | null | undefined) {
+  if (r === null || r === undefined || isNaN(r)) return "—";
   const abs = Math.abs(r).toFixed(1).replace(".", ",");
   if (r > 0) return `+${abs}R`;
   if (r < 0) return `−${abs}R`;
@@ -69,15 +72,9 @@ export default function HistoricoPage() {
   const winners = visiveis.filter((t) => (Number(t.pnl_real) || 0) > 0);
   const acerto =
     totalTrades > 0 ? Math.round((winners.length / totalTrades) * 100) : 0;
-  const somaR = visiveis.reduce((a, t) => {
-    const pts = Number(t.pontos_real) || 0;
-    const risk =
-      Number(t.stop) && Number(t.entrada)
-        ? Math.abs(Number(t.entrada) - Number(t.stop))
-        : 1;
-    return a + (risk > 0 ? pts / risk : 0);
-  }, 0);
-  const rMedio = totalTrades > 0 ? somaR / totalTrades : 0;
+  const rs = visiveis.map(rDoTrade).filter((r): r is number => r !== null);
+  const somaR = somar(rs);
+  const rMedio = rs.length > 0 ? somaR / rs.length : 0;
   const resultado = visiveis.reduce(
     (a, t) => a + (Number(t.pnl_real) || 0),
     0
@@ -338,12 +335,11 @@ export default function HistoricoPage() {
             {visiveis.map((t) => {
               const pnl = Number(t.pnl_real) || 0;
               const desvio = temDesvio(t);
-              const pts = Number(t.pontos_real) || 0;
+              const rVal = rDoTrade(t);
               const risk =
-                Number(t.stop) && Number(t.entrada)
+                t.stop !== null && t.stop !== undefined && t.entrada
                   ? Math.abs(Number(t.entrada) - Number(t.stop))
                   : 0;
-              const rVal = risk > 0 ? pts / risk : 0;
               const compra = t.direcao === "COMPRA";
               return (
                 <div

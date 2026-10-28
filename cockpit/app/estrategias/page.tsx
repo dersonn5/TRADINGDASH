@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
 import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS, MAX_OPERACOES_DIA, MAX_PERDAS_DIA } from "@/lib/gate";
 import { listarTradesDoMes, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
-import { NOMES_COMPLETOS, SIGLAS, calcularRTrade, calcularRiscoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
+import { NOMES_COMPLETOS, SIGLAS, rDoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
 import { CARD, LBL, H2 } from "@/components/v2/estilos";
 
 // Espelho de design/v2/Estrategias.dc.html.
@@ -28,10 +28,10 @@ export default function EstrategiasPage() {
 
   const doMes = (id: string) => {
     const ts = trades.filter((t) => t.strategy_id === id);
-    const rs = ts.map((t) => calcularRTrade(Number(t.pontos_real ?? 0), calcularRiscoTrade(Number(t.entrada), Number(t.stop))));
+    const rs = ts.map(rDoTrade).filter((r): r is number => r !== null);
     const pnl = somar(ts.map((t) => Number(t.pnl_real ?? 0)));
-    const rm = media(rs);
-    return { n: ts.length, rm: ts.length ? formatarR(rm) : "—", pnl: ts.length ? formatarBRL(pnl) : "—", cor: pnl >= 0 ? "var(--actx)" : "var(--negtx)" };
+    const rm = rs.length ? media(rs) : null;
+    return { n: ts.length, rm: rm !== null ? formatarR(rm) : "—", pnl: ts.length ? formatarBRL(pnl) : "—", cor: pnl >= 0 ? "var(--actx)" : "var(--negtx)" };
   };
 
   const d = estrategias.find((s) => s.id === selId) ?? estrategias[0];

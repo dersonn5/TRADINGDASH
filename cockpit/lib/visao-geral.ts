@@ -8,9 +8,9 @@ import {
   NOMES_ESTRATEGIAS,
   NOMES_GATILHOS,
   TradeMetricas,
+  calcularCustoDesvio,
   calcularDrawdown,
-  calcularRTrade,
-  calcularRiscoTrade,
+  rDoTrade,
   FAIXAS_HORARIO,
   classificarFaixaHorario,
   fimDaFaixa,
@@ -37,11 +37,11 @@ const fill = (x: number) => (x >= 0 ? FILL_POS : FILL_NEG);
 const CORES_K = ["var(--k1)", "var(--k2)", "var(--k3)", "var(--k4)", "var(--k5)"];
 const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
-function rDoTrade(t: TradeMetricas) {
-  return calcularRTrade(Number(t.pontos_real ?? 0), calcularRiscoTrade(Number(t.entrada), Number(t.stop)));
-}
 const pnl = (t: TradeMetricas) => Number(t.pnl_real ?? 0);
-const risco = (t: TradeMetricas) => calcularRiscoTrade(Number(t.entrada), Number(t.stop));
+const risco = (t: TradeMetricas) =>
+  t.stop !== null && t.stop !== undefined
+    ? Math.abs(Number(t.entrada) - Number(t.stop))
+    : 0;
 const diaMes = (iso: string) => {
   const [, m, d] = iso.split("-");
   return `${d}/${m}`;
@@ -59,7 +59,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const n = trades.length;
   const nomeMes = MESES[mes - 1];
   const nomeMesAnt = MESES[(mes + 10) % 12];
-  const rs = trades.map(rDoTrade);
+  const rs = trades.map(rDoTrade).filter((r): r is number => r !== null);
   const pnls = trades.map(pnl);
   const total = somar(pnls);
   const totalR = somar(rs);
@@ -76,7 +76,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   // mes anterior, para as variacoes
   const nA = anteriores.length;
   const pnlA = somar(anteriores.map(pnl));
-  const rsA = anteriores.map(rDoTrade);
+  const rsA = anteriores.map(rDoTrade).filter((r): r is number => r !== null);
   const ganhosA = somar(anteriores.map(pnl).filter((p) => p > 0));
   const perdasA = -somar(anteriores.map(pnl).filter((p) => p < 0));
   // rodape dos KPIs e a comparacao com o mes anterior: deixar claro que nao e o mes aberto
@@ -84,7 +84,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const kpis = [
     { label: "Resultado", valor: formatarBRL(total), cor: cor(total), sub: `${formatarR(totalR)} no mês`, delta: nA ? `${formatarBRL(total - pnlA)} contra ${nomeMesAnt}` : semAnt },
     { label: "Trades", valor: String(n), cor: "var(--tx)", sub: `${formatarPct(n ? wins.length / n : 0)} de acerto`, delta: nA ? `${nomeMesAnt}: ${plural(nA, "trade", "trades")} · ${formatarPct(anteriores.filter((t) => pnl(t) > 0).length / nA)}` : semAnt },
-    { label: "Expectativa", valor: formatarR(n ? totalR / n : 0), cor: cor(totalR), sub: `por trade · payoff ${num(payoff)}`, delta: nA ? `${nomeMesAnt}: ${formatarR(somar(rsA) / nA)}` : semAnt },
+    { label: "Expectativa", valor: formatarR(rs.length ? totalR / rs.length : 0), cor: cor(totalR), sub: `por trade · payoff ${num(payoff)}`, delta: nA ? `${nomeMesAnt}: ${formatarR(rsA.length ? somar(rsA) / rsA.length : 0)}` : semAnt },
     { label: "Profit factor", valor: num(pf), cor: "var(--tx)", sub: `${formatarBRL(ganhos, false)} ganhos · ${formatarBRL(perdas, false)} perdas`, delta: nA ? `${nomeMesAnt}: ${num(perdasA > 0 ? ganhosA / perdasA : null)}` : semAnt },
     { label: "Drawdown máximo", valor: formatarBRL(-D.maxDrawdown), cor: COR_NEG, sub: `${formatarR(-DR.maxDrawdown)} no pior trecho`, delta: nA ? `${nomeMesAnt}: ${formatarBRL(-calcularDrawdown(anteriores.map(pnl)).maxDrawdown)}` : semAnt },
   ];
@@ -138,11 +138,13 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const estr = ids.map((id) => {
     const ts = trades.filter((t) => t.strategy_id === id);
     const p = somar(ts.map(pnl));
-    const rm = media(ts.map(rDoTrade));
+    const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
+    const rm = tsRs.length ? media(tsRs) : null;
+    const tradesComStop = ts.filter((t) => t.stop !== null && t.stop !== undefined);
     return {
       id, nome: NOMES_ESTRATEGIAS[id] ?? id, n: ts.length, pnl: p, pnlTxt: formatarBRL(p), cor: cor(p),
-      rm: formatarR(rm), rmCor: cor(rm), acerto: formatarPct(ts.length ? ts.filter((t) => pnl(t) > 0).length / ts.length : 0),
-      dd: formatarBRL(-calcularDrawdown(ts.map(pnl)).maxDrawdown), stop: ts.length ? `${Math.round(mediana(ts.map(risco)))} pts` : "—",
+      rm: rm !== null ? formatarR(rm) : "—", rmCor: rm !== null ? cor(rm) : "var(--tx)", acerto: formatarPct(ts.length ? ts.filter((t) => pnl(t) > 0).length / ts.length : 0),
+      dd: formatarBRL(-calcularDrawdown(ts.map(pnl)).maxDrawdown), stop: tradesComStop.length ? `${Math.round(mediana(tradesComStop.map(risco)))} pts` : "—",
       nTxt: plural(ts.length, "trade", "trades"), wN: 0,
     };
   }).sort((a, b) => b.n - a.n);
@@ -157,16 +159,18 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     : estr.length > 1
       ? `${maisP.nome} carrega o mês com ${maisP.pnlTxt}; ${pior.nome}${pior.pnl < 0 ? " está negativa: " : " tem o menor resultado: "}${pior.pnlTxt}`
       : `${maisP.nome}: ${maisP.pnlTxt} no mês`;
+  const tradesComStopGlobal = trades.filter((t) => t.stop !== null && t.stop !== undefined);
   const tot = {
-    n, acerto: formatarPct(n ? wins.length / n : 0), rm: formatarR(n ? totalR / n : 0), rmCor: cor(totalR),
-    pnl: formatarBRL(total), cor: cor(total), dd: formatarBRL(-D.maxDrawdown), stop: n ? `${Math.round(mediana(trades.map(risco)))} pts` : "—",
+    n, acerto: formatarPct(n ? wins.length / n : 0), rm: rs.length ? formatarR(totalR / rs.length) : "—", rmCor: rs.length ? cor(totalR) : "var(--tx)",
+    pnl: formatarBRL(total), cor: cor(total), dd: formatarBRL(-D.maxDrawdown), stop: tradesComStopGlobal.length ? `${Math.round(mediana(tradesComStopGlobal.map(risco)))} pts` : "—",
   };
 
   // Por horario (504 x 220)
   const faixas = FAIXAS_HORARIO;
   const hb = faixas.map((f) => {
     const ts = trades.filter((t) => classificarFaixaHorario(t.hora_entrada) === f);
-    return { f, n: ts.length, rm: ts.length ? media(ts.map(rDoTrade)) : 0 };
+    const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
+    return { f, n: ts.length, rm: tsRs.length ? media(tsRs) : 0 };
   });
   const hmax = Math.max(1, Math.ceil(Math.max(...hb.map((b) => Math.abs(b.rm))) * 2) / 2);
   const hpt = 20, hpb = 50, plotH = 220 - hpt - hpb, y0 = hpt + plotH / 2, slot = (504 - 36) / 6;
@@ -195,7 +199,8 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const gk = Object.keys(NOMES_GATILHOS)
     .map((k) => {
       const ts = comGatilho.filter((t) => t.gatilho === k);
-      return { nome: NOMES_GATILHOS[k], n: ts.length, rm: media(ts.map(rDoTrade)) };
+      const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
+      return { nome: NOMES_GATILHOS[k], n: ts.length, rm: tsRs.length ? media(tsRs) : 0 };
     })
     .filter((g) => g.n)
     .sort((a, b) => b.n - a.n)
@@ -229,11 +234,13 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     { l: "< 150", a: 0, b: 150 }, { l: "150–199", a: 150, b: 200 }, { l: "200–249", a: 200, b: 250 },
     { l: "250–299", a: 250, b: 300 }, { l: "300+", a: 300, b: Infinity },
   ];
-  const med = Math.round(mediana(trades.map(risco)));
-  const cont = SB.map((s) => trades.filter((t) => risco(t) >= s.a && risco(t) < s.b).length);
+  const tradesComStopTodos = trades.filter((t) => t.stop !== null && t.stop !== undefined);
+  const riscosTodos = tradesComStopTodos.map(risco);
+  const med = riscosTodos.length ? Math.round(mediana(riscosTodos)) : 0;
+  const cont = SB.map((s) => tradesComStopTodos.filter((t) => risco(t) >= s.a && risco(t) < s.b).length);
   const cmax = Math.max(1, ...cont);
   const sslot = 392 / 5;
-  const acima = trades.filter((t) => risco(t) >= 250).length;
+  const acima = tradesComStopTodos.filter((t) => risco(t) >= 250).length;
   const stops = {
     bars: SB.map((s, i) => {
       const h = (cont[i] / cmax) * 120;
@@ -285,18 +292,40 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   // Disciplina
   const desv = trades.filter(temDesvio);
   const noPlano = n - desv.length;
-  const custo = somar(desv.map((t) => Math.max(0, Number(t.pnl_plano ?? t.pnl_real ?? 0) - pnl(t))));
+  const desvMedidos = desv.filter((t) => calcularCustoDesvio(t) !== null);
+  const semMedir = desv.length - desvMedidos.length;
+  const custo = somar(desvMedidos.map((t) => calcularCustoDesvio(t)!));
   const disc = {
     pct: n ? formatarPct(noPlano / n) : "—", sub: `${noPlano} de ${plural(n, "trade", "trades")} no plano`,
     w: n ? Math.round((noPlano / n) * 280) : 0,
-    frase: !n ? "Sem trades para medir ainda" : desv.length === 0 ? "Todos os trades seguiram o plano" : custo > 0 ? `Desvios custaram ${formatarBRL(custo, false)} no mês` : `${plural(desv.length, "desvio", "desvios")} do plano, sem custo medido`,
-    itens: desv.map((t) => ({ data: diaMes(t.data), tipo: tipoDesvio(t), custo: formatarBRL(-Math.max(0, Number(t.pnl_plano ?? t.pnl_real ?? 0) - pnl(t))) })),
+    frase: !n
+      ? "Sem trades para medir ainda"
+      : desv.length === 0
+      ? "Todos os trades seguiram o plano"
+      : custo > 0
+      ? `Desvios custaram ${formatarBRL(custo, false)} no mês${semMedir > 0 ? ` (${semMedir} sem medir)` : ""}`
+      : `${plural(desv.length, "desvio", "desvios")} do plano, sem custo medido`,
+    itens: desv.map((t) => {
+      const c = calcularCustoDesvio(t);
+      return {
+        data: diaMes(t.data),
+        tipo: tipoDesvio(t),
+        custo: c === null ? "não medido" : formatarBRL(-c),
+      };
+    }),
   };
 
   // Setup C e contexto
   const grupo = (ts: TradeVG[], nome: string) => {
-    const rm = media(ts.map(rDoTrade));
-    return { nome, n: ts.length, acerto: `${formatarPct(ts.length ? ts.filter((t) => pnl(t) > 0).length / ts.length : 0)} acerto`, rm: ts.length ? formatarR(rm) : "—", cor: cor(rm) };
+    const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
+    const rm = tsRs.length ? media(tsRs) : null;
+    return {
+      nome,
+      n: ts.length,
+      acerto: `${formatarPct(ts.length ? ts.filter((t) => pnl(t) > 0).length / ts.length : 0)} acerto`,
+      rm: rm !== null ? formatarR(rm) : "—",
+      cor: rm !== null ? cor(rm) : "var(--tx)",
+    };
   };
   const tsC = trades.filter((t) => t.strategy_id === "varrida_barra_10");
   const modos = ["C1", "C2"].map((m) => grupo(tsC.filter((t) => t.setup_c_modo === m), m));

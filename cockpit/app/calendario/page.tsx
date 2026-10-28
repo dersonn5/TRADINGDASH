@@ -7,8 +7,7 @@ import { CARD, LBL } from "@/components/v2/estilos";
 import {
   NOMES_ESTRATEGIAS,
   SIGLAS,
-  calcularRTrade,
-  calcularRiscoTrade,
+  rDoTrade,
   formatarBRL,
   formatarPct,
   formatarR,
@@ -648,9 +647,7 @@ export default function CalendarioPage() {
                 {tradesDoDiaSelecionado.map((t) => {
                   const pnl = Number(t.pnl_real ?? 0);
                   const desvio = temDesvio(t);
-                  const pts = Number(t.pontos_real ?? 0);
-                  const risco = calcularRiscoTrade(Number(t.entrada ?? 0), Number(t.stop ?? 0));
-                  const rVal = calcularRTrade(pts, risco);
+                  const rVal = rDoTrade(t);
                   const compra = t.direcao === "COMPRA";
                   const sigla =
                     NOMES_ESTRATEGIAS[t.strategy_id] ??

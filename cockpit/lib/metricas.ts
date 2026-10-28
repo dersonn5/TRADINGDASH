@@ -12,8 +12,8 @@ export interface TradeMetricas {
   mercado?: string;
   direcao: "COMPRA" | "VENDA";
   entrada: number;
-  stop: number;
-  alvo?: number;
+  stop?: number | null;
+  alvo?: number | null;
   saida?: number | null;
   pontos_real?: number | null;
   pnl_real?: number | null;
@@ -150,6 +150,26 @@ export function calcularRTrade(pontosReal: number, risco: number): number {
   return pontosReal / risco;
 }
 
+/**
+ * R do trade (§2.9). Devolve null quando o stop não foi anotado (null/undefined)
+ * ou quando o risco é zero. Nunca converter null em 0 via Number(null).
+ */
+export function rDoTrade(t: {
+  entrada: number;
+  stop?: number | null;
+  pontos_real?: number | null;
+}): number | null {
+  if (t.stop === null || t.stop === undefined || isNaN(Number(t.stop))) {
+    return null;
+  }
+  const stop = Number(t.stop);
+  const entrada = Number(t.entrada);
+  const risco = calcularRiscoTrade(entrada, stop);
+  if (risco <= 0) return null;
+  const pontos = Number(t.pontos_real ?? 0);
+  return calcularRTrade(pontos, risco);
+}
+
 export function temDesvio(t: TradeMetricas): boolean {
   return (
     t.respeitou_plano === false ||
@@ -159,9 +179,10 @@ export function temDesvio(t: TradeMetricas): boolean {
   );
 }
 
-export function calcularCustoDesvio(t: TradeMetricas): number {
+export function calcularCustoDesvio(t: TradeMetricas): number | null {
+  if (t.pnl_plano === null || t.pnl_plano === undefined) return null;
   if (!temDesvio(t)) return 0;
-  const pnlPlano = Number(t.pnl_plano ?? 0);
+  const pnlPlano = Number(t.pnl_plano);
   const pnlReal = Number(t.pnl_real ?? 0);
   const diff = pnlPlano - pnlReal;
   return diff > 0 ? diff : 0;
@@ -284,11 +305,11 @@ export function calcularKPIsGerais(trades: TradeMetricas[]): KPIsGerais {
   }
 
   const pnlList = trades.map((t) => Number(t.pnl_real ?? 0));
-  const rList = trades.map((t) => {
-    const risco = calcularRiscoTrade(Number(t.entrada), Number(t.stop));
-    return calcularRTrade(Number(t.pontos_real ?? 0), risco);
-  });
-  const riscoList = trades.map((t) => calcularRiscoTrade(Number(t.entrada), Number(t.stop)));
+  const rList = trades.map(rDoTrade).filter((r): r is number => r !== null);
+  const riscoList = trades
+    .filter((t) => t.stop !== null && t.stop !== undefined)
+    .map((t) => calcularRiscoTrade(Number(t.entrada), Number(t.stop)))
+    .filter((risco) => risco > 0);
 
   const resultadoReais = somar(pnlList);
   const resultadoR = somar(rList);
@@ -298,7 +319,7 @@ export function calcularKPIsGerais(trades: TradeMetricas[]): KPIsGerais {
   const somaPerdas = Math.abs(somar(perdas));
 
   const taxaAcerto = ganhos.length / n;
-  const expectativaR = resultadoR / n;
+  const expectativaR = rList.length > 0 ? resultadoR / rList.length : 0;
 
   const profitFactor = somaPerdas > 0 ? somaGanhos / somaPerdas : null;
   const mediaGanhos = media(ganhos);
@@ -307,7 +328,7 @@ export function calcularKPIsGerais(trades: TradeMetricas[]): KPIsGerais {
 
   const ddReais = calcularDrawdown(pnlList).maxDrawdown;
   const ddR = calcularDrawdown(rList).maxDrawdown;
-  const stopMed = mediana(riscoList);
+  const stopMed = riscoList.length > 0 ? mediana(riscoList) : 0;
 
   return {
     totalTrades: n,
@@ -412,15 +433,12 @@ export function agruparPorHorario(trades: TradeMetricas[]): {
   const itens = faixasPadrao.map((f) => {
     const ts = trades.filter((t) => classificarFaixaHorario(t.hora_entrada) === f);
     const pnl = somar(ts.map((t) => Number(t.pnl_real ?? 0)));
-    const rList = ts.map((t) => {
-      const risco = calcularRiscoTrade(Number(t.entrada), Number(t.stop));
-      return calcularRTrade(Number(t.pontos_real ?? 0), risco);
-    });
+    const rList = ts.map(rDoTrade).filter((r): r is number => r !== null);
     return {
       faixa: f,
       fim: fimDaFaixa(f),
       n: ts.length,
-      rm: ts.length > 0 ? media(rList) : 0,
+      rm: rList.length > 0 ? media(rList) : 0,
       pnl,
     };
   });
@@ -462,16 +480,13 @@ export function agruparPorGatilho(trades: TradeMetricas[]): {
   const itens: GatilhoItem[] = chaves
     .map((k) => {
       const ts = trades.filter((t) => t.gatilho === k);
-      const rList = ts.map((t) => {
-        const risco = calcularRiscoTrade(Number(t.entrada), Number(t.stop));
-        return calcularRTrade(Number(t.pontos_real ?? 0), risco);
-      });
+      const rList = ts.map(rDoTrade).filter((r): r is number => r !== null);
       return {
         gatilho: k,
         nome: NOMES_GATILHOS[k] || k,
         n: ts.length,
         pct: ts.length / total,
-        rm: ts.length > 0 ? media(rList) : 0,
+        rm: rList.length > 0 ? media(rList) : 0,
       };
     })
     .filter((g) => g.n > 0)
@@ -509,8 +524,11 @@ export function calcularDistribuicaoStops(trades: TradeMetricas[]): {
     { rotulo: "300+", min: 300, max: Infinity },
   ];
 
-  const riscos = trades.map((t) => calcularRiscoTrade(Number(t.entrada), Number(t.stop)));
-  const medianaStop = mediana(riscos);
+  const tradesComStop = trades.filter((t) => t.stop !== null && t.stop !== undefined);
+  const riscos = tradesComStop
+    .map((t) => calcularRiscoTrade(Number(t.entrada), Number(t.stop)))
+    .filter((r) => r > 0);
+  const medianaStop = riscos.length > 0 ? mediana(riscos) : 0;
   const acima250 = riscos.filter((r) => r >= 250).length;
 
   const faixas = limites.map((l) => ({
@@ -544,13 +562,15 @@ export function calcularDisciplina(trades: TradeMetricas[]): DisciplinaResumo {
   const desvios = trades.filter((t) => temDesvio(t));
   const tradesNoPlano = n - desvios.length;
   const pctNoPlano = tradesNoPlano / n;
-  const custoTotal = somar(desvios.map((t) => calcularCustoDesvio(t)));
+  const desviosMedidos = desvios.filter((t) => calcularCustoDesvio(t) !== null);
+  const semMedir = desvios.length - desviosMedidos.length;
+  const custoTotal = somar(desviosMedidos.map((t) => calcularCustoDesvio(t)!));
 
   const frase =
     desvios.length === 0
       ? "100% dos trades respeitaram o plano"
       : custoTotal > 0
-        ? `Desvios custaram ${formatarBRL(custoTotal, false)} no mês`
+        ? `Desvios custaram ${formatarBRL(custoTotal, false)} no mês${semMedir > 0 ? ` (${semMedir} sem medir)` : ""}`
         : `${desvios.length} ${desvios.length === 1 ? "desvio" : "desvios"} do plano, sem custo medido`;
 
   return { pctNoPlano, tradesNoPlano, totalTrades: n, custoTotal, frase };

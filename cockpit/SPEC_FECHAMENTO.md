@@ -265,10 +265,10 @@ R perto de zero, sem erro nenhum. Por isso o helper, e não `Number(t.stop ?? 0)
   - Verify: o arquivo existe e abre num editor de texto. **Fase 2 não começa sem ele.**
 
 ### Fase 1 — Banco e métricas (não depende do CSV)
-- [ ] **TASK-101** — `supabase/migration_fechamento.sql` (§2.1) e `.local/` no `.gitignore`.
+- [x] **TASK-101** — `supabase/migration_fechamento.sql` (§2.1) e `.local/` no `.gitignore`.
   - Files: `supabase/migration_fechamento.sql`, `.gitignore`
   - Verify: leitura do Claude; o Anderson roda e cola o resultado da Parte 4.
-- [ ] **TASK-102** — `rDoTrade` e troca em todos os pontos de §2.9; tipos `stop/alvo/rr_planejado`
+- [x] **TASK-102** — `rDoTrade` e troca em todos os pontos de §2.9; tipos `stop/alvo/rr_planejado`
   nulos; `calcularCustoDesvio` com null (§2.8) e "não medido" na Visão Geral.
   - Files: `lib/metricas.ts`, `lib/copa-db.ts`, `lib/visao-geral.ts`, `lib/calendario-resultados.ts`,
     `components/v2/visao-geral-conteudo.tsx`, `app/calendario/page.tsx`, `app/estrategias/page.tsx`,
