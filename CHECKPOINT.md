@@ -22,6 +22,10 @@ dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3
 - Calendário de resultados (`/calendario`) — prova: `npx tsx scripts/verify.ts` (outubro/2026 com 5 semanas, feriado 12/10, dias com trade somando pnl e R, semana e total batendo, PF/WR nulos em zero trades/perdas, total de setembro demo idêntico à Visão Geral); verificação no navegador em `/calendario?demo=1` com navegação de mês, clique para detalhar trades do dia (03/09 com +R$ 910 batendo com a célula), responsivo sem rolagem horizontal em 1440px e 900px, temas claro/escuro e barra lateral retrátil; `npm run build` limpo (exit 0).
 
 ## Próximo
+- [ ] "Fechar o dia" (importar CSV do Profit + completar com a agenda): spec em
+      `cockpit/SPEC_FECHAMENTO.md`, para o Gemini. Bloqueado na Fase 2 até o Anderson salvar o CSV
+      real em `cockpit/.local/profit-2026-10-28.csv`. Trades de 27–28/10 lançados por SQL (alguns com
+      stop/alvo nominais, a migração da spec limpa).
 - [ ] Testar o Setup V como trade nos 5 meses (entrada após o extremo, stop além da perna, alvo nos 75%).
 - [ ] Anderson roda `migration_checklist_ao_vivo.sql` no Supabase e testa "Salvar progresso".
 - [ ] Limpeza Passo 2 (apagar os 3 dias e o trade de teste) e DROP das views `v_copa_*`,
