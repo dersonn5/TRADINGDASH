@@ -47,11 +47,30 @@ const FILTROS = [
   { v: "reversao_htf", l: "RHT" },
 ];
 
+const POR_PAGINA = 10;
+
+function botaoPagina(ativo: boolean): React.CSSProperties {
+  return {
+    minWidth: "32px",
+    height: "32px",
+    padding: "0 10px",
+    borderRadius: "8px",
+    border: `1px solid ${ativo ? "var(--ac)" : "var(--bd)"}`,
+    background: ativo ? "var(--acs)" : "transparent",
+    color: ativo ? "var(--actx)" : "var(--tx2)",
+    fontFamily: "inherit",
+    fontSize: "13px",
+    fontWeight: ativo ? 600 : 400,
+    cursor: "pointer",
+  };
+}
+
 export default function HistoricoPage() {
   const [trades, setTrades] = React.useState<TradeHistorico[]>([]);
   const [erro, setErro] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [filtro, setFiltro] = React.useState("TODOS");
+  const [pagina, setPagina] = React.useState(1);
 
   React.useEffect(() => {
     listarTrades()
@@ -66,6 +85,12 @@ export default function HistoricoPage() {
     filtro === "TODOS"
       ? fechados
       : fechados.filter((t) => t.strategy_id === filtro);
+
+  // Paginação: 10 linhas por página, seletor no canto inferior direito.
+  const totalPaginas = Math.max(1, Math.ceil(visiveis.length / POR_PAGINA));
+  const paginaAtual = Math.min(pagina, totalPaginas);
+  const inicio = (paginaAtual - 1) * POR_PAGINA;
+  const daPagina = visiveis.slice(inicio, inicio + POR_PAGINA);
 
   // KPIs
   const totalTrades = visiveis.length;
@@ -129,7 +154,10 @@ export default function HistoricoPage() {
                 key={o.v}
                 type="button"
                 aria-pressed={sel}
-                onClick={() => setFiltro(o.v)}
+                onClick={() => {
+                  setFiltro(o.v);
+                  setPagina(1);
+                }}
                 style={{
                   height: "36px",
                   padding: "0 14px",
@@ -331,8 +359,8 @@ export default function HistoricoPage() {
                 {fechados.length === 0 ? "Nenhum trade fechado ainda. Os trades registrados pelo checklist aparecem aqui." : "Nenhum trade com esse filtro."}
               </div>
             )}
-            {/* Linhas */}
-            {visiveis.map((t) => {
+            {/* Linhas (só as da página atual; os KPIs acima usam todos os visíveis) */}
+            {daPagina.map((t) => {
               const pnl = Number(t.pnl_real) || 0;
               const desvio = temDesvio(t);
               const rVal = rDoTrade(t);
@@ -422,7 +450,11 @@ export default function HistoricoPage() {
                       fontSize: "12px",
                     }}
                   >
-                    {risk > 0 ? `${risk} pts` : "\u2014"}
+                    {t.risco_inicial_rs
+                      ? formatarBRL(Number(t.risco_inicial_rs), false)
+                      : risk > 0
+                      ? `${risk} pts`
+                      : "\u2014"}
                   </span>
                   {/* R */}
                   <span
@@ -477,6 +509,53 @@ export default function HistoricoPage() {
                 </div>
               );
             })}
+            {totalPaginas > 1 && (
+              <nav
+                aria-label="Páginas do histórico"
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  gap: "6px",
+                  paddingTop: "16px",
+                  borderTop: "1px solid var(--bd)",
+                }}
+              >
+                <span style={{ fontSize: "12px", color: "var(--tx3)", marginRight: "8px" }}>
+                  {`${inicio + 1}–${Math.min(inicio + POR_PAGINA, visiveis.length)} de ${visiveis.length}`}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Página anterior"
+                  disabled={paginaAtual === 1}
+                  onClick={() => setPagina(paginaAtual - 1)}
+                  style={{ ...botaoPagina(false), opacity: paginaAtual === 1 ? 0.4 : 1 }}
+                >
+                  ‹
+                </button>
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-label={`Página ${p}`}
+                    aria-current={p === paginaAtual ? "page" : undefined}
+                    onClick={() => setPagina(p)}
+                    style={botaoPagina(p === paginaAtual)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  aria-label="Próxima página"
+                  disabled={paginaAtual === totalPaginas}
+                  onClick={() => setPagina(paginaAtual + 1)}
+                  style={{ ...botaoPagina(false), opacity: paginaAtual === totalPaginas ? 0.4 : 1 }}
+                >
+                  ›
+                </button>
+              </nav>
+            )}
           </div>
         )}
       </section>
