@@ -38,7 +38,7 @@
 (+216, −225, −129, −238, −577). A hora das 09:00 é a manipulação da abertura; o que se
 aproveita dela é a volta da primeira perna ([[Estudo_Reversao_Abertura_Vista]], itens 7 e 9).
 
-O cockpit trava: setup e cota de cada hora, só WIN, até 3 contratos. O Profit não trava
+O cockpit trava: setup e cota de cada hora, só WIN, até 3 contratos na entrada (até 6 escalonando a favor). O Profit não trava
 horário nem setup — fechar o Profit às 12:00.
 
 ## 2. Gerenciamento de risco
@@ -48,8 +48,9 @@ Configurado no próprio Profit, e ele trava (03/10/2026):
 | Limite | Valor |
 |---|---|
 | Stops no dia | **3** — encerram o dia |
-| Trades no dia | **5** (1 + 3 + 1) |
-| Contratos por trade | **2 a 3** |
+| Trades no dia | **5** (1 + 3 + 2) |
+| Contratos na entrada | **2 a 3** |
+| Escalonamento | **até 6 no total**, só a favor e com o stop já no zero a zero ou no lucro (29/10/2026). Aumentar contra a posição continua proibido |
 | Pausa depois de loss | nenhuma |
 
 Configura **antes das 09:00 e não mexe durante o pregão**. Mudar a trava no meio do

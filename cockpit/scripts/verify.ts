@@ -23,6 +23,7 @@ import {
   avaliarLimitesDia,
   mercadoPermitido,
   MAX_CONTRATOS,
+  MAX_CONTRATOS_ESCALONADO,
 } from "../lib/gate";
 import { REVERSAO_HTF, CONTINUIDADE_TENDENCIA, VARRIDA_BARRA_10, PRIMEIRA_PERNA } from "../data/strategies";
 import { gradeFor, pendenciasDaPreSessao, PreSessao, validarCamposNovosTrade } from "../lib/copa-db";
@@ -350,6 +351,7 @@ report("Limites Caso 4: 5 operacoes -> bloqueado", lim4.bloqueado && lim4.motivo
 const lim5 = avaliarLimitesDia(3, 5);
 report("Limites Caso 5: 3 perdas e 5 operacoes -> os dois motivos", lim5.bloqueado && lim5.motivos.length === 2, JSON.stringify(lim5.motivos));
 report("Limites: maximo de 3 contratos", MAX_CONTRATOS === 3, String(MAX_CONTRATOS));
+report("Limites: escalonando a favor, ate 6 contratos", MAX_CONTRATOS_ESCALONADO === 6, String(MAX_CONTRATOS_ESCALONADO));
 let erroContratos = "";
 try {
   validarCamposNovosTrade({ strategy_id: "continuidade_tendencia", gatilho: "MSS_FVG", contexto_1h: "REVERSAO", contratos: 4 });

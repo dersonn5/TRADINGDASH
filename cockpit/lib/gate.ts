@@ -23,12 +23,19 @@ export const BONUS_FORA_DA_PRIME = 15; // VALIDA exige 65 + 15 = 80
 
 /**
  * Limites do dia (decisão do operador em 03/10/2026, depois da semana de 28/09 a 02/10):
- * 3 stops encerram o dia; no máximo 5 trades, distribuídos por hora (1 + 3 + 1);
- * 2 a 3 contratos; sem pausa depois de loss. O Profit trava os mesmos números.
+ * 3 stops encerram o dia; no máximo 5 trades, distribuídos por hora (1 + 3 + 2 desde 28/10);
+ * 2 a 3 contratos na entrada; sem pausa depois de loss. O Profit trava os mesmos números.
  */
 export const MAX_PERDAS_DIA = 3;
 export const MAX_OPERACOES_DIA = 5;
 export const MAX_CONTRATOS = 3;
+
+/**
+ * Escalonamento (29/10/2026): a ENTRADA continua limitada a MAX_CONTRATOS. Aumentar a mão
+ * so a favor do movimento e com o stop ja no zero a zero ou no lucro, ate este total.
+ * Aumentar contra a posicao continua proibido (erro AUMENTOU_POSICAO).
+ */
+export const MAX_CONTRATOS_ESCALONADO = 6;
 
 /** O único trade permitido antes das 10:00: contra a primeira perna do dia. */
 export const ESTRATEGIA_PRIMEIRA_PERNA = "primeira_perna";

@@ -69,6 +69,9 @@ Uma tela **"Fechar o dia"** em que, depois das 12:00, o operador:
   - **Stop**: em pontos **ou** em preço (o campo aceita os dois: até 4 dígitos = pontos;
     mais que isso = preço, lido com `lerPreco`). Vazio = "não anotei".
   - **Alvo**: idem.
+  - **Escalonou a favor?** Só aparece quando o Profit mostra mais de 3 contratos: "Sim — entrei
+    com até 3 e aumentei a favor, com o stop no zero ou no lucro" / "Não". Grava em
+    `escalonado` (coluna de `migration_escalonamento.sql`). Decide o item 6 de §2.5.
   - **Motivo da saída** (obrigatório): Alvo · Stop · Manual.
   - **Execução** (obrigatório): A · B · C.
   - **Erro**: lista fechada (§2.6) + "nenhum".
@@ -201,7 +204,14 @@ trades em ordem de `hora_entrada`. Para cada trade, olhando só os anteriores:
 3. trades anteriores **na mesma hora** ≥ `maxTrades` → "cota da 1ª hora (1) já usada";
 4. perdas anteriores no dia (`pnl_real < 0`) ≥ `MAX_PERDAS_DIA` → "depois do 3º stop";
 5. trades anteriores no dia ≥ `MAX_OPERACOES_DIA` → "6º trade do dia (máximo 5)";
-6. `contratos > MAX_CONTRATOS` → "4 contratos (máximo 3)".
+6. Tamanho (regra de 29/10/2026, constantes em `lib/gate.ts`):
+   - `contratos ≤ MAX_CONTRATOS` (3) → ok;
+   - `MAX_CONTRATOS < contratos ≤ MAX_CONTRATOS_ESCALONADO` (6) → ok **só** com `escalonado = true`
+     (o operador confirma que entrou com até 3 e aumentou a favor, com o stop no zero ou no
+     lucro); sem isso → "4 contratos na entrada (máximo 3)";
+   - `contratos > MAX_CONTRATOS_ESCALONADO` → "7 contratos (máximo 6 escalonando)".
+   Teste obrigatório em `verify.ts`: 29/10, MAV 10:04 com 6 contratos e `escalonado` → no plano;
+   RPP 09:45 com 4 contratos sem `escalonado` → fora.
 Sem setup escolhido ainda, o item 2 e o 3 ficam pendentes ("escolha o setup").
 O trade fora do plano conta na cota e nas perdas do mesmo jeito (o que foi feito, foi feito).
 Resultado gravado em `respeitou_plano` e, nas notas, prefixo `[FORA DO PLANO: motivo; motivo]`.

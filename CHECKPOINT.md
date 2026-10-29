@@ -45,7 +45,7 @@ dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3
   aquele pedaço. Por isso o campo Evento da pré-sessão sugere os nomes gravados.
 
 ## Decisões que não se recuperam lendo o código
-- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade, alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (2, era 1 até 28/10). 3 stops encerram; 5 trades; 2–3 contratos. RHT (Reversão HTF) em qualquer hora, dentro da cota. Siglas: RPP, MAV, CSI, RHT (lib/metricas SIGLAS). Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
+- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade, alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (2, era 1 até 28/10). Contratos: até 3 na entrada; desde 29/10, escalonar a favor com stop no zero/lucro até 6 (`MAX_CONTRATOS_ESCALONADO`, coluna `escalonado`). 3 stops encerram; 5 trades; 2–3 contratos. RHT (Reversão HTF) em qualquer hora, dentro da cota. Siglas: RPP, MAV, CSI, RHT (lib/metricas SIGLAS). Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
 - Voz: áudios pré-gerados na GPU do operador, tocados como arquivo estático. Sem
   servidor de voz. O manifest é indexado pelo texto normalizado (o hash só dá nome ao
   arquivo), então o navegador não precisa calcular SHA-1.
