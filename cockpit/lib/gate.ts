@@ -32,11 +32,16 @@ export const MAX_OPERACOES_DIA = 5;
 export const MAX_CONTRATOS = 3;
 
 /**
- * Escalonamento (29/10/2026): a ENTRADA continua limitada a MAX_CONTRATOS. Aumentar a mão
- * so a favor do movimento e com o stop ja no zero a zero ou no lucro, ate este total.
- * Aumentar contra a posicao continua proibido (erro AUMENTOU_POSICAO).
+ * Escalonamento (29/10/2026): a ENTRADA continua limitada a MAX_CONTRATOS. Aumentar a mao
+ * so a favor do movimento, ate este total, com stop financeiro: a perda do trade inteiro
+ * (todos os contratos) nao passa de MAX_RISCO_TRADE_RS. Aumentar contra a posicao continua
+ * proibido (erro AUMENTOU_POSICAO). (A primeira versao da regra pedia stop no zero a zero;
+ * o operador corrigiu no mesmo dia para stop financeiro.)
  */
 export const MAX_CONTRATOS_ESCALONADO = 6;
+
+/** Perda maxima de um trade em R$, somando todos os contratos (29/10/2026). Vale para todo trade. */
+export const MAX_RISCO_TRADE_RS = 150;
 
 /** O único trade permitido antes das 10:00: contra a primeira perna do dia. */
 export const ESTRATEGIA_PRIMEIRA_PERNA = "primeira_perna";

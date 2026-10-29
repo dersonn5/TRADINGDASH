@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
-import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS, MAX_CONTRATOS_ESCALONADO, MAX_OPERACOES_DIA, MAX_PERDAS_DIA } from "@/lib/gate";
+import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS, MAX_CONTRATOS_ESCALONADO, MAX_OPERACOES_DIA, MAX_RISCO_TRADE_RS, MAX_PERDAS_DIA } from "@/lib/gate";
 import { listarTradesDoMes, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
 import { NOMES_COMPLETOS, SIGLAS, rDoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
 import { CARD, LBL, H2 } from "@/components/v2/estilos";
@@ -52,7 +52,7 @@ export default function EstrategiasPage() {
             ? `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h · qualquer hora, na cota`
           : `${d.score_minimo} · ${d.score_minimo + 15} na 3ª hora (2 trades)`,
     },
-    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 2) · 2 a ${MAX_CONTRATOS} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor` },
+    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 2) · 2 a ${MAX_CONTRATOS} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor · perda máxima de R$ ${MAX_RISCO_TRADE_RS} por trade` },
   ];
 
   return (
