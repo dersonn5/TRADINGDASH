@@ -45,14 +45,14 @@ export default function EstrategiasPage() {
     {
       l: "Score mínimo",
       v: d.id === ESTRATEGIA_PRIMEIRA_PERNA
-        ? `${d.score_minimo} · 1 trade na 1ª hora`
+        ? `${d.score_minimo} · 2 trades na 1ª hora`
         : d.id === "varrida_barra_10"
           ? `${d.score_minimo} · até 3 trades na 2ª hora`
           : d.id === "reversao_htf"
             ? `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h · qualquer hora, na cota`
           : `${d.score_minimo} · ${d.score_minimo + 15} na 3ª hora (2 trades)`,
     },
-    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 2) · 2 a ${MAX_CONTRATOS} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor · perda máxima de R$ ${MAX_RISCO_TRADE_RS} por trade` },
+    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (2 · 3 · 2) · 2 a ${MAX_CONTRATOS} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor · perda máxima de R$ ${MAX_RISCO_TRADE_RS} por trade` },
   ];
 
   return (

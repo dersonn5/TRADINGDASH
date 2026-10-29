@@ -54,14 +54,15 @@ export const ESTRATEGIA_REVERSAO_HTF = "reversao_htf";
 
 /**
  * Setups e cota de trades por hora (03/10/2026). O checklist muda a cada hora.
- * - 1ª hora (09:00-09:59): só o trade contra a primeira perna, 1 trade.
+ * - 1ª hora (09:00-09:59): só o trade contra a primeira perna, 2 trades (o operador corrigiu
+ *   em 29/10/2026: a cota é 2; o registro de 03/10 dizia 1).
  * - 2ª hora (10:00-10:59): setup das 10 ou continuidade, até 3 trades (abertura de NY).
  * - 3ª hora (11:00-11:59): só continuidade, 2 trades (cota subiu de 1 para 2 em 28/10/2026).
  * A Reversão HTF (RHT) vale em qualquer hora, das 09:00 às 12:00, dentro da cota da hora
  * (decisão do operador em 03/10/2026).
  */
 export const REGRAS_DA_HORA: Record<"ABERTURA" | "PRIME" | "VALIDA", { setups: string[]; maxTrades: number; nome: string }> = {
-  ABERTURA: { setups: [ESTRATEGIA_PRIMEIRA_PERNA, ESTRATEGIA_REVERSAO_HTF], maxTrades: 1, nome: "1ª hora" },
+  ABERTURA: { setups: [ESTRATEGIA_PRIMEIRA_PERNA, ESTRATEGIA_REVERSAO_HTF], maxTrades: 2, nome: "1ª hora" },
   PRIME: { setups: [ESTRATEGIA_BARRA_10, ESTRATEGIA_CONTINUIDADE, ESTRATEGIA_REVERSAO_HTF], maxTrades: 3, nome: "2ª hora" },
   VALIDA: { setups: [ESTRATEGIA_CONTINUIDADE, ESTRATEGIA_REVERSAO_HTF], maxTrades: 2, nome: "3ª hora" },
 };
@@ -128,7 +129,7 @@ export function avaliarLimitesDia(perdasSeguidas: number, operacoesHoje: number)
 
 /**
  * Converte agora para America/Sao_Paulo e classifica a janela de operação:
- * - ABERTURA: 09:00-09:59 (1ª hora) — só o trade contra a primeira perna, 1 trade
+ * - ABERTURA: 09:00-09:59 (1ª hora) — só o trade contra a primeira perna, 2 trades
  * - PRIME: 10:00-10:59 (2ª hora) — setup das 10 ou continuidade, até 3 trades
  * - VALIDA: 11:00-11:59 (3ª hora) — só continuidade, 2 trades, score maior
  * - FORA: qualquer outro horário

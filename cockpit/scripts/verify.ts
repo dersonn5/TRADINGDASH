@@ -401,19 +401,20 @@ report(
   JSON.stringify(gate11.motivos)
 );
 
-// Setups e cotas por hora (03/10/2026): 1a hora V (1), 2a hora C ou B (3), 3a hora B (2, desde 28/10).
+// Setups e cotas por hora (03/10/2026): 1a hora V (2, corrigido em 29/10), 2a hora C ou B (3), 3a hora B (2, desde 28/10).
 const ctx = (estrategiaId: string, operacoesNaHora = 0) => ({ estrategiaId, operacoesNaHora });
 const gh = (h: number, m: number, c: ReturnType<typeof ctx>) => avaliarGate(itens80, "BULLISH", makeSPDate(h, m), 65, limLiberado, null, true, true, c);
 const casosHora: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]> = [
   ["09:30 setup das 10 -> bloqueado", false, gh(9, 30, ctx("varrida_barra_10")), "só RPP"],
   ["09:30 primeira perna, 1o trade -> liberado", true, gh(9, 30, ctx("primeira_perna")), ""],
-  ["09:30 primeira perna, ja feito -> bloqueado", false, gh(9, 30, ctx("primeira_perna", 1)), "limite de 1 trade"],
+  ["09:30 primeira perna, 1 feito -> liberado", true, gh(9, 30, ctx("primeira_perna", 1)), ""],
+  ["09:30 primeira perna, 2 feitos -> bloqueado", false, gh(9, 30, ctx("primeira_perna", 2)), "limite de 2 trades"],
   ["10:30 primeira perna -> bloqueado", false, gh(10, 30, ctx("primeira_perna")), "MAV ou CSI"],
   ["10:30 setup das 10, 2 feitos -> liberado", true, gh(10, 30, ctx("varrida_barra_10", 2)), ""],
   ["10:30 continuidade -> liberado", true, gh(10, 30, ctx("continuidade_tendencia")), ""],
   ["10:30 setup das 10, 3 feitos -> bloqueado", false, gh(10, 30, ctx("varrida_barra_10", 3)), "limite de 3 trades"],
   ["09:30 RHT -> liberado (qualquer hora)", true, gh(9, 30, ctx("reversao_htf")), ""],
-  ["09:30 RHT depois da RPP -> bloqueado (cota da 1a hora)", false, gh(9, 30, ctx("reversao_htf", 1)), "limite de 1 trade"],
+  ["09:30 RHT depois de 2 trades -> bloqueado (cota da 1a hora)", false, gh(9, 30, ctx("reversao_htf", 2)), "limite de 2 trades"],
   ["10:30 RHT -> liberado", true, gh(10, 30, ctx("reversao_htf", 2)), ""],
   ["11:15 RHT -> liberado", true, gh(11, 15, ctx("reversao_htf")), ""],
   ["11:15 continuidade -> liberado", true, gh(11, 15, ctx("continuidade_tendencia")), ""],

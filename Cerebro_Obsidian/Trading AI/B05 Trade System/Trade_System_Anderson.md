@@ -19,7 +19,7 @@
 
 | Hora | Setup (o checklist muda sozinho) | Trades |
 |---|---|---|
-| **09:00 – 09:59** | **RPP** — Reversão da Primeira Perna, alvo nos 75% da perna | **1** |
+| **09:00 – 09:59** | **RPP** — Reversão da Primeira Perna, alvo nos 75% da perna | **2** (corrigido em 29/10/2026; o registro de 03/10 dizia 1) |
 | **10:00 – 10:59** | **MAV** — Manipulação do À Vista (manipulando ou manipulado) **ou CSI** — abertura de NY a favor | **até 3** |
 | **11:00 – 11:59** | **Só CSI** — Continuação por Sweep de Indução (score 80) | **2** (era 1 até 28/10/2026) |
 | **Qualquer hora (09:00–11:59)** | **RHT** — Reversão HTF, dentro da cota da hora em que entrar | — |
@@ -29,7 +29,7 @@
 1. Tela só de **09:00 a 12:00**.
 2. **Setups:** **RPP**, **MAV** e **CSI**, um por hora (siglas de 03/10/2026), e a **RHT**
    (Reversão HTF, antigo Setup A) em qualquer hora de 09:00 a 12:00, dentro da cota da hora.
-3. **Cotas por hora: 1 · 3 · 2.** O teto do dia continua em 5 trades. Fora delas, não existe trade.
+3. **Cotas por hora: 2 · 3 · 2.** O teto do dia continua em 5 trades (as cotas somam 7: nem toda hora usa a cota cheia). Fora delas, não existe trade.
 4. **Alvo escrito antes de entrar.** Setup V: sai nos 75% da perna, sempre. Sweep HTF:
    alongar com trailing, visando um alvo HTF consciente.
 5. **Toda entrada catalogada no setup**, pelo checklist.
@@ -48,7 +48,7 @@ Configurado no próprio Profit, e ele trava (03/10/2026):
 | Limite | Valor |
 |---|---|
 | Stops no dia | **3 seguidos** encerram o dia. Um gain (ou zero a zero) no meio zera a contagem (esclarecido em 29/10/2026) |
-| Trades no dia | **5** (1 + 3 + 2) |
+| Trades no dia | **5** (cotas por hora 2 · 3 · 2) |
 | Contratos na entrada | **2 a 3** |
 | Escalonamento | **até 6 no total**, só a favor, com stop financeiro (29/10/2026). Aumentar contra a posição continua proibido |
 | Perda máxima por trade | **R$ 160**, somando todos os contratos (29/10/2026). Com 5 contratos = 160 pts de stop; com 3 = 266 pts |

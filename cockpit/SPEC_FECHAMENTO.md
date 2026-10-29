@@ -204,7 +204,7 @@ trades em ordem de `hora_entrada`. Para cada trade, olhando só os anteriores:
 1. hora fora de 09:00–11:59 (SP) → "fora da janela";
 2. janela via a mesma regra de `classificarJanela`; setup não está em
    `REGRAS_DA_HORA[janela].setups` → "RPP não vale na 2ª hora" (sigla + nome da hora);
-3. trades anteriores **na mesma hora** ≥ `maxTrades` → "cota da 1ª hora (1) já usada";
+3. trades anteriores **na mesma hora** ≥ `maxTrades` → "cota da 1ª hora (2) já usada";
 4. perdas **seguidas** imediatamente antes (`contarPerdasSeguidas` de `lib/gate.ts`, sobre os
    trades anteriores em ordem; um resultado ≥ 0 zera) ≥ `MAX_PERDAS_DIA` → "depois de 3 stops
    seguidos" (regra esclarecida em 29/10/2026: stops não seguidos não encerram o dia);
@@ -309,10 +309,11 @@ R perto de zero, sem erro nenhum. Por isso o helper, e não `Number(t.stop ?? 0)
 - [ ] **TASK-301** — `lib/plano-do-dia.ts` (§2.5) e `lib/erros.ts` (§2.6).
   - Files: `lib/plano-do-dia.ts`, `lib/erros.ts`
   - Verify: testes em `verify.ts` reproduzindo 28/10: RPP 09:18 (−) no plano; RPP 09:25 (−)
-    fora, "cota da 1ª hora"; MAV 10:01 (+) no plano; MAV 10:31 (−) no plano;
+    no plano (cota da 1ª hora é 2); MAV 10:01 (+) no plano; MAV 10:31 (−) no plano;
     CSI 10:32 (+) **no plano** (as 3 perdas do dia não foram seguidas: o +648 das 10:01 zerou). E 27/10: CSI 11:24 e CSI 11:42 os dois no plano
     (cota 2 na 3ª hora). E: RPP às 10:15 → fora, setup não vale na hora; trade com 4 contratos →
-    fora; 6º trade → fora.
+    fora; 6º trade → fora. E 29/10: RPP 09:22 e 09:29 no plano; venda 09:45 fora ("cota da 1ª
+    hora (2) já usada" e "4 contratos na entrada").
 
 ### Fase 4 — Tela
 - [ ] **TASK-401** — `lib/fechamento-db.ts`: carregar trades de uma data, casamento (§2.4),
