@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import { modoDemo, tradesDemo, tradesDemoDoMes } from "./demo";
-import { ESTRATEGIA_PRIMEIRA_PERNA, Janela, MAX_CONTRATOS, mercadoPermitido } from "./gate";
+import { ESTRATEGIA_PRIMEIRA_PERNA, Janela, MAX_CONTRATOS, contarPerdasSeguidas, mercadoPermitido } from "./gate";
 
 export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "BPR" | "IFVG" | "RISK_ENTRY" | "FVG_POS_SWING";
 export type Contexto1h = "CONTINUACAO" | "REVERSAO" | "LATERAL";
@@ -75,6 +75,7 @@ export interface ResumoDoDia {
   operacoes_hoje: number; // fechados + abertos
   operacoes_por_hora: { ABERTURA: number; PRIME: number; VALIDA: number }; // trades abertos em cada hora (cotas 1 · 3 · 2)
   perdas_hoje: number;
+  perdas_seguidas: number; // perdas no fim da sequência; 3 encerram o dia (gate)
   pnl_dia: number;
   ultimo_loss_em: Date | null;
   trade_aberto_id: string | null;
@@ -192,6 +193,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
       operacoes_hoje: 0,
       operacoes_por_hora: { ABERTURA: 0, PRIME: 0, VALIDA: 0 },
       perdas_hoje: 0,
+      perdas_seguidas: 0,
       pnl_dia: 0,
       ultimo_loss_em: null,
       trade_aberto_id: null,
@@ -225,6 +227,13 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
     else if (h >= "11:00" && h < "12:00") porHora.VALIDA++;
   }
 
+  const perdasSeguidas = contarPerdasSeguidas(
+    lista
+      .filter((t) => t.status === "FECHADO")
+      .sort((a, b) => String(a.hora_saida || a.created_at).localeCompare(String(b.hora_saida || b.created_at)))
+      .map((t) => Number(t.pnl_real) || 0)
+  );
+
   for (const t of lista) {
     if (t.status === "ABERTO") {
       tradesAbertos++;
@@ -256,6 +265,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
     operacoes_hoje: tradesFechados + tradesAbertos,
     operacoes_por_hora: porHora,
     perdas_hoje: perdasHoje,
+    perdas_seguidas: perdasSeguidas,
     pnl_dia: Number(pnlDia.toFixed(2)),
     ultimo_loss_em: ultimoLossEm,
     trade_aberto_id: tradeAbertoId,

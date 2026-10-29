@@ -21,6 +21,7 @@ import {
   ItemAvaliado,
   Janela,
   avaliarLimitesDia,
+  contarPerdasSeguidas,
   mercadoPermitido,
   MAX_CONTRATOS,
   MAX_CONTRATOS_ESCALONADO,
@@ -344,8 +345,12 @@ report("Limites Caso 1: 0 perdas, 0 operacoes -> liberado", !lim1.bloqueado && l
 const lim2 = avaliarLimitesDia(2, 4);
 report("Limites Caso 2: 2 perdas e 4 operacoes -> liberado (sem pausa depois de loss)", !lim2.bloqueado, JSON.stringify(lim2.motivos));
 const lim3 = avaliarLimitesDia(3, 3);
-report("Limites Caso 3: 3 perdas -> bloqueado, motivo cita pregao encerrado",
-  lim3.bloqueado && lim3.motivos.some((m) => m.includes("3 perdas") && m.includes("pregão encerrado")), JSON.stringify(lim3.motivos));
+report("Limites Caso 3: 3 perdas seguidas -> bloqueado, motivo cita pregao encerrado",
+  lim3.bloqueado && lim3.motivos.some((m) => m.includes("3 perdas seguidas") && m.includes("pregão encerrado")), JSON.stringify(lim3.motivos));
+// 3 stops SEGUIDOS (29/10/2026). 28/10: −106, −43, +648, −116 -> 1 seguida, o CSI das 10:32 estava liberado.
+report("Perdas seguidas: 28/10 (−106, −43, +648, −116) = 1", contarPerdasSeguidas([-106, -43, 648, -116]) === 1, String(contarPerdasSeguidas([-106, -43, 648, -116])));
+report("Perdas seguidas: zero a zero (+2) zera a sequência", contarPerdasSeguidas([-80, -80, 2, -80]) === 1, String(contarPerdasSeguidas([-80, -80, 2, -80])));
+report("Perdas seguidas: três no fim = 3", contarPerdasSeguidas([400, -80, -80, -80]) === 3, String(contarPerdasSeguidas([400, -80, -80, -80])));
 const lim4 = avaliarLimitesDia(0, 5);
 report("Limites Caso 4: 5 operacoes -> bloqueado", lim4.bloqueado && lim4.motivos.some((m) => m.includes("5 operações")), JSON.stringify(lim4.motivos));
 const lim5 = avaliarLimitesDia(3, 5);

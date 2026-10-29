@@ -210,7 +210,7 @@ export default function ChecklistPage() {
   // Avaliação dos limites diários espelhados do Profit Chart
   const limites: LimitesDia = useMemo(() => {
     if (!resumo) return { bloqueado: false, motivos: [] };
-    return avaliarLimitesDia(resumo.perdas_hoje, resumo.operacoes_hoje);
+    return avaliarLimitesDia(resumo.perdas_seguidas, resumo.operacoes_hoje);
   }, [resumo]);
 
   const ctxHora = useMemo(
@@ -753,7 +753,7 @@ export default function ChecklistPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.3fr repeat(3, minmax(0, 1fr)) 1.3fr", gap: "12px" }}>
         {statusCard("Pregão", spTimeStr)}
         {statusCard(janelaCard.rot, janelaCard.txt, { destaque: janelaCard.destaque, pequeno: true })}
-        {statusCard("Perdas", <>{resumo?.perdas_hoje ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 3</span></>)}
+        {statusCard("Perdas seguidas", <>{resumo?.perdas_seguidas ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 3</span></>)}
         {statusCard("Operações", <>{resumo?.operacoes_hoje ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 5</span></>)}
         {statusCard("Dia", formatarBRL(pnlDia), { cor: pnlDia > 0 ? "var(--actx)" : pnlDia < 0 ? "var(--negtx)" : "var(--tx)" })}
         {statusCard("Setup do dia", `${tagSetup} · ${NOME_CURTO[selectedStrategy.id] ?? selectedStrategy.nome}`, { pequeno: true })}

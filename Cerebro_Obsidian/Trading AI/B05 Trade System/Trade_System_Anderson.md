@@ -47,7 +47,7 @@ Configurado no próprio Profit, e ele trava (03/10/2026):
 
 | Limite | Valor |
 |---|---|
-| Stops no dia | **3** — encerram o dia |
+| Stops no dia | **3 seguidos** encerram o dia. Um gain (ou zero a zero) no meio zera a contagem (esclarecido em 29/10/2026) |
 | Trades no dia | **5** (1 + 3 + 2) |
 | Contratos na entrada | **2 a 3** |
 | Escalonamento | **até 6 no total**, só a favor e com o stop já no zero a zero ou no lucro (29/10/2026). Aumentar contra a posição continua proibido |

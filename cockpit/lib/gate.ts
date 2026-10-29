@@ -23,8 +23,9 @@ export const BONUS_FORA_DA_PRIME = 15; // VALIDA exige 65 + 15 = 80
 
 /**
  * Limites do dia (decisão do operador em 03/10/2026, depois da semana de 28/09 a 02/10):
- * 3 stops encerram o dia; no máximo 5 trades, distribuídos por hora (1 + 3 + 2 desde 28/10);
- * 2 a 3 contratos na entrada; sem pausa depois de loss. O Profit trava os mesmos números.
+ * 3 stops SEGUIDOS encerram o dia (o operador esclareceu em 29/10/2026: um gain no meio zera a
+ * sequência; antes o cockpit contava as perdas do dia inteiro); no máximo 5 trades, distribuídos
+ * por hora (1 + 3 + 2 desde 28/10); 2 a 3 contratos na entrada; sem pausa depois de loss.
  */
 export const MAX_PERDAS_DIA = 3;
 export const MAX_OPERACOES_DIA = 5;
@@ -88,11 +89,23 @@ export interface LimitesDia {
   motivos: string[];
 }
 
-export function avaliarLimitesDia(perdasHoje: number, operacoesHoje: number): LimitesDia {
+/**
+ * Perdas seguidas no fim da sequência de trades fechados, em ordem de saída.
+ * Perda = pnl < 0; qualquer resultado >= 0 (inclusive zero a zero) zera a contagem.
+ */
+export function contarPerdasSeguidas(pnlsEmOrdem: number[]): number {
+  let seguidas = 0;
+  for (const pnl of pnlsEmOrdem) {
+    seguidas = pnl < 0 ? seguidas + 1 : 0;
+  }
+  return seguidas;
+}
+
+export function avaliarLimitesDia(perdasSeguidas: number, operacoesHoje: number): LimitesDia {
   const motivos: string[] = [];
 
-  if (perdasHoje >= MAX_PERDAS_DIA) {
-    motivos.push(`${MAX_PERDAS_DIA} perdas no dia: pregão encerrado`);
+  if (perdasSeguidas >= MAX_PERDAS_DIA) {
+    motivos.push(`${MAX_PERDAS_DIA} perdas seguidas: pregão encerrado`);
   }
 
   if (operacoesHoje >= MAX_OPERACOES_DIA) {
