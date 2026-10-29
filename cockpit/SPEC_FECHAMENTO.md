@@ -215,9 +215,10 @@ trades em ordem de `hora_entrada`. Para cada trade, olhando só os anteriores:
      (o operador confirma que entrou com até 3 e aumentou a favor, com stop financeiro);
      sem isso → "4 contratos na entrada (máximo 3)";
    - `contratos > MAX_CONTRATOS_ESCALONADO` → "7 contratos (máximo 6 escalonando)".
-7. Perda do trade (`pnl_real < 0`) maior que `MAX_RISCO_TRADE_RS` (R$ 150, todos os contratos) →
-   "perda de R$ 159 passou do teto de R$ 150". Vale para todo trade, escalonado ou não.
-   Com `risco_inicial_rs` anotado acima do teto → "risco de R$ 180 na entrada (teto R$ 150)".
+7. Perda do trade (`pnl_real < 0`) maior que `MAX_RISCO_TRADE_RS` (R$ 160, todos os contratos) →
+   "perda de R$ 180 passou do teto de R$ 160". Vale para todo trade, escalonado ou não.
+   Com `risco_inicial_rs` anotado acima do teto → "risco de R$ 180 na entrada (teto R$ 160)".
+   Teste: 29/10 RHT 11:26, 5 contratos, −R$ 159, risco R$ 159 → no plano.
    Teste obrigatório em `verify.ts`: 29/10, MAV 10:04 com 6 contratos e `escalonado` → no plano;
    RPP 09:45 com 4 contratos sem `escalonado` → fora.
 Sem setup escolhido ainda, o item 2 e o 3 ficam pendentes ("escolha o setup").

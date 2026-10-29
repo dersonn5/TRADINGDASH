@@ -40,8 +40,11 @@ export const MAX_CONTRATOS = 3;
  */
 export const MAX_CONTRATOS_ESCALONADO = 6;
 
-/** Perda maxima de um trade em R$, somando todos os contratos (29/10/2026). Vale para todo trade. */
-export const MAX_RISCO_TRADE_RS = 150;
+/**
+ * Perda maxima de um trade em R$, somando todos os contratos. Vale para todo trade.
+ * 29/10/2026: comecou em 150; o operador ajustou para 160 no mesmo dia, alinhado ao GR dele.
+ */
+export const MAX_RISCO_TRADE_RS = 160;
 
 /** O único trade permitido antes das 10:00: contra a primeira perna do dia. */
 export const ESTRATEGIA_PRIMEIRA_PERNA = "primeira_perna";

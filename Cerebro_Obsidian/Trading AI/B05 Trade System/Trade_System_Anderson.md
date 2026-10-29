@@ -51,7 +51,7 @@ Configurado no próprio Profit, e ele trava (03/10/2026):
 | Trades no dia | **5** (1 + 3 + 2) |
 | Contratos na entrada | **2 a 3** |
 | Escalonamento | **até 6 no total**, só a favor, com stop financeiro (29/10/2026). Aumentar contra a posição continua proibido |
-| Perda máxima por trade | **R$ 150**, somando todos os contratos (29/10/2026) |
+| Perda máxima por trade | **R$ 160**, somando todos os contratos (29/10/2026). Com 5 contratos = 160 pts de stop; com 3 = 266 pts |
 | Pausa depois de loss | nenhuma |
 
 Configura **antes das 09:00 e não mexe durante o pregão**. Mudar a trava no meio do
