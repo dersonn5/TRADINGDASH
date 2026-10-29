@@ -9,6 +9,8 @@ import {
   NOMES_GATILHOS,
   TradeMetricas,
   calcularCustoDesvio,
+  fraseCustoDesvios,
+  lucroForaDoPlano,
   calcularDrawdown,
   rDoTrade,
   FAIXAS_HORARIO,
@@ -295,6 +297,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const desvMedidos = desv.filter((t) => calcularCustoDesvio(t) !== null);
   const semMedir = desv.length - desvMedidos.length;
   const custo = somar(desvMedidos.map((t) => calcularCustoDesvio(t)!));
+  const lucroFora = somar(desv.map(lucroForaDoPlano));
   const disc = {
     pct: n ? formatarPct(noPlano / n) : "—", sub: `${noPlano} de ${plural(n, "trade", "trades")} no plano`,
     w: n ? Math.round((noPlano / n) * 280) : 0,
@@ -302,15 +305,14 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
       ? "Sem trades para medir ainda"
       : desv.length === 0
       ? "Todos os trades seguiram o plano"
-      : custo > 0
-      ? `Desvios custaram ${formatarBRL(custo, false)} no mês${semMedir > 0 ? ` (${semMedir} sem medir)` : ""}`
-      : `${plural(desv.length, "desvio", "desvios")} do plano, sem custo medido`,
+      : fraseCustoDesvios(desv.length, custo, lucroFora, semMedir),
     itens: desv.map((t) => {
       const c = calcularCustoDesvio(t);
+      const lucro = lucroForaDoPlano(t);
       return {
         data: diaMes(t.data),
         tipo: tipoDesvio(t),
-        custo: c === null ? "não medido" : formatarBRL(-c),
+        custo: c === null ? "não medido" : lucro > 0 ? `lucro ${formatarBRL(lucro)}` : formatarBRL(-c),
       };
     }),
   };

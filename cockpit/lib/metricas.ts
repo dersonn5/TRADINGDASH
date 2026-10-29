@@ -189,13 +189,34 @@ export function temDesvio(t: TradeMetricas): boolean {
   );
 }
 
+/**
+ * Quanto o desvio custou em R$ (null = nao da para medir).
+ * - Trade FORA do plano (respeitou_plano = false): o plano era nao fazer o trade, entao o
+ *   custo e a perda dele; se deu lucro, custo 0 (o lucro aparece em lucroForaDoPlano).
+ * - Desvio de conducao num trade do plano (antecipou stop, parcial, mudou alvo): plano menos
+ *   real; sem pnl_plano (stop/alvo originais nao anotados) = null, "nao medido".
+ */
 export function calcularCustoDesvio(t: TradeMetricas): number | null {
-  if (t.pnl_plano === null || t.pnl_plano === undefined) return null;
   if (!temDesvio(t)) return 0;
-  const pnlPlano = Number(t.pnl_plano);
   const pnlReal = Number(t.pnl_real ?? 0);
-  const diff = pnlPlano - pnlReal;
-  return diff > 0 ? diff : 0;
+  if (t.respeitou_plano === false) return Math.max(0, -pnlReal);
+  if (t.pnl_plano === null || t.pnl_plano === undefined) return null;
+  return Math.max(0, Number(t.pnl_plano) - pnlReal);
+}
+
+/** "Desvios custaram R$ 96 · R$ 2 de lucro fora do plano · 1 sem medir" */
+export function fraseCustoDesvios(nDesvios: number, custo: number, lucroFora: number, semMedir: number): string {
+  const partes = [
+    custo > 0 ? `Desvios custaram ${formatarBRL(custo, false)}` : `${nDesvios} ${nDesvios === 1 ? "desvio" : "desvios"} sem perda`,
+  ];
+  if (lucroFora > 0) partes.push(`${formatarBRL(lucroFora, false)} de lucro fora do plano`);
+  if (semMedir > 0) partes.push(`${semMedir} sem medir`);
+  return partes.join(" · ");
+}
+
+/** Lucro de trade fora do plano. Mostrado ao lado do custo: desvio que deu certo reforça o desvio. */
+export function lucroForaDoPlano(t: TradeMetricas): number {
+  return t.respeitou_plano === false ? Math.max(0, Number(t.pnl_real ?? 0)) : 0;
 }
 
 // ==========================================
@@ -575,13 +596,12 @@ export function calcularDisciplina(trades: TradeMetricas[]): DisciplinaResumo {
   const desviosMedidos = desvios.filter((t) => calcularCustoDesvio(t) !== null);
   const semMedir = desvios.length - desviosMedidos.length;
   const custoTotal = somar(desviosMedidos.map((t) => calcularCustoDesvio(t)!));
+  const lucroFora = somar(desvios.map(lucroForaDoPlano));
 
   const frase =
     desvios.length === 0
       ? "100% dos trades respeitaram o plano"
-      : custoTotal > 0
-        ? `Desvios custaram ${formatarBRL(custoTotal, false)} no mês${semMedir > 0 ? ` (${semMedir} sem medir)` : ""}`
-        : `${desvios.length} ${desvios.length === 1 ? "desvio" : "desvios"} do plano, sem custo medido`;
+      : fraseCustoDesvios(desvios.length, custoTotal, lucroFora, semMedir);
 
   return { pctNoPlano, tradesNoPlano, totalTrades: n, custoTotal, frase };
 }

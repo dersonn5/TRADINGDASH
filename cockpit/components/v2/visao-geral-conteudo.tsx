@@ -404,7 +404,7 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
               {vg.disc.itens.map((d, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                   <span style={{ color: "var(--tx2)" }}>{d.data} · {d.tipo}</span>
-                  <span style={{ color: d.custo === "não medido" ? "var(--tx3)" : "var(--negtx)", fontWeight: 600 }}>{d.custo}</span>
+                  <span style={{ color: d.custo === "não medido" || d.custo.startsWith("lucro") ? "var(--tx3)" : "var(--negtx)", fontWeight: 600 }}>{d.custo}</span>
                 </div>
               ))}
             </div>

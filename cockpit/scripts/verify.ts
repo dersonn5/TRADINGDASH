@@ -33,6 +33,8 @@ import {
   TradeMetricas,
   rDoTrade,
   calcularCustoDesvio,
+  fraseCustoDesvios,
+  lucroForaDoPlano,
   calcularKPIsGerais,
   calcularDrawdown,
   agruparPorEstrategia,
@@ -1149,11 +1151,23 @@ const tradeDesvioSemPlano: TradeMetricas = {
   pnl_plano: null,
   respeitou_plano: false,
 };
-const custoNull = calcularCustoDesvio(tradeDesvioSemPlano);
+// Fora do plano: o plano era nao operar, custo = a perda; lucro nao e custo.
+const custoForaComLucro = calcularCustoDesvio(tradeDesvioSemPlano);
 report(
-  "TASK-102: custo de desvio com pnl_plano null -> null",
-  custoNull === null,
-  `obteve: ${custoNull}`
+  "Custo: fora do plano com lucro -> custo 0 e lucro fora do plano R$ 100",
+  custoForaComLucro === 0 && lucroForaDoPlano(tradeDesvioSemPlano) === 100,
+  `custo=${custoForaComLucro} lucro=${lucroForaDoPlano(tradeDesvioSemPlano)}`
+);
+// 29/10 09:45: venda fora do plano, −R$ 96 -> custou R$ 96.
+const custoForaPerda = calcularCustoDesvio({ ...tradeDesvioSemPlano, pnl_real: -96, pnl_plano: -96 });
+report("Custo: fora do plano com perda de R$ 96 -> R$ 96", custoForaPerda === 96, `obteve: ${custoForaPerda}`);
+// 29/10 09:22: no plano, stop puxado cedo, stop original nao anotado (pnl_plano null) -> nao medido.
+const custoConducao = calcularCustoDesvio({ ...tradeDesvioSemPlano, respeitou_plano: true, antecipou_stop: true, pnl_real: -34, pnl_plano: null });
+report("TASK-102: desvio de condução com pnl_plano null -> null (não medido)", custoConducao === null, `obteve: ${custoConducao}`);
+report(
+  "Custo: frase do cartão",
+  fraseCustoDesvios(2, 96, 0, 1) === "Desvios custaram R$ 96 · 1 sem medir",
+  fraseCustoDesvios(2, 96, 0, 1)
 );
 
 // 4. trade escalonado (29/10 MAV 10:04): entrou com 3 contratos e stop de 170 pts
