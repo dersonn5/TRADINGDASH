@@ -72,6 +72,9 @@ Uma tela **"Fechar o dia"** em que, depois das 12:00, o operador:
   - **Escalonou a favor?** Só aparece quando o Profit mostra mais de 3 contratos: "Sim — entrei
     com até 3 e aumentei a favor, com o stop no zero ou no lucro" / "Não". Grava em
     `escalonado` (coluna de `migration_escalonamento.sql`). Decide o item 6 de §2.5.
+    Com "Sim", pedir também **stop em pts e contratos da entrada** e gravar
+    `risco_inicial_rs = pts × contratos × 0,2`. É dele que `rDoTrade` tira o R do trade
+    escalonado (a entrada do Profit é o preço médio dos contratos, e dá R errado).
   - **Motivo da saída** (obrigatório): Alvo · Stop · Manual.
   - **Execução** (obrigatório): A · B · C.
   - **Erro**: lista fechada (§2.6) + "nenhum".

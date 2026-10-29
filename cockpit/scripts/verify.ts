@@ -1148,6 +1148,16 @@ report(
   `obteve: ${custoNull}`
 );
 
+// 4. trade escalonado (29/10 MAV 10:04): entrou com 3 contratos e stop de 170 pts
+//    (risco R$ 102), escalonou ate 6, preco medio 173.431, +790,83 pts, +R$ 949.
+//    O R vem do risco em R$ (949 / 102 = +9,30R), nao de pontos / (entrada media - stop).
+const rEscalonado = rDoTrade({ entrada: 173431, stop: null, pontos_real: 790.83, pnl_real: 949, risco_inicial_rs: 102 });
+report(
+  "Escalonamento: R = pnl / risco inicial em R$ (949 / 102 = +9,30R)",
+  rEscalonado !== null && Math.abs(rEscalonado - 949 / 102) < 0.0001,
+  `obteve: ${rEscalonado}`
+);
+
 if (hasErrors) {
   console.error("\n❌ Verificação finalizou com ERROS.");
   process.exit(1);

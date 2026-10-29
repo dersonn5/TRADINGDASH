@@ -18,6 +18,7 @@ export interface TradeMetricas {
   pontos_real?: number | null;
   pnl_real?: number | null;
   pnl_plano?: number | null;
+  risco_inicial_rs?: number | null;
   hora_entrada?: string | null;
   hora_saida?: string | null;
   gatilho?: string | null;
@@ -158,7 +159,16 @@ export function rDoTrade(t: {
   entrada: number;
   stop?: number | null;
   pontos_real?: number | null;
+  pnl_real?: number | null;
+  risco_inicial_rs?: number | null;
 }): number | null {
+  // Trade escalonado (29/10/2026): a entrada gravada e o preco medio de todos os contratos,
+  // entao pontos ÷ (entrada − stop) erra o R. Vale o risco em R$ na entrada (stop × contratos
+  // da entrada × valor do ponto), anotado pelo operador.
+  const riscoRs = Number(t.risco_inicial_rs);
+  if (t.risco_inicial_rs !== null && t.risco_inicial_rs !== undefined && riscoRs > 0) {
+    return Number(t.pnl_real ?? 0) / riscoRs;
+  }
   if (t.stop === null || t.stop === undefined || isNaN(Number(t.stop))) {
     return null;
   }

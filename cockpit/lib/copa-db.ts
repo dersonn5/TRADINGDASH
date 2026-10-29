@@ -311,6 +311,8 @@ export interface TradeHistorico {
   origem?: "CHECKLIST" | "PROFIT" | "SQL" | null;
   profit_chave?: string | null;
   erro_tipo?: string | null;
+  escalonado?: boolean | null;
+  risco_inicial_rs?: number | null;
 }
 
 /**
