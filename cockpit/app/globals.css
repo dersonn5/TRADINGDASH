@@ -281,6 +281,23 @@
   }
 }
 
+/* Barra de rolagem no tom da marca: trilho no fundo da pagina, polegar em ciano, sem setas.
+   Chrome/Edge usam o ::-webkit-scrollbar; o scrollbar-color fica so para o Firefox, porque no
+   Chrome 121+ ele anula o pseudo-elemento e volta a barra quadrada. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ac) 60%, transparent);
+  border: 2px solid var(--bg);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ac); }
+::-webkit-scrollbar-button { display: none; }
+::-webkit-scrollbar-corner { background: var(--bg); }
+@supports not selector(::-webkit-scrollbar) {
+  html { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ac) 60%, transparent) var(--bg); }
+}
+
 /* v2: tudo em Sora. .mono e .tabular ficaram so como marcadores de numero alinhado. */
 .tabular { font-variant-numeric: tabular-nums; }
 .mono { font-variant-numeric: tabular-nums; }
