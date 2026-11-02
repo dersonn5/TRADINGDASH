@@ -25,6 +25,17 @@
 | **Qualquer hora (09:00–11:59)** | **RHT** — Reversão HTF, dentro da cota da hora em que entrar | — |
 | **12:00** | **FIM.** Fecha o Profit | |
 
+**Fim do horário de verão dos EUA (de 03/11/2026 a 13/03/2027).** O à vista continua
+abrindo às 10:00 e o WIN negocia das 09:00 às 18:25 (B3, Ofício Circular 050/2026-VNC).
+O que muda é o horário americano em Brasília:
+- **Abertura de NY: 11:30** (era 10:30). Cai no meio da 3ª hora: trade de CSI aberto às
+  11:30 passa pela volatilidade da abertura.
+- **Dados americanos das 08:30 ET (payroll, CPI, pedidos de seguro-desemprego): 10:30**
+  (era 09:30). Caem dentro da 2ª hora, no horário do MAV. Notícia na janela muda o tamanho,
+  não a leitura (pré-mercado, item 4).
+- A 1ª hora fica sem dado americano: a manipulação das 09:00 é só do índice.
+O cockpit já converte sozinho (alertas e calendário econômico usam o fuso de Nova York).
+
 **O norte:**
 1. Tela só de **09:00 a 12:00**.
 2. **Setups:** **RPP**, **MAV** e **CSI**, um por hora (siglas de 03/10/2026), e a **RHT**

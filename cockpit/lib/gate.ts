@@ -57,7 +57,8 @@ export const ESTRATEGIA_REVERSAO_HTF = "reversao_htf";
  * - 1ª hora (09:00-09:59): só o trade contra a primeira perna, 1 trade. Foi 2 de 29/10 a
  *   02/11/2026; voltou a 1 porque, depois do 2º turno das eleições (26/10), a primeira perna
  *   parou de reverter dentro da 1ª hora (0 de 3 dias até 10:00) e o RPP fez 1 acerto em 7.
- * - 2ª hora (10:00-10:59): setup das 10 ou continuidade, até 3 trades (abertura de NY).
+ * - 2ª hora (10:00-10:59): setup das 10 ou continuidade, até 3 trades. NY abre às 10:30 no
+ *   horário de verão dos EUA e às 11:30 fora dele (aberturaNY em lib/alertas.ts).
  * - 3ª hora (11:00-11:59): só continuidade, 2 trades (cota subiu de 1 para 2 em 28/10/2026).
  * A Reversão HTF (RHT) vale em qualquer hora, das 09:00 às 12:00, dentro da cota da hora
  * (decisão do operador em 03/10/2026).
