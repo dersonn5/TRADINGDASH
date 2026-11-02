@@ -28,6 +28,20 @@ export interface TradeMetricas {
   antecipou_stop?: boolean | null;
   parcial_emocional?: boolean | null;
   mudou_alvo?: boolean | null;
+  execucao?: string | null;
+  notas?: string | null;
+}
+
+export type NotaExecucao = "A" | "B" | "C";
+
+/**
+ * Nota da execucao (Trade System §7). Coluna execucao; nos trades fechados antes da coluna,
+ * o prefixo [EXEC:X] das notas. null = trade sem nota.
+ */
+export function notaExecucao(t: Pick<TradeMetricas, "execucao" | "notas">): NotaExecucao | null {
+  if (t.execucao === "A" || t.execucao === "B" || t.execucao === "C") return t.execucao;
+  const m = t.notas?.match(/\[EXEC:([ABC])\]/);
+  return m ? (m[1] as NotaExecucao) : null;
 }
 
 /**

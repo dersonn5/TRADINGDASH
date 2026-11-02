@@ -21,6 +21,7 @@ import {
   formatarR,
   media,
   mediana,
+  notaExecucao,
   somar,
   temDesvio,
 } from "./metricas";
@@ -318,6 +319,27 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     }),
   };
 
+  // Nota da execucao (Trade System §7): a metrica que importa e a frequencia de C
+  const comNota = trades.filter((t) => notaExecucao(t) !== null);
+  const nC = comNota.filter((t) => notaExecucao(t) === "C").length;
+  const exec = {
+    semNota: n - comNota.length,
+    pctC: comNota.length ? formatarPct(nC / comNota.length) : "—",
+    corC: nC > 0 ? COR_NEG : COR_POS,
+    notas: (["A", "B", "C"] as const).map((nota) => {
+      const ts = comNota.filter((t) => notaExecucao(t) === nota);
+      const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
+      const rm = tsRs.length ? media(tsRs) : null;
+      const p = somar(ts.map(pnl));
+      return {
+        nota, n: ts.length,
+        pct: comNota.length ? formatarPct(ts.length / comNota.length) : "—",
+        rm: rm !== null ? formatarR(rm) : "—", rmCor: rm !== null ? cor(rm) : "var(--tx)",
+        pnl: formatarBRL(p), pnlCor: cor(p),
+      };
+    }),
+  };
+
   // Setup C e contexto
   const grupo = (ts: TradeVG[], nome: string) => {
     const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
@@ -345,7 +367,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
 
   const meta = montarMeta(trades, anteriores, ano, mes, hojeIso);
 
-  return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, sc, meta };
+  return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, exec, sc, meta };
 }
 
 export type VisaoGeral = ReturnType<typeof montarVisaoGeral>;

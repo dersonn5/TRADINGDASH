@@ -412,6 +412,25 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
               ))}
             </div>
           )}
+          {vg.n > 0 && <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingTop: "12px", borderTop: "1px solid var(--bd)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "4px" }}>
+              <span style={{ fontSize: "12px", color: "var(--tx3)" }}>Nota da execução</span>
+              <span style={{ fontSize: "12px", color: "var(--tx3)" }}>
+                frequência de C <span style={{ fontWeight: 700, color: vg.exec.corC }}>{vg.exec.pctC}</span>
+              </span>
+            </div>
+            {vg.exec.notas.map((e) => (
+              <div key={e.nota} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 0", fontSize: "13px" }}>
+                <span style={{ width: "18px", fontWeight: 700 }}>{e.nota}</span>
+                <span style={{ flexGrow: 1, color: "var(--tx2)" }}>{e.n} · {e.pct}</span>
+                <span style={{ width: "60px", textAlign: "right", fontWeight: 600, color: e.rmCor }}>{e.rm}</span>
+                <span style={{ width: "72px", textAlign: "right", fontWeight: 600, color: e.pnlCor }}>{e.pnl}</span>
+              </div>
+            ))}
+            {vg.exec.semNota > 0 && (
+              <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{vg.exec.semNota} {vg.exec.semNota === 1 ? "trade sem nota" : "trades sem nota"}</span>
+            )}
+          </div>}
         </section>
 
         <section style={CARD}>

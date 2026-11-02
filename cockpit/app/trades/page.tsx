@@ -9,6 +9,7 @@ import {
   NOMES_GATILHOS,
   formatarBRL,
   rDoTrade,
+  notaExecucao,
   somar,
   temDesvio,
 } from "@/lib/metricas";
@@ -325,7 +326,7 @@ export default function HistoricoPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns:
-                  "92px 1.3fr 76px 1.1fr 1fr 1.5fr 64px 70px 96px 72px",
+                  "92px 1.3fr 76px 1.1fr 1fr 1.5fr 64px 70px 96px 44px 72px",
                 gap: "10px",
                 alignItems: "center",
                 paddingBottom: "12px",
@@ -350,6 +351,9 @@ export default function HistoricoPage() {
               <span role="columnheader" style={{ textAlign: "right" }}>
                 Resultado
               </span>
+              <span role="columnheader" style={{ textAlign: "center" }} title="Nota da execução (A, B ou C)">
+                Exec
+              </span>
               <span role="columnheader" style={{ textAlign: "right" }}>
                 Plano
               </span>
@@ -364,6 +368,7 @@ export default function HistoricoPage() {
               const pnl = Number(t.pnl_real) || 0;
               const desvio = temDesvio(t);
               const rVal = rDoTrade(t);
+              const nota = notaExecucao(t);
               const risk =
                 t.stop !== null && t.stop !== undefined && t.entrada
                   ? Math.abs(Number(t.entrada) - Number(t.stop))
@@ -376,7 +381,7 @@ export default function HistoricoPage() {
                   style={{
                     display: "grid",
                     gridTemplateColumns:
-                      "92px 1.3fr 76px 1.1fr 1fr 1.5fr 64px 70px 96px 72px",
+                      "92px 1.3fr 76px 1.1fr 1fr 1.5fr 64px 70px 96px 44px 72px",
                     gap: "10px",
                     alignItems: "center",
                     padding: "12px 0",
@@ -487,6 +492,17 @@ export default function HistoricoPage() {
                     }}
                   >
                     {formatarBRL(pnl)}
+                  </span>
+                  {/* Nota da execucao */}
+                  <span
+                    role="cell"
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 700,
+                      color: nota === "C" ? "var(--negtx)" : nota === "A" ? "var(--actx)" : nota ? "var(--tx)" : "var(--tx3)",
+                    }}
+                  >
+                    {nota ?? "—"}
                   </span>
                   {/* Plano */}
                   <span role="cell" style={{ textAlign: "right" }}>

@@ -323,6 +323,7 @@ export interface TradeHistorico {
   erro_tipo?: string | null;
   escalonado?: boolean | null;
   risco_inicial_rs?: number | null;
+  execucao?: "A" | "B" | "C" | null;
 }
 
 /**
@@ -474,8 +475,8 @@ export async function registrarTrade(input: TradeInput): Promise<string> {
 }
 
 /**
- * Fecha um trade aberto calculando pontos_real, pnl_real, pnl_plano
- * e prefixando as notas com [EXEC:A], [EXEC:B] ou [EXEC:C].
+ * Fecha um trade aberto calculando pontos_real, pnl_real, pnl_plano, gravando a nota da
+ * execucao na coluna execucao e prefixando as notas com [EXEC:A], [EXEC:B] ou [EXEC:C].
  */
 export async function fecharTrade(id: string, f: FechamentoInput): Promise<void> {
   const { data: trade, error: errFetch } = await supabase
@@ -511,24 +512,31 @@ export async function fecharTrade(id: string, f: FechamentoInput): Promise<void>
   const prefixo = `[EXEC:${f.execucao}]`;
   const notasFinal = f.notas && f.notas.trim() ? `${prefixo} ${f.notas.trim()}` : prefixo;
 
-  const { error: errUpdate } = await supabase
+  const campos = {
+    status: "FECHADO",
+    saida: f.saida,
+    hora_saida: new Date().toISOString(),
+    motivo_saida: f.motivo_saida,
+    desfecho_plano: f.desfecho_plano ?? null,
+    pontos_real: Number(pontosReal.toFixed(2)),
+    pnl_real: pnlReal,
+    pnl_plano: pnlPlano,
+    respeitou_plano: f.respeitou_plano,
+    antecipou_stop: f.antecipou_stop,
+    parcial_emocional: f.parcial_emocional,
+    mudou_alvo: f.mudou_alvo,
+    notas: notasFinal,
+  };
+  let { error: errUpdate } = await supabase
     .from("copa_trades")
-    .update({
-      status: "FECHADO",
-      saida: f.saida,
-      hora_saida: new Date().toISOString(),
-      motivo_saida: f.motivo_saida,
-      desfecho_plano: f.desfecho_plano ?? null,
-      pontos_real: Number(pontosReal.toFixed(2)),
-      pnl_real: pnlReal,
-      pnl_plano: pnlPlano,
-      respeitou_plano: f.respeitou_plano,
-      antecipou_stop: f.antecipou_stop,
-      parcial_emocional: f.parcial_emocional,
-      mudou_alvo: f.mudou_alvo,
-      notas: notasFinal,
-    })
+    .update({ ...campos, execucao: f.execucao })
     .eq("id", id);
+
+  // Banco sem a coluna execucao (migration_execucao.sql nao rodada): fecha o trade mesmo
+  // assim; a nota fica no prefixo [EXEC:X] das notas, que notaExecucao() tambem le.
+  if (errUpdate && /execucao/.test(errUpdate.message)) {
+    ({ error: errUpdate } = await supabase.from("copa_trades").update(campos).eq("id", id));
+  }
 
   if (errUpdate) {
     throw new Error(errUpdate.message);

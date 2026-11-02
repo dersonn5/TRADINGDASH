@@ -244,7 +244,8 @@ após a captura do PWH), `ERRO_BOLETA` ("Ordem errada: lado, quantidade ou preç
   horários do Profit, `stop`, `alvo` (ou null), `rr_planejado` = |alvo − entrada| ÷
   |entrada − stop| ou null, `pontos_real`, `pnl_real`, `pnl_plano` (§2.8), `motivo_saida`,
   `respeitou_plano` (§2.5), booleanos (§2.6), `erro_tipo`, `gatilho`, `contexto_1h`,
-  `setup_c_modo`, `profit_chave`, `notas` = `[EXEC:X] [FORA DO PLANO: …] observação`.
+  `setup_c_modo`, `profit_chave`, `execucao` ('A' | 'B' | 'C', coluna desde
+  `migration_execucao.sql`; obrigatória na tela), `notas` = `[EXEC:X] [FORA DO PLANO: …] observação`.
 - **Não** chamar `registrarTrade` nem `validarCamposNovosTrade`: eles exigem pré-sessão fechada,
   gatilho e máximo de 3 contratos — aqui o trade já aconteceu e tem de entrar como foi.
 - Sem `copa_trade_items` (não houve checklist).

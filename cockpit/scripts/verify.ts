@@ -36,6 +36,7 @@ import {
   calcularCustoDesvio,
   fraseCustoDesvios,
   lucroForaDoPlano,
+  notaExecucao,
   calcularKPIsGerais,
   calcularDrawdown,
   agruparPorEstrategia,
@@ -1179,6 +1180,24 @@ report(
   rEscalonado !== null && Math.abs(rEscalonado - 949 / 102) < 0.0001,
   `obteve: ${rEscalonado}`
 );
+
+// Nota da execucao (Trade System §7): coluna; nos trades antigos, o prefixo [EXEC:X] das notas
+report(
+  "Execução: coluna, prefixo das notas e sem nota",
+  notaExecucao({ execucao: "B", notas: "[EXEC:A] x" }) === "B" &&
+    notaExecucao({ execucao: null, notas: "[EXEC:C] [lançado depois] y" }) === "C" &&
+    notaExecucao({ execucao: null, notas: "[lançado depois]" }) === null,
+  ""
+);
+{
+  const te = (pnl_real: number, execucao: string | null) => ({ data: "2026-11-03", strategy_id: "varrida_barra_10", direcao: "COMPRA" as const, entrada: 100, stop: 90, pontos_real: pnl_real / 0.6, pnl_real, execucao });
+  const vgE = montarVisaoGeral([te(60, "A"), te(-6, "A"), te(-6, "C"), te(12, "B"), te(-6, null)], [], 2026, 11, "2026-11-03");
+  report(
+    "Execução: frequência de C = 1 em 4 com nota (25%), 1 sem nota",
+    vgE.exec.pctC === "25%" && vgE.exec.semNota === 1 && vgE.exec.notas[0].n === 2 && vgE.exec.notas[2].n === 1,
+    JSON.stringify(vgE.exec)
+  );
+}
 
 // 5. Plano de fim de ano (Trade System §2.1)
 {

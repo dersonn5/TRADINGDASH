@@ -129,6 +129,8 @@ export function tradesDemoDoMes(ano: number, mes: number, ate: string): TradeHis
         parcial_emocional: custo > 0 && desvio >= 0.04 && desvio < 0.07,
         mudou_alvo: custo > 0 && desvio >= 0.07,
         notas: null,
+        // sem sorteio novo (manteria os numeros da demo): desvio vira C, o resto se divide em B e A
+        execucao: custo > 0 ? "C" : desvio < 0.35 ? "B" : "A",
         gatilho: est.gatilhos[Math.floor(r() * est.gatilhos.length)] as TradeHistorico["gatilho"],
         contexto_1h: (["CONTINUACAO", "REVERSAO", "LATERAL"] as const)[Math.floor(r() * 3)],
         setup_c_modo: est.id === "varrida_barra_10" ? (r() < 0.6 ? "C1" : "C2") : null,
