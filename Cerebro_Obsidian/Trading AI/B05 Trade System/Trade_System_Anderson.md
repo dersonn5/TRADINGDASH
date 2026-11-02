@@ -150,6 +150,10 @@ O único trade antes das 10:00.
 5. **Stop além do topo/fundo da perna** + 1 tick (não na estrutura curta do gatilho).
 6. **Alvo fixo nos 75%. Sai lá, sempre.**
 7. Um trade por dia, antes das 10:00. Stopou: esperar as 10:00.
+8. **Pagou 1R: stop no zero a zero** (02/11/2026). A 1ª hora está em padrão de tendência
+   e a reversão vem depois das 10:00; não pagar para ver o preço voltar contra. Mover o
+   stop pelo plano **não** é "antecipou o stop" (não é desvio). Saída no zero a zero zera a
+   contagem de stops seguidos.
 
 Pontos de qualidade (pesos estimados): perna chegou aos 800 até 09:29 (40) — no estudo,
 a perna rápida volta mais em todos os anos; rejeição clara no extremo (30); alvo a 2R+ (30).
