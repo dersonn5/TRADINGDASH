@@ -19,7 +19,7 @@
 
 | Hora | Setup (o checklist muda sozinho) | Trades |
 |---|---|---|
-| **09:00 – 09:59** | **RPP** — Reversão da Primeira Perna, alvo nos 75% da perna | **2** (corrigido em 29/10/2026; o registro de 03/10 dizia 1) |
+| **09:00 – 09:59** | **RPP** — Reversão da Primeira Perna, alvo nos 75% da perna | **1** (foi 2 de 29/10 a 02/11/2026; ver nota abaixo) |
 | **10:00 – 10:59** | **MAV** — Manipulação do À Vista (manipulando ou manipulado) **ou CSI** — abertura de NY a favor | **até 3** |
 | **11:00 – 11:59** | **Só CSI** — Continuação por Sweep de Indução (score 80) | **2** (era 1 até 28/10/2026) |
 | **Qualquer hora (09:00–11:59)** | **RHT** — Reversão HTF, dentro da cota da hora em que entrar | — |
@@ -29,10 +29,17 @@
 1. Tela só de **09:00 a 12:00**.
 2. **Setups:** **RPP**, **MAV** e **CSI**, um por hora (siglas de 03/10/2026), e a **RHT**
    (Reversão HTF, antigo Setup A) em qualquer hora de 09:00 a 12:00, dentro da cota da hora.
-3. **Cotas por hora: 2 · 3 · 2.** O teto do dia continua em 5 trades (as cotas somam 7: nem toda hora usa a cota cheia). Fora delas, não existe trade.
+3. **Cotas por hora: 1 · 3 · 2.** O teto do dia continua em 5 trades. Fora delas, não existe trade.
 4. **Alvo escrito antes de entrar.** Setup V: sai nos 75% da perna, sempre. Sweep HTF:
    alongar com trailing, visando um alvo HTF consciente.
 5. **Toda entrada catalogada no setup**, pelo checklist.
+
+**RPP volta a 1 por dia (02/11/2026, decisão do operador).** Depois do 2º turno das
+eleições (26/10), a primeira perna deixou de reverter dentro da 1ª hora. No cache de 1 min:
+antes de 05/10, a volta de 75% acontecia até 10:00 em 12 de 34 dias com perna de 800+;
+entre os turnos, 6 de 12; desde 26/10, **0 de 3** (2 desses 3 voltaram depois das 10:00,
+já no horário do MAV/CSI). Nos trades reais, o RPP fez 1 acerto em 7 (−R$ 499). Amostra
+pós-eleição pequena: rever no fim de novembro.
 
 **Por quê:** de 28/09 a 02/10, trades antes das 10:00 fora do Setup V somaram −R$ 953
 (+216, −225, −129, −238, −577). A hora das 09:00 é a manipulação da abertura; o que se
@@ -48,7 +55,7 @@ Configurado no próprio Profit, e ele trava (03/10/2026):
 | Limite | Valor |
 |---|---|
 | Stops no dia | **3 seguidos** encerram o dia. Um gain (ou zero a zero) no meio zera a contagem (esclarecido em 29/10/2026) |
-| Trades no dia | **5** (cotas por hora 2 · 3 · 2) |
+| Trades no dia | **5** (cotas por hora 1 · 3 · 2) |
 | Contratos na entrada | **2 a 3** |
 | Escalonamento | **até 6 no total**, só a favor, com stop financeiro (29/10/2026). Aumentar contra a posição continua proibido |
 | Perda máxima por trade | **R$ 160**, somando todos os contratos (29/10/2026). Com 5 contratos = 160 pts de stop; com 3 = 266 pts |
@@ -56,6 +63,48 @@ Configurado no próprio Profit, e ele trava (03/10/2026):
 
 Configura **antes das 09:00 e não mexe durante o pregão**. Mudar a trava no meio do
 pregão é desvio de plano (29/09).
+
+## 2.1 Plano de fim de ano — escada de contratos (02/11/2026)
+
+Definido de cabeça fria, antes de novembro. A mão sobe com o lucro já feito, nunca para
+correr atrás de meta.
+
+**Novembro — 3 contratos, meta +R$ 6.000** (19 pregões, ~R$ 316/dia, o ritmo de outubro).
+
+| Até | Acumulado esperado |
+|---|---|
+| 06/11 | R$ 1.260 |
+| 13/11 | R$ 2.840 |
+| 19/11 | R$ 4.100 |
+| 27/11 | R$ 5.680 |
+| 30/11 | R$ 6.000 |
+
+Foco do mês: 1 RPP por dia, zero trade fora do plano, alvo escrito antes de entrar.
+
+**Requisitos para entrar em dezembro com 5 contratos** (todos):
+1. Novembro em +R$ 6.000 ou mais.
+2. Disciplina de 90%+ dos trades no plano.
+3. 50 trades ou mais no mês.
+4. Novembro positivo **sem o maior trade** (não depender de um trade só).
+
+Faltou algum: dezembro começa com 3 contratos, igual a novembro.
+
+**Dezembro — subida:**
+
+| Degrau | Quando | 1R (185 pts) | Perda máxima por trade |
+|---|---|---|---|
+| 5 contratos | início de dezembro | R$ 185 | R$ 265 |
+| 7 contratos | dezembro em +R$ 2.000 | R$ 259 | R$ 370 |
+| 10 contratos | dezembro em +R$ 4.000 | R$ 370 | R$ 530 |
+
+Perda máxima mantém a proporção de hoje (R$ 160 com 3 contratos, ~R$ 53 por contrato).
+Escalonamento a favor continua valendo, até o dobro da mão do degrau.
+
+**Dezembro — recuo (automático, sem discussão):**
+- Perdeu R$ 2.000 a partir do pico de dezembro → desce um degrau.
+- Lucro acumulado de nov + dez caiu para R$ 3.000 → volta para 3 contratos.
+
+Troca de degrau só entre pregões, nunca no meio do dia.
 
 ## 3. Timeframes
 
