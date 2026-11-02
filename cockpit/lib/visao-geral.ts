@@ -24,6 +24,7 @@ import {
   somar,
   temDesvio,
 } from "./metricas";
+import { montarMeta } from "./meta-fim-de-ano";
 
 export interface TradeVG extends TradeMetricas {
   data: string; // YYYY-MM-DD da sessao
@@ -342,7 +343,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     ? `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)} está em ${formatarBRL(total)} com ${plural(n, "trade", "trades")} (${formatarR(totalR)}).${maisP ? ` ${maisP.nome} carrega o mês` : ""}${melhor ? `; o melhor horário é ${melhor.f}–${fimDaFaixa(melhor.f)}.` : "."}`
     : `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)} ainda não tem trades fechados. Os números aparecem aqui conforme você fecha trades pelo checklist.`;
 
-  return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, sc };
+  const meta = montarMeta(trades, anteriores, ano, mes, hojeIso);
+
+  return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, sc, meta };
 }
 
 export type VisaoGeral = ReturnType<typeof montarVisaoGeral>;

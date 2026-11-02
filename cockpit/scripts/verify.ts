@@ -1,6 +1,7 @@
 import fs from "fs";
 import { montarVisaoGeral } from "../lib/visao-geral";
 import { montarCalendarioMes } from "../lib/calendario-resultados";
+import { degrauDezembro, montarMeta, pregoesDoMes, requisitosDezembro } from "../lib/meta-fim-de-ano";
 import { tradesDemoDoMes } from "../lib/demo";
 import { lerPreco } from "../lib/metricas";
 import { TRADES_DESIGN } from "./fixture-design";
@@ -1178,6 +1179,37 @@ report(
   rEscalonado !== null && Math.abs(rEscalonado - 949 / 102) < 0.0001,
   `obteve: ${rEscalonado}`
 );
+
+// 5. Plano de fim de ano (Trade System §2.1)
+{
+  const nov = pregoesDoMes(2026, 11);
+  const dez = pregoesDoMes(2026, 12);
+  report("Meta: novembro/2026 tem 19 pregões (sem 02 e 20/11)", nov.length === 19 && !nov.includes("2026-11-02") && !nov.includes("2026-11-20"), `obteve: ${nov.length}`);
+  report("Meta: dezembro/2026 tem 20 pregões (sem 24, 25 e 31/12)", dez.length === 20, `obteve: ${dez.length}`);
+  report("Meta: fora de nov/dez de 2026 não há card", montarMeta([], [], 2026, 10, "2026-10-30") === null, "");
+
+  const tm = (data: string, pnl_real: number, respeitou_plano = true) => ({ data, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const, entrada: 0, stop: null, pontos_real: 0, pnl_real, respeitou_plano });
+  // 06/11 = 4o pregao de 19 -> esperado 6000 * 4 / 19 = 1263
+  const m = montarMeta([tm("2026-11-03", 500), tm("2026-11-04", 900)], [], 2026, 11, "2026-11-06")!;
+  report("Meta: ritmo de 06/11 (esperado R$ 1.263, R$ 1.400 feitos -> acima)", m.ritmoOk && m.ritmo.includes("R$ 1.263") && m.ritmo.includes("acima em R$ 137"), m.ritmo);
+
+  // novembro bom: 50 trades, +R$ 6.500, maior trade R$ 1.000, 2 fora do plano (96%)
+  const novBom = Array.from({ length: 50 }, (_, i) => tm("2026-11-10", i === 0 ? 1000 : 5500 / 49, !(i === 1 || i === 2)));
+  report("Meta: novembro bom cumpre os 4 requisitos", requisitosDezembro(novBom).every((r) => r.ok), JSON.stringify(requisitosDezembro(novBom)));
+  // dependeu de um trade: +R$ 6.500 com um trade de R$ 7.000
+  const novSorte = Array.from({ length: 50 }, (_, i) => tm("2026-11-10", i === 0 ? 7000 : -10));
+  report("Meta: novembro que depende de um trade não libera", !requisitosDezembro(novSorte).every((r) => r.ok), "");
+
+  const d0 = degrauDezembro(novBom, []);
+  report("Escada: dezembro abre com 5 contratos e R$ 265", d0.contratos === 5 && d0.perdaMaxima === 265, JSON.stringify(d0));
+  const d7 = degrauDezembro(novBom, [tm("2026-12-01", 2100)]);
+  report("Escada: dezembro +R$ 2.100 -> 7 contratos", d7.contratos === 7, JSON.stringify(d7));
+  const dRecuo = degrauDezembro(novBom, [tm("2026-12-01", 4200), tm("2026-12-02", -2100)]);
+  report("Escada: pico de R$ 4.200 e recuo de R$ 2.100 -> desce de 7 para 5", dRecuo.contratos === 5, JSON.stringify(dRecuo));
+  const dColchao = degrauDezembro(novBom, [tm("2026-12-01", -3600)]);
+  report("Escada: colchão em R$ 2.900 -> volta a 3 contratos", dColchao.contratos === 3, JSON.stringify(dColchao));
+  report("Escada: novembro sem requisitos -> 3 contratos", degrauDezembro(novSorte, []).contratos === 3, "");
+}
 
 if (hasErrors) {
   console.error("\n❌ Verificação finalizou com ERROS.");

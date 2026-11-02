@@ -3,6 +3,7 @@
 import * as React from "react";
 import { NOMES_COMPLETOS } from "@/lib/metricas";
 import type { VisaoGeral } from "@/lib/visao-geral";
+import type { MetaDoMes } from "@/lib/meta-fim-de-ano";
 import { CARD, LBL, H2, PILL_PEQUENA } from "@/components/v2/estilos";
 
 // Corpo da Visao Geral — espelho de design/v2/Main.dc.html.
@@ -61,6 +62,8 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
           </div>
         ))}
       </div>
+
+      {vg.meta && <MetaDoMesCard meta={vg.meta} />}
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
         <section style={CARD}>
@@ -436,6 +439,38 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
         </section>
       </div>
     </>
+  );
+}
+
+// Plano de fim de ano (Trade System §2.1): progresso da meta e o que falta para dezembro.
+function MetaDoMesCard({ meta }: { meta: MetaDoMes }) {
+  const tituloReq = meta.tipo === "novembro" ? "Para abrir dezembro com 5 contratos" : "Requisitos de novembro";
+  return (
+    <section style={{ ...CARD, display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "32px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <Cabecalho label={meta.label} frase={meta.frase} />
+        <svg width="100%" height="14" viewBox="0 0 400 14" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="0" y="2" width="400" height="10" rx="5" style={{ fill: "var(--s2)" }} />
+          <rect x="0" y="2" width={Math.round(meta.pct * 400)} height="10" rx="5" style={{ fill: "var(--ac)" }} />
+          {meta.marcaPct !== null && (
+            <rect x={Math.max(0, Math.round(meta.marcaPct * 400) - 1)} y="0" width="2" height="14" style={{ fill: "var(--tx)" }} />
+          )}
+        </svg>
+        <span style={{ fontSize: "13px", color: meta.ritmoOk ? "var(--actx)" : "var(--negtx)", fontWeight: 600 }}>{meta.ritmo}</span>
+        <span style={{ fontSize: "13px", color: "var(--tx2)" }}>{meta.faltaTxt}</span>
+        <span style={{ fontSize: "12px", color: "var(--tx3)" }}>{meta.mao}</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <span style={{ fontSize: "12px", color: "var(--tx3)", paddingBottom: "6px" }}>{tituloReq}</span>
+        {meta.requisitos.map((r) => (
+          <div key={r.label} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", borderTop: "1px solid var(--bd)", fontSize: "13px" }}>
+            <span aria-label={r.ok ? "cumprido" : "pendente"} style={{ width: "18px", textAlign: "center", fontWeight: 700, color: r.ok ? "var(--actx)" : "var(--tx3)" }}>{r.ok ? "✓" : "○"}</span>
+            <span style={{ flexGrow: 1, color: "var(--tx2)" }}>{r.label}</span>
+            <span style={{ fontWeight: 600 }}>{r.atual}</span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

@@ -1,6 +1,6 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 20/10/2026 · Claude
+Atualizado: 02/11/2026 · Claude
 
 ## Onde estamos
 Plano por hora em operação. **Dia 1 do cockpit: 19/10/2026** — o operador pediu para apagar tudo antes
@@ -45,7 +45,8 @@ dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3
   aquele pedaço. Por isso o campo Evento da pré-sessão sugere os nomes gravados.
 
 ## Decisões que não se recuperam lendo o código
-- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (2 trades desde a correção de 29/10; alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (2, era 1 até 28/10). Contratos: até 3 na entrada; desde 29/10, escalonar a favor com stop financeiro até 6 (`MAX_CONTRATOS_ESCALONADO`, coluna `escalonado`); perda máxima por trade R$ 160, todos os contratos (`MAX_RISCO_TRADE_RS`). 3 stops SEGUIDOS encerram (um gain zera; `contarPerdasSeguidas`, desde 29/10); 5 trades; 2–3 contratos. RHT (Reversão HTF) em qualquer hora, dentro da cota. Siglas: RPP, MAV, CSI, RHT (lib/metricas SIGLAS). Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
+- Plano de fim de ano (02/11/2026, Trade System §2.1): novembro 3 contratos, meta R$ 6.000 (19 pregões); dezembro 5→7→10 contratos se novembro cumprir 4 requisitos (R$ 6 mil, disciplina 90%, 50 trades, positivo sem o maior trade); recuo de R$ 2 mil do pico desce um degrau, colchão de R$ 3 mil volta a 3. Card "Meta do mês" na Visão Geral (`lib/meta-fim-de-ano.ts`). **Em dezembro, `MAX_CONTRATOS` e `MAX_RISCO_TRADE_RS` em `lib/gate.ts` ainda estão fixos em 3 e R$ 160: ligar ao degrau antes de 01/12.**
+- Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade; foi 2 de 29/10 a 02/11, voltou a 1 porque a perna parou de reverter na 1ª hora depois das eleições; alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (2, era 1 até 28/10). Contratos: até 3 na entrada; desde 29/10, escalonar a favor com stop financeiro até 6 (`MAX_CONTRATOS_ESCALONADO`, coluna `escalonado`); perda máxima por trade R$ 160, todos os contratos (`MAX_RISCO_TRADE_RS`). 3 stops SEGUIDOS encerram (um gain zera; `contarPerdasSeguidas`, desde 29/10); 5 trades; 2–3 contratos. RHT (Reversão HTF) em qualquer hora, dentro da cota. Siglas: RPP, MAV, CSI, RHT (lib/metricas SIGLAS). Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
 - Voz: áudios pré-gerados na GPU do operador, tocados como arquivo estático. Sem
   servidor de voz. O manifest é indexado pelo texto normalizado (o hash só dá nome ao
   arquivo), então o navegador não precisa calcular SHA-1.
