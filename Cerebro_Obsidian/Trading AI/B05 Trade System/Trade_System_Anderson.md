@@ -41,6 +41,21 @@ entre os turnos, 6 de 12; desde 26/10, **0 de 3** (2 desses 3 voltaram depois da
 já no horário do MAV/CSI). Nos trades reais, o RPP fez 1 acerto em 7 (−R$ 499). Amostra
 pós-eleição pequena: rever no fim de novembro.
 
+**Leitura do operador (02/11/2026):** a 1ª hora está entregando tendência para reverter na
+2ª. Medido no cache de 1 min (dias com tendência na 1ª hora pela regra das 3 de 4 barras ou
+475 pts; "reverteu" = devolveu 50% do movimento da hora entre 10:00 e 12:00):
+
+| Período | Tendência na 1ª hora | Devolveu 50% até 12:00 |
+|---|---|---|
+| Até 02/10 | 28 dias | 22 (79%) |
+| Entre os turnos | 9 | 8 |
+| Desde 26/10 | 3 | 2 |
+
+A reversão depois das 10:00 é o padrão de sempre (~80%), não algo novo. O que mudou foi a
+reversão **dentro** da 1ª hora (o RPP). Por isso o foco de novembro é o MAV/CSI contra a
+tendência da 1ª hora — que é também o melhor recorte do backtest do MAV (C1 contra a
+tendência, +0,43R, ver seção do MAV). RPP só com cautela: setup completo, 1 por dia.
+
 **Por quê:** de 28/09 a 02/10, trades antes das 10:00 fora do Setup V somaram −R$ 953
 (+216, −225, −129, −238, −577). A hora das 09:00 é a manipulação da abertura; o que se
 aproveita dela é a volta da primeira perna ([[Estudo_Reversao_Abertura_Vista]], itens 7 e 9).
