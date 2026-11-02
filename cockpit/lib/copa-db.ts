@@ -2,7 +2,7 @@ import { supabase } from "./supabase";
 import { modoDemo, tradesDemo, tradesDemoDoMes } from "./demo";
 import { ESTRATEGIA_PRIMEIRA_PERNA, Janela, MAX_CONTRATOS, contarPerdasSeguidas, mercadoPermitido } from "./gate";
 
-export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "BPR" | "IFVG" | "RISK_ENTRY" | "FVG_POS_SWING";
+export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "CISD_OB" | "BPR" | "IFVG" | "RISK_ENTRY" | "FVG_POS_SWING";
 export type Contexto1h = "CONTINUACAO" | "REVERSAO" | "LATERAL";
 export type SetupCModo = "C1" | "C2";
 
@@ -40,7 +40,7 @@ export function validarCamposNovosTrade(input: {
   if (!input.gatilho) {
     throw new Error("gatilho é obrigatório para registrar o trade");
   }
-  const GATILHOS_VALIDOS: GatilhoTrade[] = ["MSS_FVG", "MSS_OB", "BPR", "IFVG", "RISK_ENTRY", "FVG_POS_SWING"];
+  const GATILHOS_VALIDOS: GatilhoTrade[] = ["MSS_FVG", "MSS_OB", "CISD_OB", "BPR", "IFVG", "RISK_ENTRY", "FVG_POS_SWING"];
   if (!GATILHOS_VALIDOS.includes(input.gatilho as GatilhoTrade)) {
     throw new Error(`gatilho inválido: ${input.gatilho}`);
   }

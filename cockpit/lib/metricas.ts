@@ -73,6 +73,7 @@ export const NOMES_ESTRATEGIAS: Record<string, string> = {
 export const NOMES_GATILHOS: Record<string, string> = {
   MSS_FVG: "MSS + FVG",
   MSS_OB: "MSS + OB",
+  CISD_OB: "CISD + OB",
   BPR: "BPR",
   RISK_ENTRY: "Risk entry",
   FVG_POS_SWING: "FVG após swing",

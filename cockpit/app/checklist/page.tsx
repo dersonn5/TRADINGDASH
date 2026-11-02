@@ -911,6 +911,7 @@ export default function ChecklistPage() {
                 [
                   { v: "MSS_FVG" as GatilhoTrade, l: "MSS + FVG" },
                   { v: "MSS_OB" as GatilhoTrade, l: "MSS + OB" },
+                  { v: "CISD_OB" as GatilhoTrade, l: "CISD + OB" },
                   { v: "BPR" as GatilhoTrade, l: "BPR" },
                   { v: "IFVG" as GatilhoTrade, l: "iFVG" },
                   { v: "RISK_ENTRY" as GatilhoTrade, l: "Risk entry" },
