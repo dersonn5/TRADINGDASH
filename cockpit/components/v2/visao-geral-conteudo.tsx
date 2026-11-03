@@ -121,7 +121,7 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
               </div>
             }
           />
-          <svg width="100%" viewBox={vg.curva.vb} role="img" aria-label="Curva de capital do mês" style={{ display: "block" }}>
+          <svg width="100%" viewBox={vg.curva.vb} role="img" aria-label={`Curva de capital ${vg.noPeriodo}`} style={{ display: "block" }}>
             {vg.curva.temDD && (
               <>
                 <rect x={vg.curva.ddx} y={vg.curva.ddy} width={vg.curva.ddw} height={vg.curva.ddh} rx="6" style={{ fill: "var(--neg)", fillOpacity: 0.14 }} />
@@ -327,8 +327,8 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: "20px" }}>
         <section style={CARD}>
-          <Cabecalho label="Estratégias no mês" frase={vg.tabFrase} />
-          <div role="table" aria-label="Estratégias no mês" style={{ display: "flex", flexDirection: "column", fontSize: "13px" }}>
+          <Cabecalho label={`Estratégias ${vg.noPeriodo}`} frase={vg.tabFrase} />
+          <div role="table" aria-label={`Estratégias ${vg.noPeriodo}`} style={{ display: "flex", flexDirection: "column", fontSize: "13px" }}>
             <div role="row" style={{ ...LINHA, paddingBottom: "10px", color: "var(--tx3)", fontSize: "11px", letterSpacing: "0.06em", textTransform: "uppercase" }}>
               <span role="columnheader">Estratégia</span>
               {["Trades", "Acerto", "R médio", "Resultado", "DD máx", "Stop med."].map((h) => (
@@ -377,7 +377,7 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
       <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr", gap: "20px" }}>
         <section style={CARD}>
           <Cabecalho label="Calendário" frase={vg.cal.frase} />
-          <svg width="100%" viewBox={`0 0 380 ${vg.cal.altura}`} role="img" aria-label="Resultado por dia do mês" style={{ display: "block" }}>
+          <svg width="100%" viewBox={`0 0 380 ${vg.cal.altura}`} role="img" aria-label={`Resultado por dia ${vg.noPeriodo}`} style={{ display: "block" }}>
             {vg.cal.dow.map((w) => (
               <text key={w.l} x={w.x} y="12" textAnchor="middle" style={{ fill: "var(--tx3)", fontSize: "11px" }}>{w.l}</text>
             ))}

@@ -1199,6 +1199,19 @@ report(
   );
 }
 
+// Visão Geral, período todo: soma meses, sem meta, calendário do 1o dia operado até hoje
+{
+  const tt = (data: string, pnl_real: number) => ({ data, strategy_id: "varrida_barra_10", direcao: "COMPRA" as const, entrada: 100, stop: 90, pontos_real: pnl_real / 0.6, pnl_real });
+  const vgT = montarVisaoGeral([tt("2026-10-27", 300), tt("2026-10-30", -100), tt("2026-11-03", -389)], [], 2026, 11, "2026-11-03", "tudo");
+  const rotulos = vgT.cal.cells.filter((c) => c.so === 1).map((c) => c.d).join(",");
+  report(
+    "Visão Geral (tudo): −R$ 189 em 3 pregões, sem meta, calendário de 27/10 a 03/11",
+    vgT.kpis[0].valor === "−R$ 189" && vgT.meta === null && vgT.kpis[0].delta === "Desde 27/10/2026 · 3 pregões" &&
+      rotulos === "27,28,29,30,2,3" && vgT.noPeriodo === "no período",
+    `resultado=${vgT.kpis[0].valor} meta=${vgT.meta} delta=${vgT.kpis[0].delta} dias=${rotulos}`
+  );
+}
+
 // 5. Plano de fim de ano (Trade System §2.1)
 {
   const nov = pregoesDoMes(2026, 11);

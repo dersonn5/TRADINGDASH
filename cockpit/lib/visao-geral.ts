@@ -59,8 +59,20 @@ function tipoDesvio(t: TradeMetricas) {
   return "Fora do plano";
 }
 
-export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: number, mes: number, hojeIso: string) {
+const dataBR = (iso: string) => {
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+};
+
+/**
+ * periodo "tudo": todos os trades fechados, sem comparacao com mes anterior e sem meta;
+ * o calendario cobre do primeiro dia operado ate hoje.
+ */
+export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: number, mes: number, hojeIso: string, periodo: "mes" | "tudo" = "mes") {
   const n = trades.length;
+  const tudo = periodo === "tudo";
+  const noPeriodo = tudo ? "no período" : "no mês";
+  const datasOperadas = Array.from(new Set(trades.map((t) => t.data))).sort();
   const nomeMes = MESES[mes - 1];
   const nomeMesAnt = MESES[(mes + 10) % 12];
   const rs = trades.map(rDoTrade).filter((r): r is number => r !== null);
@@ -85,12 +97,25 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const perdasA = -somar(anteriores.map(pnl).filter((p) => p < 0));
   // rodape dos KPIs e a comparacao com o mes anterior: deixar claro que nao e o mes aberto
   const semAnt = `Mês anterior (${nomeMesAnt}): sem trades`;
+  // no periodo todo nao ha mes anterior: cada rodape traz um dado do proprio periodo
+  const nDias = datasOperadas.length;
+  const pnlDia: Record<string, number> = {};
+  trades.forEach((t) => (pnlDia[t.data] = (pnlDia[t.data] ?? 0) + pnl(t)));
+  const diasPositivos = datasOperadas.filter((d) => pnlDia[d] > 0).length;
+  const doPeriodo = [
+    nDias ? `Desde ${dataBR(datasOperadas[0])} · ${plural(nDias, "pregão", "pregões")}` : "Sem trades registrados",
+    nDias ? `${(n / nDias).toFixed(1).replace(".", ",")} por pregão` : "—",
+    n ? `${formatarBRL(total / n)} por trade` : "—",
+    nDias ? `${diasPositivos} de ${plural(nDias, "pregão positivo", "pregões positivos")}` : "—",
+    nDias ? `${formatarBRL(total / nDias)} por pregão em média` : "—",
+  ];
+  const delta = (i: number, comAnt: string) => (tudo ? doPeriodo[i] : nA ? comAnt : semAnt);
   const kpis = [
-    { label: "Resultado", valor: formatarBRL(total), cor: cor(total), sub: `${formatarR(totalR)} no mês`, delta: nA ? `${formatarBRL(total - pnlA)} contra ${nomeMesAnt}` : semAnt },
-    { label: "Trades", valor: String(n), cor: "var(--tx)", sub: `${formatarPct(n ? wins.length / n : 0)} de acerto`, delta: nA ? `${nomeMesAnt}: ${plural(nA, "trade", "trades")} · ${formatarPct(anteriores.filter((t) => pnl(t) > 0).length / nA)}` : semAnt },
-    { label: "Expectativa", valor: formatarR(rs.length ? totalR / rs.length : 0), cor: cor(totalR), sub: `por trade · payoff ${num(payoff)}`, delta: nA ? `${nomeMesAnt}: ${formatarR(rsA.length ? somar(rsA) / rsA.length : 0)}` : semAnt },
-    { label: "Profit factor", valor: num(pf), cor: "var(--tx)", sub: `${formatarBRL(ganhos, false)} ganhos · ${formatarBRL(perdas, false)} perdas`, delta: nA ? `${nomeMesAnt}: ${num(perdasA > 0 ? ganhosA / perdasA : null)}` : semAnt },
-    { label: "Drawdown máximo", valor: formatarBRL(-D.maxDrawdown), cor: COR_NEG, sub: `${formatarR(-DR.maxDrawdown)} no pior trecho`, delta: nA ? `${nomeMesAnt}: ${formatarBRL(-calcularDrawdown(anteriores.map(pnl)).maxDrawdown)}` : semAnt },
+    { label: "Resultado", valor: formatarBRL(total), cor: cor(total), sub: `${formatarR(totalR)} ${noPeriodo}`, delta: delta(0, `${formatarBRL(total - pnlA)} contra ${nomeMesAnt}`) },
+    { label: "Trades", valor: String(n), cor: "var(--tx)", sub: `${formatarPct(n ? wins.length / n : 0)} de acerto`, delta: delta(1, `${nomeMesAnt}: ${plural(nA, "trade", "trades")} · ${formatarPct(nA ? anteriores.filter((t) => pnl(t) > 0).length / nA : 0)}`) },
+    { label: "Expectativa", valor: formatarR(rs.length ? totalR / rs.length : 0), cor: cor(totalR), sub: `por trade · payoff ${num(payoff)}`, delta: delta(2, `${nomeMesAnt}: ${formatarR(rsA.length ? somar(rsA) / rsA.length : 0)}`) },
+    { label: "Profit factor", valor: num(pf), cor: "var(--tx)", sub: `${formatarBRL(ganhos, false)} ganhos · ${formatarBRL(perdas, false)} perdas`, delta: delta(3, `${nomeMesAnt}: ${num(perdasA > 0 ? ganhosA / perdasA : null)}`) },
+    { label: "Drawdown máximo", valor: formatarBRL(-D.maxDrawdown), cor: COR_NEG, sub: `${formatarR(-DR.maxDrawdown)} no pior trecho`, delta: delta(4, `${nomeMesAnt}: ${formatarBRL(-calcularDrawdown(anteriores.map(pnl)).maxDrawdown)}`) },
   ];
 
   // Curva de capital (688 x 250)
@@ -132,7 +157,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     endx: X(n).toFixed(1), endy: Y(cum[n]).toFixed(1),
     frase: n
       ? `Pico de ${formatarBRL(pico)}${iPico > 0 ? ` em ${diaMes(trades[iPico - 1].data)}` : ""}${temDD ? ` · pior trecho ${formatarBRL(-D.maxDrawdown)} (${diaMes(trades[Math.max(D.picoIndex, 1) - 1].data)} → ${diaMes(trades[D.valeIndex - 1].data)})` : " · sem drawdown"}`
-      : "Sem trades no mês ainda",
+      : `Sem trades ${noPeriodo} ainda`,
   };
 
   // Por estrategia
@@ -157,12 +182,12 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const maisN = [...estr].sort((a, b) => b.n - a.n)[0];
   const maisP = [...estr].sort((a, b) => b.pnl - a.pnl)[0];
   const pior = [...estr].sort((a, b) => a.pnl - b.pnl)[0];
-  const estrFrase = n ? `Mais trades: ${maisN.nome} (${maisN.n}) · mais resultado: ${maisP.nome}` : "Nenhum trade no mês ainda";
+  const estrFrase = n ? `Mais trades: ${maisN.nome} (${maisN.n}) · mais resultado: ${maisP.nome}` : `Nenhum trade ${noPeriodo} ainda`;
   const tabFrase = !n
     ? "Os resultados por estratégia aparecem com o primeiro trade fechado"
     : estr.length > 1
-      ? `${maisP.nome} carrega o mês com ${maisP.pnlTxt}; ${pior.nome}${pior.pnl < 0 ? " está negativa: " : " tem o menor resultado: "}${pior.pnlTxt}`
-      : `${maisP.nome}: ${maisP.pnlTxt} no mês`;
+      ? `${maisP.nome} carrega ${tudo ? "o período" : "o mês"} com ${maisP.pnlTxt}; ${pior.nome}${pior.pnl < 0 ? " está negativa: " : " tem o menor resultado: "}${pior.pnlTxt}`
+      : `${maisP.nome}: ${maisP.pnlTxt} ${noPeriodo}`;
   const tradesComStopGlobal = trades.filter((t) => t.stop !== null && t.stop !== undefined);
   const tot = {
     n, acerto: formatarPct(n ? wins.length / n : 0), rm: rs.length ? formatarR(totalR / rs.length) : "—", rmCor: rs.length ? cor(totalR) : "var(--tx)",
@@ -251,30 +276,35 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
       const cx = i * sslot + sslot / 2;
       return { l: s.l, n: cont[i], cx: cx.toFixed(1), x: (cx - 26).toFixed(1), y: (160 - h).toFixed(1), h: Math.max(h, 2).toFixed(1), vy: (160 - h - 8).toFixed(1), fill: n && med >= s.a && med < s.b ? "var(--k1)" : "var(--k4)" };
     }),
-    frase: n ? `Stop mediano ${med} pts · ${plural(acima, "stop", "stops")} de 250 pts ou mais` : "Nenhum stop registrado no mês",
+    frase: n ? `Stop mediano ${med} pts · ${plural(acima, "stop", "stops")} de 250 pts ou mais` : `Nenhum stop registrado ${noPeriodo}`,
   };
 
-  // Calendario: semanas de segunda a sexta que cobrem o mes
+  // Calendario: semanas de segunda a sexta que cobrem o mes (no periodo todo: do 1o dia operado ate hoje)
   const porDia: Record<string, number> = {};
   trades.forEach((t) => (porDia[t.data] = (porDia[t.data] ?? 0) + pnl(t)));
   const vmax = Math.max(1, ...Object.values(porDia).map(Math.abs));
-  const primeiro = new Date(Date.UTC(ano, mes - 1, 1));
+  const ultimaOperada = datasOperadas[datasOperadas.length - 1] ?? hojeIso;
+  const fimTudoIso = ultimaOperada > hojeIso ? ultimaOperada : hojeIso;
+  const primeiro = tudo ? new Date(`${datasOperadas[0] ?? hojeIso}T00:00:00Z`) : new Date(Date.UTC(ano, mes - 1, 1));
   const desloc = (primeiro.getUTCDay() + 6) % 7; // 0 = segunda
-  // segunda-feira da semana do dia 1 (se o dia 1 cai no fim de semana, comeca na segunda seguinte)
-  const seg = desloc <= 4 ? new Date(Date.UTC(ano, mes - 1, 1 - desloc)) : new Date(Date.UTC(ano, mes - 1, 1 + (7 - desloc)));
+  // segunda-feira da semana do 1o dia (se ele cai no fim de semana, comeca na segunda seguinte)
+  const seg = new Date(primeiro.getTime() + (desloc <= 4 ? -desloc : 7 - desloc) * 864e5);
   const cells: Array<Record<string, string | number>> = [];
-  const ultimo = new Date(Date.UTC(ano, mes, 0));
+  const ultimo = tudo ? new Date(`${fimTudoIso}T00:00:00Z`) : new Date(Date.UTC(ano, mes, 0));
+  const inicioIso = primeiro.toISOString().slice(0, 10);
   let r = 0;
   for (let semana = new Date(seg); semana <= ultimo; semana = new Date(semana.getTime() + 7 * 864e5), r++) {
     for (let c = 0; c < 5; c++) {
       const d = new Date(semana.getTime() + c * 864e5);
       const iso = d.toISOString().slice(0, 10);
-      const fora = d.getUTCMonth() !== mes - 1;
+      const fora = tudo ? iso < inicioIso || iso > fimTudoIso : d.getUTCMonth() !== mes - 1;
       const futuro = !fora && iso > hojeIso;
       const v = fora ? undefined : porDia[iso];
       const x = c * 76, y = 22 + r * 48;
+      // no periodo todo o dia 1 leva o mes, para a virada de mes ficar visivel
+      const rotulo = tudo && d.getUTCDate() === 1 ? `1/${d.getUTCMonth() + 1}` : String(d.getUTCDate());
       cells.push({
-        x, y, tx: x + 8, ty: y + 16, vx: x + 62, vy: y + 34, d: String(d.getUTCDate()),
+        x, y, tx: x + 8, ty: y + 16, vx: x + 62, vy: y + 34, d: rotulo,
         dcor: fora ? "var(--tx3)" : "var(--tx2)",
         v: v === undefined ? "" : `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(Math.round(v)).toLocaleString("pt-BR")}`,
         fill: v === undefined ? "var(--s2)" : fill(v),
@@ -290,7 +320,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     altura: 22 + r * 48,
     dow: ["Seg", "Ter", "Qua", "Qui", "Sex"].map((l, i) => ({ l, x: i * 76 + 35 })),
     cells,
-    frase: melhorDia ? `${diasPos} de ${dias.length} ${dias.length === 1 ? "dia positivo" : "dias positivos"} · melhor: ${diaMes(melhorDia)} ${formatarBRL(porDia[melhorDia])}` : "Nenhum dia operado no mês ainda",
+    frase: melhorDia ? `${diasPos} de ${dias.length} ${dias.length === 1 ? "dia positivo" : "dias positivos"} · melhor: ${diaMes(melhorDia)} ${formatarBRL(porDia[melhorDia])}` : `Nenhum dia operado ${noPeriodo} ainda`,
   };
 
   // Disciplina
@@ -361,13 +391,15 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     pequena: tsC.length > 0 && tsC.length < 10,
   };
 
+  const sujeito = tudo ? "O período todo" : `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)}`;
   const resumo = n
-    ? `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)} está em ${formatarBRL(total)} com ${plural(n, "trade", "trades")} (${formatarR(totalR)}).${maisP ? ` ${maisP.nome} carrega o mês` : ""}${melhor ? `; o melhor horário é ${melhor.f}–${fimDaFaixa(melhor.f)}.` : "."}`
-    : `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)} ainda não tem trades fechados. Os números aparecem aqui conforme você fecha trades pelo checklist.`;
+    ? `${sujeito} está em ${formatarBRL(total)} com ${plural(n, "trade", "trades")} (${formatarR(totalR)}).${maisP ? ` ${maisP.nome} carrega ${tudo ? "o período" : "o mês"}` : ""}${melhor ? `; o melhor horário é ${melhor.f}–${fimDaFaixa(melhor.f)}.` : "."}`
+    : `${sujeito} ainda não tem trades fechados. Os números aparecem aqui conforme você fecha trades pelo checklist.`;
 
-  const meta = montarMeta(trades, anteriores, ano, mes, hojeIso);
+  // a meta e de um mes do plano de fim de ano: nao existe no periodo todo
+  const meta = tudo ? null : montarMeta(trades, anteriores, ano, mes, hojeIso);
 
-  return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, exec, sc, meta };
+  return { n, resumo, kpis, curva, estr, estrFrase, tabFrase, tot, hora, gat, stops, cal, disc, exec, sc, meta, noPeriodo };
 }
 
 export type VisaoGeral = ReturnType<typeof montarVisaoGeral>;

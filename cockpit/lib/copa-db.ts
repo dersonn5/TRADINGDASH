@@ -348,6 +348,29 @@ export async function listarTrades(): Promise<TradeHistorico[]> {
 }
 
 /**
+ * Todos os trades fechados, ordenados por hora_saida ASC (o "Tudo" da Visão Geral).
+ */
+export async function listarTradesFechados(): Promise<TradeHistorico[]> {
+  const ordem = (a: TradeHistorico, b: TradeHistorico) => (a.hora_saida ?? "￿").localeCompare(b.hora_saida ?? "￿");
+  if (modoDemo()) return tradesDemo(getDataSaoPaulo()).filter((t) => t.status === "FECHADO").sort(ordem);
+  const { data, error } = await supabase
+    .from("copa_trades")
+    .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
+    .eq("status", "FECHADO")
+    .order("hora_saida", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    throw new Error(`Erro ao buscar os trades: ${error.message}`);
+  }
+
+  return (data || []).map((t: any) => ({
+    ...t,
+    data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
+    strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
+  }));
+}
+
+/**
  * Trades fechados do mês especificado (ano, mês 1..12), ordenados por hora_saida ASC.
  * Filtra pela data da sessão (copa_sessions.data) entre o primeiro e o último dia do mês.
  */
