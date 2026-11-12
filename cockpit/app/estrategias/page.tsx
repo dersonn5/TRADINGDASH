@@ -3,7 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { DEFAULT_STRATEGIES } from "@/data/strategies";
-import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS, MAX_CONTRATOS_ESCALONADO, MAX_OPERACOES_DIA, MAX_RISCO_TRADE_RS, MAX_PERDAS_DIA } from "@/lib/gate";
+import { ESTRATEGIA_PRIMEIRA_PERNA, MAX_CONTRATOS_ESCALONADO, MAX_OPERACOES_DIA, MAX_RISCO_TRADE_RS, MAX_PERDAS_DIA } from "@/lib/gate";
+import { getContaAtiva } from "@/lib/contas";
+import { CONTRATOS_RECUO, CORTE_PERDA_DIA_RS, RECUO_PERDA_RS, TETO_GANHO_DIA_RS } from "@/lib/prova";
 import { listarTradesDoMes, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
 import { NOMES_COMPLETOS, SIGLAS, rDoTrade, formatarBRL, formatarR, media, somar } from "@/lib/metricas";
 import { CARD, LBL, H2 } from "@/components/v2/estilos";
@@ -38,6 +40,12 @@ export default function EstrategiasPage() {
   const kills = d.checklist.filter((i) => i.tipo === "KILL");
   const pontos = d.checklist.filter((i) => i.tipo === "PONTO");
   const maxPeso = Math.max(1, ...pontos.map((p) => p.peso));
+  // Os limites sao da conta ativa: a real tem a mao e o risco do plano de fim de ano; a prova, os da Zero7
+  const conta = getContaAtiva();
+  const limites =
+    conta.tipo === "PROVA"
+      ? `${conta.max_perdas_seguidas} stops encerram · ${conta.max_operacoes_dia} trades (1 · 3 · 2) · ${conta.max_contratos} contratos fixos, ${CONTRATOS_RECUO} no recuo (−R$ ${RECUO_PERDA_RS.toLocaleString("pt-BR")} acumulado) · risco máximo de R$ ${conta.max_risco_trade_rs} por trade · o dia acaba em −R$ ${CORTE_PERDA_DIA_RS.toLocaleString("pt-BR")} ou +R$ ${TETO_GANHO_DIA_RS.toLocaleString("pt-BR")}`
+      : `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 2) · 2 a ${conta.max_contratos} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor · perda máxima de R$ ${MAX_RISCO_TRADE_RS} por trade`;
   const horario = d.horarios_validos?.length ? `${d.horarios_validos[0].inicio} – ${d.horarios_validos[d.horarios_validos.length - 1].fim}` : "10:00 – 11:30";
   const fatos = [
     { l: "Mercado", v: d.mercado.join(" · ") || "WIN" },
@@ -52,7 +60,7 @@ export default function EstrategiasPage() {
             ? `${d.score_minimo} · ${d.score_minimo + 15} depois das 11h · qualquer hora, na cota`
           : `${d.score_minimo} · ${d.score_minimo + 15} na 3ª hora (2 trades)`,
     },
-    { l: "Limites", v: `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (1 · 3 · 2) · 2 a ${MAX_CONTRATOS} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor · perda máxima de R$ ${MAX_RISCO_TRADE_RS} por trade` },
+    { l: "Limites", v: limites },
   ];
 
   return (

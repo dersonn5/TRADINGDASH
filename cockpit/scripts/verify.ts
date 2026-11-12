@@ -2,7 +2,9 @@ import fs from "fs";
 import { montarVisaoGeral } from "../lib/visao-geral";
 import { montarCalendarioMes } from "../lib/calendario-resultados";
 import { degrauDezembro, montarMeta, pregoesDoMes, requisitosDezembro } from "../lib/meta-fim-de-ano";
-import { tradesDemoDoMes } from "../lib/demo";
+import { tradesDemoDoMes, tradesDemoProva } from "../lib/demo";
+import { CONTA_PROVA_ZERO7, CONTA_REAL_PADRAO } from "../lib/contas";
+import { avaliarLimitesProva, calcularProva, contratosPermitidos, montarProva, riscoDoTradeRs, validarRiscoProva } from "../lib/prova";
 import { lerPreco } from "../lib/metricas";
 import { TRADES_DESIGN } from "./fixture-design";
 import {
@@ -1241,6 +1243,65 @@ report(
   const dColchao = degrauDezembro(novBom, [tm("2026-12-01", -3600)]);
   report("Escada: colchão em R$ 2.900 -> volta a 3 contratos", dColchao.contratos === 3, JSON.stringify(dColchao));
   report("Escada: novembro sem requisitos -> 3 contratos", degrauDezembro(novSorte, []).contratos === 3, "");
+}
+
+// 6. Contas e prova da mesa (SPEC_CONTAS.md)
+{
+  const real = CONTA_REAL_PADRAO;
+  const prova = CONTA_PROVA_ZERO7;
+  report("Contas: a real padrão tem os limites do gate (3 contratos, R$ 160, 3 stops, 5 trades)",
+    real.max_contratos === 3 && real.max_risco_trade_rs === 160 && real.max_perdas_seguidas === 3 && real.max_operacoes_dia === 5 && real.meta_rs === null, JSON.stringify(real));
+  report("Contas: limites do dia por conta (2 stops encerram quando a conta diz 2)",
+    avaliarLimitesDia(2, 1, { maxPerdasSeguidas: 2, maxOperacoesDia: 5 }).bloqueado && !avaliarLimitesDia(2, 1).bloqueado, "");
+
+  const tp = (data: string, pnl_real: number, pontos_real: number) => ({ data, pnl_real, pontos_real });
+  // dia 1 passa do teto (R$ 2.498,50); dia 2 tem um ganho de 7 pts (não conta); dia 3, perda de 8 pts (conta)
+  const r = calcularProva([tp("2026-11-12", 3000, 300), tp("2026-11-13", -400, -200), tp("2026-11-13", 14, 7), tp("2026-11-16", -16, -8)], prova);
+  report("Prova: teto de 50% por pregão e trades de 10 pts (bruto R$ 2.598, vale R$ 2.082,50)",
+    r.pnlBruto === 2598 && r.resultadoValido === 2082.5 && r.excedenteTeto === 501.5 && r.naoContam.n === 2 && r.naoContam.ganhosIgnorados === 14 && r.pregoes === 3 && r.maiorDia?.valor === 3000,
+    JSON.stringify(r));
+
+  const rRecuo = calcularProva([tp("2026-11-12", -3200, -1600), tp("2026-11-13", 1000, 500)], prova);
+  const rVoltou = calcularProva([tp("2026-11-12", -3200, -1600), tp("2026-11-13", 1000, 500), tp("2026-11-16", 2200, 1100)], prova);
+  report("Prova: recuo em −R$ 3.200 (5 contratos) até o acumulado voltar ao zero (10 contratos)",
+    rRecuo.emRecuo && contratosPermitidos(prova, rRecuo.emRecuo) === 5 && !rVoltou.emRecuo && contratosPermitidos(prova, rVoltou.emRecuo) === 10 && rVoltou.piorAcumulado === -3200,
+    `recuo=${rRecuo.emRecuo} voltou=${rVoltou.emRecuo} pior=${rVoltou.piorAcumulado}`);
+  report("Prova: conta real não recua", contratosPermitidos(real, true) === 3, "");
+
+  const zero = calcularProva([], prova);
+  const lim = (pnlDia: number, resumo = zero) => avaliarLimitesProva(prova, { pnlDia, resumo });
+  report("Prova: o dia acaba em −R$ 1.200 e em +R$ 2.400, e não antes",
+    lim(-1200).bloqueado && !lim(-1199).bloqueado && lim(2400).bloqueado && !lim(2399).bloqueado, `${lim(-1200).motivos} | ${lim(2400).motivos}`);
+  report("Prova: conta real não usa os limites da prova", !avaliarLimitesProva(real, { pnlDia: -5000, resumo: zero }).bloqueado, "");
+
+  const cincoDias = ["2026-11-12", "2026-11-13", "2026-11-16", "2026-11-17", "2026-11-18"];
+  const bateu = calcularProva(cincoDias.map((d) => tp(d, 1020, 510)), prova); // 5.100 em 5 pregões
+  const quatro = calcularProva(cincoDias.slice(0, 4).map((d) => tp(d, 1300, 650)), prova); // 5.200 em 4 pregões
+  report("Prova: saída em R$ 5.100 só com 5 pregões operados", lim(0, bateu).bloqueado && !lim(0, quatro).bloqueado, `${lim(0, bateu).motivos}`);
+  const eliminou = calcularProva([tp("2026-11-12", -6500, -3250)], prova);
+  report("Prova: perda total de R$ 6.500 elimina", lim(0, eliminou).motivos.some((m) => m.includes("eliminada")), `${lim(0, eliminou).motivos}`);
+
+  const risco = (riscoRs: number, pnlDia: number, resumo = zero) => validarRiscoProva(prova, riscoRs, { pnlDia, resumo });
+  const quaseFora = calcularProva([tp("2026-11-12", -6200, -3100)], prova);
+  report("Prova: risco do trade (teto R$ 530, cabe no dia, cabe na perda total)",
+    risco(400, 0).length === 0 && risco(531, 0).length === 1 && risco(500, -800).length === 1 && risco(400, 0, quaseFora).length === 1 && riscoDoTradeRs(167500, 167300, 10) === 400,
+    `${risco(531, 0)} | ${risco(500, -800)} | ${risco(400, 0, quaseFora)}`);
+
+  const card = montarProva([tp("2026-11-12", 800, 400), tp("2026-11-13", -400, -200)], prova, "2026-11-13")!;
+  const bloco = (label: string) => card.blocos.find((b) => b.label === label)!;
+  report("Card da prova: em andamento, faltam R$ 4.700 e 3 pregões, perda de hoje R$ 400",
+    card.status === "EM_ANDAMENTO" && card.frase === "Faltam R$ 4.700 para a saída e 3 pregões no mínimo" && bloco("Perda de hoje").valor === "R$ 400" &&
+      bloco("Perda total usada").valor === "R$ 0" && bloco("Pregões operados").valor === "2" && bloco("Mão da próxima entrada").valor === "10 contratos" &&
+      card.ritmo === "Para fechar em 8 pregões: R$ 783 por pregão nos 6 que restam",
+    `${card.frase} | ${card.ritmo} | ${JSON.stringify(card.blocos.map((b) => `${b.label}=${b.valor}`))}`);
+  report("Card da prova: meta batida, eliminada e conta real",
+    montarProva(cincoDias.map((d) => tp(d, 1020, 510)), prova, "2026-11-18")!.status === "META_BATIDA" &&
+      montarProva([tp("2026-11-12", -6500, -3250)], prova, "2026-11-12")!.status === "ELIMINADA" && montarProva([], real, "2026-11-12") === null, "");
+
+  const demoProva = tradesDemoProva("2026-11-12");
+  report("Demo: prova fictícia com 10 contratos e no máximo 6 pregões",
+    demoProva.length > 0 && demoProva.every((t) => t.contratos === 10) && new Set(demoProva.map((t) => t.data)).size <= 6,
+    `trades=${demoProva.length} pregoes=${new Set(demoProva.map((t) => t.data)).size}`);
 }
 
 if (hasErrors) {

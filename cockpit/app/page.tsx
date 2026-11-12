@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { listarTradesDoMes, listarTradesFechados, getDataSaoPaulo } from "@/lib/copa-db";
+import { listarTradesDoMes, listarTradesFechados, getDataSaoPaulo, TradeHistorico } from "@/lib/copa-db";
 import { montarVisaoGeral, TradeVG } from "@/lib/visao-geral";
+import { getContaAtiva } from "@/lib/contas";
+import { montarProva } from "@/lib/prova";
 import { CARD } from "@/components/v2/estilos";
 import { VisaoGeralConteudo } from "@/components/v2/visao-geral-conteudo";
 
@@ -17,11 +19,16 @@ function mesAnterior(ano: number, mes: number) {
 // "tudo" = todos os trades fechados, sem comparação com mês anterior e sem meta
 type Selecao = { ano: number; mes: number } | "tudo";
 
+type Dados = { atual: TradeVG[]; anterior: TradeVG[]; todos: TradeVG[] | null };
+
 export default function VisaoGeralPage() {
   const hojeIso = getDataSaoPaulo();
   const [anoHoje, mesHoje] = hojeIso.split("-").map(Number);
+  // Conta ativa (SPEC_CONTAS.md): fixa enquanto a tela está montada, o Shell remonta ao trocar
+  const conta = getContaAtiva();
+  const ehProva = conta.tipo === "PROVA";
   const [sel, setSel] = React.useState<Selecao>({ ano: anoHoje, mes: mesHoje });
-  const [dados, setDados] = React.useState<{ atual: TradeVG[]; anterior: TradeVG[] } | null>(null);
+  const [dados, setDados] = React.useState<Dados | null>(null);
   const [erro, setErro] = React.useState<string | null>(null);
   const [atualizado, setAtualizado] = React.useState("");
 
@@ -37,17 +44,23 @@ export default function VisaoGeralPage() {
     let vivo = true;
     setDados(null);
     setErro(null);
-    const busca =
-      sel === "tudo"
-        ? listarTradesFechados().then((atual) => [atual, []] as const)
-        : (() => {
-            const ant = mesAnterior(sel.ano, sel.mes);
-            return Promise.all([listarTradesDoMes(sel.ano, sel.mes), listarTradesDoMes(ant.ano, ant.mes)]);
-          })();
-    busca
-      .then(([atual, anterior]) => {
+    const carregar = async (): Promise<Dados> => {
+      let atual: TradeHistorico[];
+      let anterior: TradeHistorico[] = [];
+      if (sel === "tudo") {
+        atual = await listarTradesFechados();
+      } else {
+        const ant = mesAnterior(sel.ano, sel.mes);
+        [atual, anterior] = await Promise.all([listarTradesDoMes(sel.ano, sel.mes), listarTradesDoMes(ant.ano, ant.mes)]);
+      }
+      // a prova é medida pela conta inteira, qualquer que seja o mês escolhido
+      const todos = ehProva ? (sel === "tudo" ? atual : await listarTradesFechados()) : null;
+      return { atual: atual as TradeVG[], anterior: anterior as TradeVG[], todos: todos as TradeVG[] | null };
+    };
+    carregar()
+      .then((d) => {
         if (!vivo) return;
-        setDados({ atual: atual as TradeVG[], anterior: anterior as TradeVG[] });
+        setDados(d);
         setAtualizado(new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date()));
       })
       .catch((e) => vivo && setErro(e.message || "Erro ao carregar os trades"));
@@ -58,16 +71,18 @@ export default function VisaoGeralPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
 
-  const vg = React.useMemo(
-    () =>
-      dados
-        ? sel === "tudo"
-          ? montarVisaoGeral(dados.atual, [], anoHoje, mesHoje, hojeIso, "tudo")
-          : montarVisaoGeral(dados.atual, dados.anterior, sel.ano, sel.mes, hojeIso)
-        : null,
+  const vg = React.useMemo(() => {
+    if (!dados) return null;
+    const base =
+      sel === "tudo"
+        ? montarVisaoGeral(dados.atual, [], anoHoje, mesHoje, hojeIso, "tudo")
+        : montarVisaoGeral(dados.atual, dados.anterior, sel.ano, sel.mes, hojeIso);
+    // a meta de fim de ano é do plano da conta real; a prova tem a meta dela, no card da prova
+    return ehProva ? { ...base, meta: null } : base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dados, chave, hojeIso]
-  );
+  }, [dados, chave, hojeIso]);
+
+  const prova = React.useMemo(() => (dados?.todos ? montarProva(dados.todos, conta, hojeIso) : null), [dados, conta, hojeIso]);
 
   const titulo = sel === "tudo" ? "Todo o período" : `${MESES[sel.mes - 1]} ${sel.ano}`;
   const estiloBotao = (ativo: boolean): React.CSSProperties => ({
@@ -80,6 +95,7 @@ export default function VisaoGeralPage() {
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "13px", color: "var(--tx3)" }}>
+            {ehProva ? `${conta.nome} · ` : ""}
             {titulo}
             {atualizado ? ` · atualizado ${atualizado}` : ""}
           </span>
@@ -105,7 +121,7 @@ export default function VisaoGeralPage() {
       ) : !vg ? (
         <div style={{ ...CARD, alignItems: "center", padding: "48px", color: "var(--tx3)", fontSize: "14px" }}>Carregando…</div>
       ) : (
-        <VisaoGeralConteudo vg={vg} />
+        <VisaoGeralConteudo vg={vg} prova={prova} />
       )}
     </>
   );

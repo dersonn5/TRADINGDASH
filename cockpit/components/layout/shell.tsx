@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { AlertasVoz } from "@/components/layout/alertas-voz";
 import { entrarNoDemo, modoDemo, sairDoDemo } from "@/lib/demo";
+import { CONTA_REAL_PADRAO, carregarContas, definirContaAtiva, escolherConta, lembrarConta, type Conta } from "@/lib/contas";
 
 // Casca do app: barra lateral e area principal, identicas a design/v2/*.dc.html.
 
@@ -86,6 +87,32 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [nome, setNome] = React.useState("Anderson");
   const [recolhida, setRecolhida] = React.useState(false);
   const [demo, setDemo] = React.useState(false);
+  // contas (SPEC_CONTAS.md): null enquanto carrega; as telas so montam depois, ja com a conta ativa
+  const [contas, setContas] = React.useState<Conta[] | null>(null);
+  const [conta, setConta] = React.useState<Conta | null>(null);
+  const naLogin = pathname === "/login";
+
+  React.useEffect(() => {
+    if (naLogin) return;
+    let vivo = true;
+    // sem rede ou sem a tabela: abre na conta real padrao, como antes das contas
+    carregarContas().catch(() => [CONTA_REAL_PADRAO]).then((cs) => {
+      if (!vivo) return;
+      const c = escolherConta(cs);
+      definirContaAtiva(c);
+      setContas(cs);
+      setConta(c);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [naLogin]);
+
+  function trocarConta(c: Conta) {
+    definirContaAtiva(c);
+    lembrarConta(c.id);
+    setConta(c);
+  }
 
   React.useEffect(() => {
     const salvo = localStorage.getItem("cognitive-theme");
@@ -166,6 +193,41 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {!recolhida && <span style={{ fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em", flexGrow: 1, whiteSpace: "nowrap" }}>Cognitive Trading</span>}
         </div>
 
+        {contas && contas.length > 1 && conta && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {!recolhida && <span style={grupoTitulo}>Conta</span>}
+            {recolhida ? (
+              <button
+                type="button"
+                onClick={() => trocarConta(contas[(contas.findIndex((c) => c.id === conta.id) + 1) % contas.length])}
+                aria-label={`Conta ${conta.nome}: trocar`}
+                title={`${conta.nome}: trocar de conta`}
+                style={{ ...botaoIcone, width: "100%", background: "var(--acs)", color: "var(--actx)", borderColor: "var(--ac)", fontFamily: "inherit", fontSize: "13px", fontWeight: 600 }}
+              >
+                {conta.tipo === "PROVA" ? "P" : "R"}
+              </button>
+            ) : (
+              <div role="group" aria-label="Conta" style={{ display: "flex", gap: "4px", padding: "4px", background: "var(--s1)", border: "1px solid var(--bd)", borderRadius: "12px" }}>
+                {contas.map((c) => {
+                  const ativa = c.id === conta.id;
+                  return (
+                    <button
+                      key={c.id ?? c.nome}
+                      type="button"
+                      aria-pressed={ativa}
+                      title={c.nome}
+                      onClick={() => trocarConta(c)}
+                      style={{ flex: 1, height: "34px", border: 0, borderRadius: "8px", fontFamily: "inherit", fontSize: "13px", cursor: "pointer", background: ativa ? "var(--ac)" : "transparent", color: ativa ? "var(--onac)" : "var(--tx2)", fontWeight: ativa ? 600 : 400 }}
+                    >
+                      {c.tipo === "PROVA" ? "Prova" : "Real"}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           {!recolhida && <span style={grupoTitulo}>Pregão</span>}
           {PREGAO.map((i) => <NavLink key={i.href} item={i} ativo={ativo(i.href)} recolhida={recolhida} />)}
@@ -194,7 +256,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             {!recolhida && <span style={{ fontSize: "13px", color: "var(--tx2)" }}>{nome}</span>}
           </div>
           <div style={{ display: "flex", flexDirection: recolhida ? "column" : "row", alignItems: "center", gap: "8px", padding: recolhida ? 0 : "0 8px" }}>
-            <AlertasVoz />
+            <AlertasVoz key={conta?.id ?? "padrao"} />
             <button type="button" onClick={alternarTema} aria-label={escuro ? "Usar tema claro" : "Usar tema escuro"} title={escuro ? "Tema claro" : "Tema escuro"} style={botaoIcone}>
               {escuro ? (
                 <svg {...svgProps} width={16} height={16}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
@@ -241,7 +303,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         )}
-        {children}
+        {conta && <React.Fragment key={conta.id ?? "padrao"}>{children}</React.Fragment>}
       </main>
     </div>
   );

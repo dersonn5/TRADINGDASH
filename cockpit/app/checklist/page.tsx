@@ -15,7 +15,6 @@ import {
   avaliarLimitesDia,
   classificarJanela,
   ESTRATEGIA_PRIMEIRA_PERNA,
-  MAX_CONTRATOS,
   REGRAS_DA_HORA,
   GateResult,
   ItemAvaliado,
@@ -43,11 +42,15 @@ import {
   Contexto1h,
   SetupCModo,
 } from "@/lib/copa-db";
+import { getContaAtiva } from "@/lib/contas";
+import { avaliarLimitesProva, contratosPermitidos, validarRiscoProva, CORTE_PERDA_DIA_RS } from "@/lib/prova";
 import { PrintUpload } from "@/components/print-upload";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, chip, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 import { formatarBRL, lerPreco, NOMES_COMPLETOS, SIGLAS } from "@/lib/metricas";
 
 export default function ChecklistPage() {
+  // Conta ativa (SPEC_CONTAS.md): fixa enquanto a tela esta montada, o Shell remonta ao trocar
+  const conta = getContaAtiva();
   // Estratégia selecionada (padrão: REVERSAO_HTF)
   const [selectedStrategy, setSelectedStrategy] = useState<Strategy>(REVERSAO_HTF);
   const [checklist, setChecklist] = useState<LiveChecklist | null>(null);
@@ -210,8 +213,16 @@ export default function ChecklistPage() {
   // Avaliação dos limites diários espelhados do Profit Chart
   const limites: LimitesDia = useMemo(() => {
     if (!resumo) return { bloqueado: false, motivos: [] };
-    return avaliarLimitesDia(resumo.perdas_seguidas, resumo.operacoes_hoje);
-  }, [resumo]);
+    const dia = avaliarLimitesDia(resumo.perdas_seguidas, resumo.operacoes_hoje, {
+      maxPerdasSeguidas: conta.max_perdas_seguidas,
+      maxOperacoesDia: conta.max_operacoes_dia,
+    });
+    if (!resumo.resumo_prova) return dia;
+    // prova da mesa: o dia tambem acaba pelo corte de perda, pelo teto de ganho, pela eliminacao e pela meta
+    const prova = avaliarLimitesProva(conta, { pnlDia: resumo.pnl_dia, resumo: resumo.resumo_prova });
+    const motivos = [...dia.motivos, ...prova.motivos];
+    return { bloqueado: motivos.length > 0, motivos };
+  }, [resumo, conta]);
 
   const ctxHora = useMemo(
     () => ({
@@ -500,6 +511,14 @@ export default function ChecklistPage() {
     return { distStop, distAlvo, riscoReais, retornoReais, rr };
   }, [precosPreenchidos, mercado, numEntrada, numStop, numAlvo, numContratos]);
 
+  // Mão da entrada: o máximo da conta; na prova, o recuo reduz quando o acumulado aperta
+  const maxContratos = contratosPermitidos(conta, resumo?.resumo_prova?.emRecuo ?? false);
+  // Prova: o stop tem de caber no risco por trade, no que resta do dia e na perda total
+  const errosProva = useMemo(
+    () => (resumo?.resumo_prova ? validarRiscoProva(conta, metricasTrade.riscoReais, { pnlDia: resumo.pnl_dia, resumo: resumo.resumo_prova }) : []),
+    [conta, resumo, metricasTrade.riscoReais]
+  );
+
   const ehPrimeiraPerna = selectedStrategy.id === ESTRATEGIA_PRIMEIRA_PERNA;
   const novosCamposValidos =
     Boolean(gatilho) &&
@@ -507,7 +526,7 @@ export default function ChecklistPage() {
     (selectedStrategy.id !== "varrida_barra_10" || Boolean(setupCModo));
 
   const formularioValido =
-    precosPreenchidos && validacaoDirecao.ok && numContratos >= 1 && numContratos <= MAX_CONTRATOS && novosCamposValidos;
+    precosPreenchidos && validacaoDirecao.ok && numContratos >= 1 && numContratos <= maxContratos && novosCamposValidos && errosProva.length === 0;
 
   // Handler para abrir ordem
   async function handleAbrirOrdem() {
@@ -753,11 +772,21 @@ export default function ChecklistPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.3fr repeat(3, minmax(0, 1fr)) 1.3fr", gap: "12px" }}>
         {statusCard("Pregão", spTimeStr)}
         {statusCard(janelaCard.rot, janelaCard.txt, { destaque: janelaCard.destaque, pequeno: true })}
-        {statusCard("Perdas seguidas", <>{resumo?.perdas_seguidas ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 3</span></>)}
-        {statusCard("Operações", <>{resumo?.operacoes_hoje ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ 5</span></>)}
+        {statusCard("Perdas seguidas", <>{resumo?.perdas_seguidas ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ {conta.max_perdas_seguidas}</span></>)}
+        {statusCard("Operações", <>{resumo?.operacoes_hoje ?? 0} <span style={{ fontSize: "14px", color: "var(--tx3)" }}>/ {conta.max_operacoes_dia}</span></>)}
         {statusCard("Dia", formatarBRL(pnlDia), { cor: pnlDia > 0 ? "var(--actx)" : pnlDia < 0 ? "var(--negtx)" : "var(--tx)" })}
         {statusCard("Setup do dia", `${tagSetup} · ${NOME_CURTO[selectedStrategy.id] ?? selectedStrategy.nome}`, { pequeno: true })}
       </div>
+
+      {resumo?.resumo_prova && (
+        <div role="status" style={{ display: "flex", flexWrap: "wrap", gap: "8px 28px", padding: "12px 18px", borderRadius: "12px", border: "1px solid var(--bd)", background: "var(--s1)", fontSize: "13px", color: "var(--tx2)" }}>
+          <span style={{ fontWeight: 600, color: "var(--tx)" }}>{conta.nome}</span>
+          <span>Acumulado {formatarBRL(resumo.resumo_prova.pnlBruto)}</span>
+          <span>Vale para a meta {formatarBRL(resumo.resumo_prova.resultadoValido, false)} de {formatarBRL(conta.meta_rs, false)}</span>
+          <span>Hoje {formatarBRL(pnlDia)} · corte de perda em {formatarBRL(CORTE_PERDA_DIA_RS, false)}</span>
+          <span>Mão: {maxContratos} contratos{resumo.resumo_prova.emRecuo ? " (recuo)" : ""}</span>
+        </div>
+      )}
 
       {resumo?.trade_aberto_id && (
         <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", borderRadius: "14px", background: "var(--acs)", border: "1px solid var(--ac)" }}>
@@ -904,7 +933,14 @@ export default function ChecklistPage() {
               {campo("Contratos", contratos, setContratos, contratosTravados ? { disabled: true, nota: "da pré-sessão" } : undefined)}
             </div>
             {validacaoDirecao.erro && <span style={{ fontSize: "13px", color: "var(--negtx)" }}>{validacaoDirecao.erro}</span>}
-            {numContratos > MAX_CONTRATOS && <span style={{ fontSize: "13px", color: "var(--negtx)" }}>Máximo de {MAX_CONTRATOS} contratos por trade</span>}
+            {numContratos > maxContratos && (
+              <span style={{ fontSize: "13px", color: "var(--negtx)" }}>
+                Máximo de {maxContratos} contratos por trade{maxContratos < conta.max_contratos ? " (recuo da prova)" : ""}
+              </span>
+            )}
+            {errosProva.map((e) => (
+              <span key={e} style={{ fontSize: "13px", color: "var(--negtx)" }}>{e}</span>
+            ))}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <span style={{ fontSize: "13px", color: "var(--tx2)" }}>Gatilho</span>
               {chips(

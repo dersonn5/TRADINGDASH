@@ -112,15 +112,25 @@ export function contarPerdasSeguidas(pnlsEmOrdem: number[]): number {
   return seguidas;
 }
 
-export function avaliarLimitesDia(perdasSeguidas: number, operacoesHoje: number): LimitesDia {
+/** Limites do dia de uma conta (SPEC_CONTAS.md). Sem argumento: os da conta real, 3 stops e 5 trades. */
+export interface RegrasDoDia {
+  maxPerdasSeguidas: number;
+  maxOperacoesDia: number;
+}
+
+export function avaliarLimitesDia(
+  perdasSeguidas: number,
+  operacoesHoje: number,
+  regras: RegrasDoDia = { maxPerdasSeguidas: MAX_PERDAS_DIA, maxOperacoesDia: MAX_OPERACOES_DIA }
+): LimitesDia {
   const motivos: string[] = [];
 
-  if (perdasSeguidas >= MAX_PERDAS_DIA) {
-    motivos.push(`${MAX_PERDAS_DIA} perdas seguidas: pregão encerrado`);
+  if (perdasSeguidas >= regras.maxPerdasSeguidas) {
+    motivos.push(`${regras.maxPerdasSeguidas} perdas seguidas: pregão encerrado`);
   }
 
-  if (operacoesHoje >= MAX_OPERACOES_DIA) {
-    motivos.push(`${MAX_OPERACOES_DIA} operações no dia: limite atingido`);
+  if (operacoesHoje >= regras.maxOperacoesDia) {
+    motivos.push(`${regras.maxOperacoesDia} operações no dia: limite atingido`);
   }
 
   return {

@@ -132,6 +132,54 @@ Escalonamento a favor continua valendo, até o dobro da mão do degrau.
 
 Troca de degrau só entre pregões, nunca no meio do dia.
 
+> **Suspenso desde 11/11/2026:** a conta real fica parada enquanto durar a prova da mesa
+> (§2.2). O plano acima volta a valer quando a conta real voltar a operar.
+
+## 2.2 Prova da mesa — Zero7, plano Pleno (11/11/2026)
+
+Só a prova é operada; a conta real fica parada. Mesmo Trade System (setups, cotas 1 · 3 · 2,
+09:00 a 12:00), outra mão.
+
+**Regras da mesa** (regulamento de 14/10/2026 + tela da compra):
+
+| Regra | Valor | Consequência |
+|---|---|---|
+| Meta de aprovação | R$ 4.997 líquidos | pede a aprovação e para |
+| Perda total | R$ 6.500 (tela da compra; o regulamento traz R$ 4.997) | elimina |
+| Perda diária | R$ 1.247 | trava o dia, não elimina |
+| Pregões mínimos | 5 | — |
+| Teto por pregão | 50% da meta (R$ 2.498,50) | o excedente não conta |
+| Contratos | 25 no WIN | — |
+| Zeragem | 17:30 | depois disso o lucro não conta |
+| Leilão | proibido | lucro não conta, prejuízo conta |
+| Trade de 10 pts ou menos | não conta | — |
+| Automação, copy, replicador | proibido | elimina sem reembolso |
+
+O regulamento não diz se a perda total é fixa ou móvel; o operador confirmou que é **fixa**
+sobre o saldo inicial. Guardar o print da compra com os R$ 6.500.
+
+**Plano do operador** (alvo: aprovar em até 8 pregões; o prazo da mesa é ilimitado):
+
+- **Mão:** 10 contratos fixos. Stop de 200 pts = R$ 400; teto de 265 pts = R$ 530 por trade.
+- **Fim do dia por perda:** o próximo stop tem de caber em R$ 1.200 (3 stops de até 200 pts
+  ou 2 maiores). Fica abaixo da trava de R$ 1.247 da mesa.
+- **Fim do dia por ganho:** passou de R$ 2.400, encerra.
+- **Recuo:** R$ 3.200 de prejuízo acumulado → 5 contratos até voltar ao zero.
+- **Saída:** R$ 5.100 (meta + folga para custos de R$ 0,37 por contrato), com 5 pregões ou
+  mais. Pede a aprovação e para: o que vier depois não conta.
+- **Sem aumento de mão** e sem trade a mais para compensar dia fraco.
+
+Simulação de 11/11 (grosseira, base de 20 trades de outubro): com a expectativa de outubro,
+45% de chance de fechar em até 8 pregões e ~12 pregões em média; com metade da expectativa,
+23% e ~19 pregões, com 2% de eliminação. Acima de 10 contratos a prova não anda mais rápido:
+a perda diária da mesa passa a cortar o dia.
+
+**Depois da aprovação** vem a incubadora, não a conta real: pelo regulamento, ciclos de 30
+dias, 10 pregões no mínimo e margem de R$ 4.997 (já com 20% de IR), com saque de até R$ 1.250
+por ciclo. A promoção fala em "10 dias na incubadora". Confirmar com a mesa por escrito.
+
+No cockpit: perfil **Prova** na barra lateral (`lib/prova.ts`, `SPEC_CONTAS.md`).
+
 ## 3. Timeframes
 
 | Papel | Timeframe |

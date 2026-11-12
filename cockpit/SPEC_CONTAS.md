@@ -1,6 +1,8 @@
 # PRD curto — Contas (prova da mesa e conta real)
 
-Status: **rascunho para o Anderson revisar** · 11/11/2026 · Claude
+Status: **aprovado pelo Anderson em 11/11/2026; Fases 1 a 4 escritas em 12/11** · Claude
+Falta: rodar `supabase/migration_contas.sql` e conferir com dados reais (critérios 1 a 3 do §6).
+Plano da prova (10 contratos, corte do dia, recuo, saída): Trade System §2.2 e `lib/prova.ts`.
 
 ## 1. Problema
 

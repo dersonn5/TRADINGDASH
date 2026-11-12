@@ -11,7 +11,7 @@ import {
   PreSessao,
 } from "@/lib/copa-db";
 import { PrintUpload } from "@/components/print-upload";
-import { MAX_CONTRATOS } from "@/lib/gate";
+import { getContaAtiva } from "@/lib/contas";
 import { EVENTO_PRESESSAO_SALVA } from "@/components/layout/alertas-voz";
 import { mesclarAgenda, EventoCalendario, EVENTOS_BRASIL, NOMES_EUA } from "@/lib/calendario";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
@@ -508,7 +508,7 @@ export default function PreSessaoPage() {
               <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px", borderRadius: "12px", border: "1px solid var(--bd)", background: "var(--bg)" }}>
                 <button type="button" aria-label="Menos um contrato" disabled={isFechada || semSetup} onClick={() => updateField("contratos_declarados", contratos > 1 ? contratos - 1 : null)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>−</button>
                 <span style={{ width: "44px", textAlign: "center", fontSize: "20px", fontWeight: 600 }}>{contratos}</span>
-                <button type="button" aria-label="Mais um contrato" disabled={isFechada || semSetup || contratos >= MAX_CONTRATOS} onClick={() => updateField("contratos_declarados", contratos + 1)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>+</button>
+                <button type="button" aria-label="Mais um contrato" disabled={isFechada || semSetup || contratos >= getContaAtiva().max_contratos} onClick={() => updateField("contratos_declarados", contratos + 1)} style={{ width: "40px", height: "40px", borderRadius: "9px", border: 0, background: "var(--s2)", color: "var(--tx)", fontFamily: "inherit", fontSize: "18px", cursor: "pointer" }}>+</button>
               </div>
             </div>
           </section>

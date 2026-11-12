@@ -59,6 +59,8 @@ const CONTRATOS = 3;
 // Escolhida entre varias para os tres meses parecerem um trader real: acerto perto de
 // 50%, resultado positivo e alguns desvios de plano
 const SEMENTE = 39595;
+// A prova fictícia usa outra semente; qualquer valor serve, os números só precisam parecer uma prova
+const SEMENTE_PROVA = 7421;
 
 function diasDePregao(ano: number, mes: number, ate: string): string[] {
   const dias: string[] = [];
@@ -73,8 +75,8 @@ function diasDePregao(ano: number, mes: number, ate: string): string[] {
 }
 
 /** Trades ficticios fechados do mes, do dia 1 ate `ate` (inclusive), em ordem de saida. */
-export function tradesDemoDoMes(ano: number, mes: number, ate: string): TradeHistorico[] {
-  const r = sorteio(SEMENTE + ano * 100 + mes);
+export function tradesDemoDoMes(ano: number, mes: number, ate: string, contratos = CONTRATOS, semente = SEMENTE): TradeHistorico[] {
+  const r = sorteio(semente + ano * 100 + mes);
   const trades: TradeHistorico[] = [];
   for (const dia of diasDePregao(ano, mes, ate)) {
     const quantos = r() < 0.25 ? 0 : r() < 0.7 ? 1 : 2;
@@ -97,8 +99,8 @@ export function tradesDemoDoMes(ano: number, mes: number, ate: string): TradeHis
       const resultadoR = ganhou ? Math.round((1 + r() * 3.2) * 10) / 10 : -1;
       const pontos = Math.round(resultadoR * risco);
       const desvio = r();
-      const custo = desvio < 0.1 ? Math.round(risco * 0.3 * VALOR_PONTO * CONTRATOS) : 0;
-      const pnl = Math.round(pontos * VALOR_PONTO * CONTRATOS);
+      const custo = desvio < 0.1 ? Math.round(risco * 0.3 * VALOR_PONTO * contratos) : 0;
+      const pnl = Math.round(pontos * VALOR_PONTO * contratos);
       const score = 65 + Math.floor(r() * 30);
       const utc = (h: number, m: number) => `${dia}T${String(h + 3).padStart(2, "0")}:${String(m).padStart(2, "0")}:00Z`;
       const fim = mm + duracao;
@@ -117,7 +119,7 @@ export function tradesDemoDoMes(ano: number, mes: number, ate: string): TradeHis
         entrada,
         stop: entrada - sinal * risco,
         alvo: entrada + sinal * Math.round(risco * rrPlano),
-        contratos: CONTRATOS,
+        contratos,
         rr_planejado: rrPlano,
         saida: entrada + sinal * pontos,
         motivo_saida: ganhou ? (resultadoR >= rrPlano ? "ALVO" : "MANUAL") : "STOP",
@@ -151,4 +153,19 @@ export function tradesDemo(hoje: string): TradeHistorico[] {
     todos.push(...tradesDemoDoMes(a, mm, hoje));
   }
   return todos.sort((x, y) => y.hora_entrada.localeCompare(x.hora_entrada));
+}
+
+/**
+ * Prova fictícia em andamento: 10 contratos, os últimos 6 pregões com trade até `hoje`, do mais
+ * recente para o mais antigo. Gerada com outra semente, para não repetir a conta real.
+ */
+export function tradesDemoProva(hoje: string): TradeHistorico[] {
+  const [ano, mes] = hoje.split("-").map(Number);
+  const anterior = mes === 1 ? { a: ano - 1, m: 12 } : { a: ano, m: mes - 1 };
+  const todos = [
+    ...tradesDemoDoMes(anterior.a, anterior.m, hoje, 10, SEMENTE_PROVA),
+    ...tradesDemoDoMes(ano, mes, hoje, 10, SEMENTE_PROVA),
+  ];
+  const ultimos = new Set(Array.from(new Set(todos.map((t) => t.data))).sort().slice(-6));
+  return todos.filter((t) => ultimos.has(t.data)).sort((x, y) => y.hora_entrada.localeCompare(x.hora_entrada));
 }

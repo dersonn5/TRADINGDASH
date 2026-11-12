@@ -1,6 +1,15 @@
 import { supabase } from "./supabase";
-import { modoDemo, tradesDemo, tradesDemoDoMes } from "./demo";
-import { ESTRATEGIA_PRIMEIRA_PERNA, Janela, MAX_CONTRATOS, contarPerdasSeguidas, mercadoPermitido } from "./gate";
+import { modoDemo, tradesDemo, tradesDemoDoMes, tradesDemoProva } from "./demo";
+import { ESTRATEGIA_PRIMEIRA_PERNA, Janela, contarPerdasSeguidas, mercadoPermitido } from "./gate";
+import { contaAtivaId, getContaAtiva } from "./contas";
+import { calcularProva, riscoDoTradeRs, ResumoProva } from "./prova";
+
+/** Restringe uma consulta de copa_sessions a conta ativa. Sem conta (banco antigo), nao filtra. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function daConta(q: any): any {
+  const id = contaAtivaId();
+  return id ? q.eq("conta_id", id) : q;
+}
 
 export type GatilhoTrade = "MSS_FVG" | "MSS_OB" | "CISD_OB" | "BPR" | "IFVG" | "RISK_ENTRY" | "FVG_POS_SWING";
 export type Contexto1h = "CONTINUACAO" | "REVERSAO" | "LATERAL";
@@ -34,8 +43,9 @@ export function validarCamposNovosTrade(input: {
   setup_c_modo?: string | null;
   contratos?: number;
 }): void {
-  if (input.contratos !== undefined && input.contratos > MAX_CONTRATOS) {
-    throw new Error(`máximo de ${MAX_CONTRATOS} contratos por trade`);
+  const maxContratos = getContaAtiva().max_contratos;
+  if (input.contratos !== undefined && input.contratos > maxContratos) {
+    throw new Error(`máximo de ${maxContratos} contratos por trade`);
   }
   if (!input.gatilho) {
     throw new Error("gatilho é obrigatório para registrar o trade");
@@ -79,6 +89,8 @@ export interface ResumoDoDia {
   pnl_dia: number;
   ultimo_loss_em: Date | null;
   trade_aberto_id: string | null;
+  /** So na conta de prova: a conta inteira (acumulado, pregoes, recuo). Null na conta real. */
+  resumo_prova: ResumoProva | null;
 }
 
 export interface FechamentoInput {
@@ -152,10 +164,10 @@ export async function getVersaoVigente(strategyId: string): Promise<string | nul
 export async function getSessaoFechadaDoDia(): Promise<string> {
   const hoje = getDataSaoPaulo();
 
-  const { data: session, error: errSelect } = await supabase
+  const { data: session, error: errSelect } = await daConta(supabase
     .from("copa_sessions")
     .select("id, fechada_em")
-    .eq("data", hoje)
+    .eq("data", hoje))
     .maybeSingle();
 
   if (errSelect) {
@@ -170,20 +182,53 @@ export async function getSessaoFechadaDoDia(): Promise<string> {
 }
 
 /**
+ * A conta de prova inteira, para o gate: acumulado, pregoes operados, recuo. Os trades
+ * fechados da conta ativa, em ordem de saida. Conta real: null (nao precisa).
+ */
+async function getResumoProva(): Promise<ResumoProva | null> {
+  const conta = getContaAtiva();
+  const id = contaAtivaId();
+  if (conta.tipo !== "PROVA" || !id) return null;
+
+  const { data, error } = await supabase
+    .from("copa_trades")
+    .select("pnl_real, pontos_real, hora_saida, copa_sessions!inner(data)")
+    .eq("status", "FECHADO")
+    .eq("copa_sessions.conta_id", id)
+    .order("hora_saida", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    throw new Error(`Erro ao buscar o acumulado da prova: ${error.message}`);
+  }
+
+  return calcularProva(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (data || []).map((t: any) => ({
+      data: t.copa_sessions?.data ?? "",
+      pnl_real: t.pnl_real === null ? null : Number(t.pnl_real),
+      pontos_real: t.pontos_real === null ? null : Number(t.pontos_real),
+    })),
+    conta
+  );
+}
+
+/**
  * Retorna o resumo operacional do pregão de hoje.
  */
 export async function getResumoDoDia(): Promise<ResumoDoDia> {
   const hoje = getDataSaoPaulo();
 
-  const { data: session, error: errSession } = await supabase
+  const { data: session, error: errSession } = await daConta(supabase
     .from("copa_sessions")
     .select("id")
-    .eq("data", hoje)
+    .eq("data", hoje))
     .maybeSingle();
 
   if (errSession) {
     throw new Error(`Erro ao buscar sessão do dia: ${errSession.message}`);
   }
+
+  const resumoProva = await getResumoProva();
 
   if (!session) {
     return {
@@ -197,6 +242,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
       pnl_dia: 0,
       ultimo_loss_em: null,
       trade_aberto_id: null,
+      resumo_prova: resumoProva,
     };
   }
 
@@ -269,6 +315,7 @@ export async function getResumoDoDia(): Promise<ResumoDoDia> {
     pnl_dia: Number(pnlDia.toFixed(2)),
     ultimo_loss_em: ultimoLossEm,
     trade_aberto_id: tradeAbertoId,
+    resumo_prova: resumoProva,
   };
 }
 
@@ -330,21 +377,57 @@ export interface TradeHistorico {
  * Todos os trades registrados pelo checklist, do mais recente para o mais antigo.
  */
 export async function listarTrades(): Promise<TradeHistorico[]> {
-  if (modoDemo()) return tradesDemo(getDataSaoPaulo());
-  const { data, error } = await supabase
-    .from("copa_trades")
-    .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
-    .order("hora_entrada", { ascending: false });
+  if (modoDemo()) return tradesDemoDaConta(getDataSaoPaulo());
+  return buscarTrades({ campoOrdem: "hora_entrada", asc: false });
+}
 
-  if (error) {
-    throw new Error(`Erro ao buscar trades: ${error.message}`);
-  }
-
-  return (data || []).map((t: any) => ({
+/**
+ * Trades do banco da conta ativa, com a data da sessão e a estratégia. Uma consulta só para as
+ * três listagens: o filtro de conta (e o de datas) vai pela sessão do trade.
+ */
+async function buscarTrades(o: {
+  fechados?: boolean;
+  de?: string;
+  ate?: string;
+  campoOrdem: "hora_entrada" | "hora_saida";
+  asc: boolean;
+}): Promise<TradeHistorico[]> {
+  const conta = contaAtivaId();
+  const filtraSessao = Boolean(conta || o.de || o.ate);
+  const ordem = o.asc ? { ascending: true, nullsFirst: false } : { ascending: false };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapear = (t: any) => ({
     ...t,
     data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
     strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
-  }));
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let q: any = supabase
+    .from("copa_trades")
+    .select(`*, copa_sessions${filtraSessao ? "!inner" : ""}(data), copa_strategy_versions(strategy_id)`);
+  if (o.fechados) q = q.eq("status", "FECHADO");
+  if (conta) q = q.eq("copa_sessions.conta_id", conta);
+  if (o.de) q = q.gte("copa_sessions.data", o.de);
+  if (o.ate) q = q.lte("copa_sessions.data", o.ate);
+  const { data, error } = await q.order(o.campoOrdem, ordem);
+
+  if (!error) return (data || []).map(mapear);
+  if (!filtraSessao) throw new Error(`Erro ao buscar trades: ${error.message}`);
+
+  // Fallback caso o filtro em join dê erro na sintaxe: busca tudo e filtra aqui
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let f: any = supabase.from("copa_trades").select("*, copa_sessions(data, conta_id), copa_strategy_versions(strategy_id)");
+  if (o.fechados) f = f.eq("status", "FECHADO");
+  const { data: todos, error: errFallback } = await f.order(o.campoOrdem, ordem);
+  if (errFallback) throw new Error(`Erro ao buscar trades: ${errFallback.message}`);
+
+  return (todos || [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((t: any) => !conta || t.copa_sessions?.conta_id === conta)
+    .map(mapear)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((t: any) => (!o.de || t.data >= o.de) && (!o.ate || t.data <= o.ate));
 }
 
 /**
@@ -352,22 +435,8 @@ export async function listarTrades(): Promise<TradeHistorico[]> {
  */
 export async function listarTradesFechados(): Promise<TradeHistorico[]> {
   const ordem = (a: TradeHistorico, b: TradeHistorico) => (a.hora_saida ?? "￿").localeCompare(b.hora_saida ?? "￿");
-  if (modoDemo()) return tradesDemo(getDataSaoPaulo()).filter((t) => t.status === "FECHADO").sort(ordem);
-  const { data, error } = await supabase
-    .from("copa_trades")
-    .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
-    .eq("status", "FECHADO")
-    .order("hora_saida", { ascending: true, nullsFirst: false });
-
-  if (error) {
-    throw new Error(`Erro ao buscar os trades: ${error.message}`);
-  }
-
-  return (data || []).map((t: any) => ({
-    ...t,
-    data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
-    strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
-  }));
+  if (modoDemo()) return tradesDemoDaConta(getDataSaoPaulo()).filter((t) => t.status === "FECHADO").sort(ordem);
+  return buscarTrades({ fechados: true, campoOrdem: "hora_saida", asc: true });
 }
 
 /**
@@ -378,46 +447,27 @@ export async function listarTradesDoMes(
   ano: number,
   mes: number
 ): Promise<TradeHistorico[]> {
-  if (modoDemo()) return tradesDemoDoMes(ano, mes, getDataSaoPaulo());
   const mesStr = String(mes).padStart(2, "0");
   const dataInicio = `${ano}-${mesStr}-01`;
   const ultimoDia = new Date(ano, mes, 0).getDate();
   const dataFim = `${ano}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`;
-
-  const { data, error } = await supabase
-    .from("copa_trades")
-    .select("*, copa_sessions!inner(data), copa_strategy_versions(strategy_id)")
-    .eq("status", "FECHADO")
-    .gte("copa_sessions.data", dataInicio)
-    .lte("copa_sessions.data", dataFim)
-    .order("hora_saida", { ascending: true, nullsFirst: false });
-
-  if (error) {
-    // Fallback caso o filtro em join dê erro na sintaxe
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from("copa_trades")
-      .select("*, copa_sessions(data), copa_strategy_versions(strategy_id)")
-      .eq("status", "FECHADO")
-      .order("hora_saida", { ascending: true, nullsFirst: false });
-
-    if (fallbackError) {
-      throw new Error(`Erro ao buscar trades do mês: ${fallbackError.message}`);
-    }
-
-    return (fallbackData || [])
-      .map((t: any) => ({
-        ...t,
-        data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
-        strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
-      }))
-      .filter((t: any) => t.data >= dataInicio && t.data <= dataFim);
+  if (modoDemo()) {
+    const hoje = getDataSaoPaulo();
+    if (getContaAtiva().tipo !== "PROVA") return tradesDemoDoMes(ano, mes, hoje);
+    return tradesDemoProva(hoje)
+      .filter((t) => t.data >= dataInicio && t.data <= dataFim)
+      .sort((a, b) => String(a.hora_saida).localeCompare(String(b.hora_saida)));
   }
+  return buscarTrades({ fechados: true, de: dataInicio, ate: dataFim, campoOrdem: "hora_saida", asc: true });
+}
 
-  return (data || []).map((t: any) => ({
-    ...t,
-    data: t.copa_sessions?.data ?? t.hora_entrada?.slice(0, 10) ?? "",
-    strategy_id: t.copa_strategy_versions?.strategy_id ?? "",
-  }));
+/**
+ * Trades fictícios do modo demonstração para a conta ativa. A conta real mostra os três meses
+ * de sempre (do mais recente para o mais antigo); a prova, os pregões curtos de uma prova em
+ * andamento. A listagem mensal só filtra o que sobra.
+ */
+function tradesDemoDaConta(hoje: string): TradeHistorico[] {
+  return getContaAtiva().tipo === "PROVA" ? tradesDemoProva(hoje) : tradesDemo(hoje);
 }
 
 /**
@@ -435,6 +485,16 @@ export async function registrarTrade(input: TradeInput): Promise<string> {
 
   // Trava na gravação para os novos campos obrigatórios (FR-005)
   validarCamposNovosTrade(input);
+
+  // Prova da mesa: o risco por trade tem teto (SPEC_CONTAS.md). O resto dos limites da prova
+  // (dia, total, meta) depende do acumulado e fica no gate da tela.
+  const conta = getContaAtiva();
+  if (conta.tipo === "PROVA") {
+    const risco = riscoDoTradeRs(input.entrada, input.stop, input.contratos);
+    if (risco > conta.max_risco_trade_rs) {
+      throw new Error(`risco de R$ ${Math.round(risco)} acima do máximo de R$ ${conta.max_risco_trade_rs} por trade`);
+    }
+  }
 
   const sessionId = await getSessaoFechadaDoDia();
   const versionId = await getVersaoVigente(input.strategy_id);
@@ -618,8 +678,8 @@ export function pendenciasDaPreSessao(p: PreSessao): string[] {
 
   if (p?.setup_do_dia !== "NENHUM" && (!p?.contratos_declarados || p.contratos_declarados <= 0)) {
     pendencias.push("tamanho não declarado");
-  } else if (p?.contratos_declarados && p.contratos_declarados > MAX_CONTRATOS) {
-    pendencias.push(`tamanho acima do máximo de ${MAX_CONTRATOS} contratos`);
+  } else if (p?.contratos_declarados && p.contratos_declarados > getContaAtiva().max_contratos) {
+    pendencias.push(`tamanho acima do máximo de ${getContaAtiva().max_contratos} contratos`);
   }
 
   return pendencias;
@@ -631,10 +691,10 @@ export function pendenciasDaPreSessao(p: PreSessao): string[] {
  */
 export async function getPreSessaoDeHoje(): Promise<PreSessao> {
   const hoje = getDataSaoPaulo();
-  const { data, error } = await supabase
+  const { data, error } = await daConta(supabase
     .from("copa_sessions")
     .select("*")
-    .eq("data", hoje)
+    .eq("data", hoje))
     .maybeSingle();
 
   if (error) {
@@ -688,10 +748,10 @@ export async function getPreSessaoDeHoje(): Promise<PreSessao> {
 export async function salvarPreSessao(p: Partial<PreSessao>): Promise<string> {
   const hoje = getDataSaoPaulo();
 
-  const { data: existing, error: errSelect } = await supabase
+  const { data: existing, error: errSelect } = await daConta(supabase
     .from("copa_sessions")
     .select("id, phase_id")
-    .eq("data", hoje)
+    .eq("data", hoje))
     .maybeSingle();
 
   if (errSelect) {
@@ -728,6 +788,7 @@ export async function salvarPreSessao(p: Partial<PreSessao>): Promise<string> {
     .from("copa_sessions")
     .insert({
       data: hoje,
+      ...(contaAtivaId() ? { conta_id: contaAtivaId() } : {}),
       ...payload,
     })
     .select("id")
@@ -753,10 +814,10 @@ export async function fecharPreSessao(): Promise<void> {
   const agoraIso = new Date().toISOString();
   const hoje = getDataSaoPaulo();
 
-  const { error } = await supabase
+  const { error } = await daConta(supabase
     .from("copa_sessions")
     .update({ fechada_em: agoraIso })
-    .eq("data", hoje);
+    .eq("data", hoje));
 
   if (error) {
     throw new Error(`Erro ao fechar pré-sessão: ${error.message}`);
@@ -768,10 +829,10 @@ export async function fecharPreSessao(): Promise<void> {
  */
 export async function reabrirPreSessao(motivo: string): Promise<void> {
   const hoje = getDataSaoPaulo();
-  const { data: session, error: errFetch } = await supabase
+  const { data: session, error: errFetch } = await daConta(supabase
     .from("copa_sessions")
     .select("notas")
-    .eq("data", hoje)
+    .eq("data", hoje))
     .maybeSingle();
 
   if (errFetch || !session) {
@@ -790,13 +851,13 @@ export async function reabrirPreSessao(motivo: string): Promise<void> {
   const notasAtuais = session.notas ? session.notas.trim() : "";
   const novasNotas = notasAtuais ? `${notasAtuais}\n${linhaReabertura}` : linhaReabertura;
 
-  const { error: errUpdate } = await supabase
+  const { error: errUpdate } = await daConta(supabase
     .from("copa_sessions")
     .update({
       fechada_em: null,
       notas: novasNotas,
     })
-    .eq("data", hoje);
+    .eq("data", hoje));
 
   if (errUpdate) {
     throw new Error(`Erro ao reabrir pré-sessão: ${errUpdate.message}`);

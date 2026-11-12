@@ -1,11 +1,13 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 02/11/2026 · Claude
+Atualizado: 12/11/2026 · Claude
 
 ## Onde estamos
-Plano por hora em operação. **Dia 1 do cockpit: 19/10/2026** — o operador pediu para apagar tudo antes
-dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3 RHT fora do plano
-(5 contratos, cota da 1ª hora estourada), dia +R$ 60. O diário de 07/10 fica só no Cerebro.
+**Prova da mesa Zero7 (plano Pleno), comprada em 11/11/2026: só a prova é operada, a conta real
+está parada** e o plano de fim de ano, suspenso. O cockpit tem dois perfis, Real e Prova
+(`SPEC_CONTAS.md`); o código está no ar, mas **a `migration_contas.sql` ainda não foi rodada**:
+até lá só existe a conta real e nada muda nas telas.
+Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data).
 
 ## Pronto e verificado
 - Visual v2 fiel a `design/v2/*.dc.html` nas 5 telas; telas zeradas sem dados — prova:
@@ -21,7 +23,24 @@ dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3
   `cockpit/supabase/migration_checklist_ao_vivo.sql`.
 - Calendário de resultados (`/calendario`) — prova: `npx tsx scripts/verify.ts` (outubro/2026 com 5 semanas, feriado 12/10, dias com trade somando pnl e R, semana e total batendo, PF/WR nulos em zero trades/perdas, total de setembro demo idêntico à Visão Geral); verificação no navegador em `/calendario?demo=1` com navegação de mês, clique para detalhar trades do dia (03/09 com +R$ 910 batendo com a célula), responsivo sem rolagem horizontal em 1440px e 900px, temas claro/escuro e barra lateral retrátil; `npm run build` limpo (exit 0).
 
+- Contas, prova e real (12/11) — prova: `npx tsc --noEmit` limpo; `npx tsx scripts/verify.ts` com 16
+  testes novos (teto de 50% por pregão, trades de 10 pts, recuo, corte do dia, saída, risco do trade,
+  card); no demo, seletor Real/Prova trocando Visão Geral, Histórico, Calendário e Estratégias, com a
+  escolha mantida ao recarregar. **Não provado com dados reais:** filtro por conta no banco, faixa da
+  prova no Checklist e bloqueios do gate na prova. Dependem da migração e do login do operador.
+- Filtro "Tudo" na Visão Geral (03/11) — prova: teste no verify.ts e print no demo.
+
 ## Próximo
+- [ ] Anderson roda, nesta ordem: SQL dos 8 trades de 03/11 (se ainda não rodou) e depois
+      `cockpit/supabase/migration_contas.sql`. Conferência no fim da migração: conta real com as
+      sessões e os trades de antes, prova zerada.
+- [ ] Depois da migração, conferir logado: trocar para Prova, fechar uma pré-sessão, ver a faixa da
+      prova no Checklist e o card na Visão Geral batendo com a Área do Trader da Zero7.
+- [ ] Perguntar à Zero7 por escrito: incubadora de 10 dias (promoção) ou ciclo de 30 dias com margem
+      de R$ 4.997 (regulamento); limites de contratos e de perda na conta real; se a margem é o capital.
+- [ ] Trades de 03/11: faltam setup e gatilho dos 3 da 1ª hora, gatilhos dos das 10h e nota A/B/C.
+- [ ] Detector de estrutura (`cockpit/SPEC_DETECTOR.md`): PRD aguardando o operador; Fase 0 é fechar
+      as definições do §4 com prints.
 - [ ] "Fechar o dia" (importar CSV do Profit + completar com a agenda): spec em
       `cockpit/SPEC_FECHAMENTO.md`, para o Gemini. Bloqueado na Fase 2 até o Anderson salvar o CSV
       real em `cockpit/.local/profit-2026-10-28.csv`. Trades de 27–28/10 lançados por SQL (alguns com
@@ -45,6 +64,18 @@ dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3
   aquele pedaço. Por isso o campo Evento da pré-sessão sugere os nomes gravados.
 
 ## Decisões que não se recuperam lendo o código
+- Prova Zero7 (11/11/2026, Trade System §2.2): 10 contratos fixos, não 5 nem 15. Simulação: o
+  operador quer aprovar em até 8 pregões; 5 contratos dão ~18 pregões; acima de 10 a perda diária
+  da mesa (R$ 1.247) corta o dia depois de 2 stops, então a prova não acelera e a eliminação dobra.
+  Perda total tratada como R$ 6.500 **fixos** (palavra do operador e tela da compra; o regulamento
+  traz R$ 4.997 e não diz se é fixa). Cockpit soma sem custos: a saída é em R$ 5.100, não em R$ 4.997.
+- Contas: a conta ativa é estado de módulo em `lib/contas.ts`, definido pelo Shell antes de montar
+  as telas; trocar de conta remonta a tela (key). Alternativa descartada: passar a conta por
+  parâmetro em toda função do `copa-db.ts` (dezenas de chamadas). Sem a migração ou sem conta
+  carregada o id é nulo e nada é filtrado; depois da migração, gravar sem conta falha no banco
+  (`conta_id NOT NULL`), de propósito.
+- Trade de 10 pts ou menos na prova: a perda conta, o ganho não. O regulamento só diz que a
+  operação "não conta"; a leitura conservadora evita meta inflada no cockpit.
 - Plano de fim de ano (02/11/2026, Trade System §2.1): novembro 3 contratos, meta R$ 6.000 (19 pregões); dezembro 5→7→10 contratos se novembro cumprir 4 requisitos (R$ 6 mil, disciplina 90%, 50 trades, positivo sem o maior trade); recuo de R$ 2 mil do pico desce um degrau, colchão de R$ 3 mil volta a 3. Card "Meta do mês" na Visão Geral (`lib/meta-fim-de-ano.ts`). **Em dezembro, `MAX_CONTRATOS` e `MAX_RISCO_TRADE_RS` em `lib/gate.ts` ainda estão fixos em 3 e R$ 160: ligar ao degrau antes de 01/12.**
 - Plano por hora (03/10/2026, depois da semana 28/09–02/10): 09h Setup V (1 trade; foi 2 de 29/10 a 02/11, voltou a 1 porque a perna parou de reverter na 1ª hora depois das eleições; alvo 75% da perna) · 10h setup das 10 ou continuidade (até 3) · 11h só continuidade (2, era 1 até 28/10). Contratos: até 3 na entrada; desde 29/10, escalonar a favor com stop financeiro até 6 (`MAX_CONTRATOS_ESCALONADO`, coluna `escalonado`); perda máxima por trade R$ 160, todos os contratos (`MAX_RISCO_TRADE_RS`). 3 stops SEGUIDOS encerram (um gain zera; `contarPerdasSeguidas`, desde 29/10); 5 trades; 2–3 contratos. RHT (Reversão HTF) em qualquer hora, dentro da cota. Siglas: RPP, MAV, CSI, RHT (lib/metricas SIGLAS). Regras em `lib/gate.ts` (REGRAS_DA_HORA) e Trade_System_Anderson.md §1–2.
 - Voz: áudios pré-gerados na GPU do operador, tocados como arquivo estático. Sem
@@ -67,7 +98,11 @@ dessa data (SQL entregue em 20/10; ele roda no Supabase). 19/10: RPP +R$ 360 e 3
   EUA, 11:30 de nov a mar.
 - Relatório do Gemini disse "tsc limpo" sem ser verdade. Conferir o `git diff`.
 - Apagar `.next/` com o dev server rodando deixa tudo em 500.
-- Conferir visual sem login: desvio temporário no AuthGate, removido antes do commit.
+- Conferir visual sem login: desvio temporário no AuthGate, removido antes do commit. O desvio
+  tem de olhar a URL (`demo=1`), não o `localStorage`: o demo só é ligado pelo Shell, que fica
+  dentro do AuthGate. O desvio também gera erro de hidratação no console; some ao remover.
+- Banco checa `chk_direcao_coerente`: stop de compra abaixo da entrada. Saída no zero a zero com
+  stop já movido não serve como stop do registro; gravar `NULL` (03/11).
 - Backtests do Setup C com gatilho de 1 min olhavam o futuro. Ver
   `Cerebro_Obsidian/.../Estudo_Barra_das_10.md` itens 6–9.
 

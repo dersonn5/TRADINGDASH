@@ -4,6 +4,7 @@ import * as React from "react";
 import { NOMES_COMPLETOS } from "@/lib/metricas";
 import type { VisaoGeral } from "@/lib/visao-geral";
 import type { MetaDoMes } from "@/lib/meta-fim-de-ano";
+import type { Prova, TomProva } from "@/lib/prova";
 import { CARD, LBL, H2, PILL_PEQUENA } from "@/components/v2/estilos";
 
 // Corpo da Visao Geral — espelho de design/v2/Main.dc.html.
@@ -39,11 +40,13 @@ const MAPA_ESTRAT: Record<string, { serieId: string; tag: string; cor: string }>
   reversao_htf: { serieId: "R", tag: "RHT", cor: "var(--k5)" },
 };
 
-export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
+export function VisaoGeralConteudo({ vg, prova = null }: { vg: VisaoGeral; prova?: Prova | null }) {
   const [highlightSerie, setHighlightSerie] = React.useState<string | null>(null);
 
   return (
     <>
+      {prova && <ProvaCard prova={prova} />}
+
       <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", borderRadius: "14px", background: "var(--acs)", border: "1px solid var(--bd)" }}>
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, fill: "none", stroke: "var(--actx)", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" }}>
           <path d="M3 17l6-6 4 4 8-8" />
@@ -458,6 +461,38 @@ export function VisaoGeralConteudo({ vg }: { vg: VisaoGeral }) {
         </section>
       </div>
     </>
+  );
+}
+
+const COR_TOM: Record<TomProva, { texto: string; barra: string }> = {
+  ok: { texto: "var(--tx)", barra: "var(--ac)" },
+  atencao: { texto: "var(--k3)", barra: "var(--k3)" },
+  perigo: { texto: "var(--negtx)", barra: "var(--neg)" },
+};
+
+// Prova da mesa (SPEC_CONTAS.md): meta, perda total, perda de hoje, pregoes, maior pregao, mao.
+function ProvaCard({ prova }: { prova: Prova }) {
+  const corStatus = prova.status === "ELIMINADA" ? "var(--negtx)" : prova.status === "META_BATIDA" ? "var(--actx)" : undefined;
+  return (
+    <section style={{ ...CARD, gap: "18px" }}>
+      <Cabecalho label={prova.nome} frase={<span style={{ color: corStatus }}>{prova.frase}</span>} />
+      {prova.ritmo && <span style={{ fontSize: "13px", color: "var(--tx2)" }}>{prova.ritmo}</span>}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "14px" }}>
+        {prova.blocos.map((b) => (
+          <div key={b.label} style={{ display: "flex", flexDirection: "column", gap: "6px", padding: "14px 16px", borderRadius: "12px", background: "var(--s2)" }}>
+            <span style={LBL}>{b.label}</span>
+            <span style={{ fontSize: "22px", fontWeight: 600, letterSpacing: "-0.02em", color: COR_TOM[b.tom].texto }}>{b.valor}</span>
+            {b.pct !== null && (
+              <svg width="100%" height="8" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
+                <rect x="0" y="0" width="100" height="8" rx="4" style={{ fill: "var(--bd)" }} />
+                <rect x="0" y="0" width={Math.max(b.pct > 0 ? 2 : 0, Math.round(b.pct * 100))} height="8" rx="4" style={{ fill: COR_TOM[b.tom].barra }} />
+              </svg>
+            )}
+            <span style={{ fontSize: "12px", color: "var(--tx3)", lineHeight: 1.4 }}>{b.sub}</span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
