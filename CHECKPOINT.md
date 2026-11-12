@@ -101,6 +101,10 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
 - Conferir visual sem login: desvio temporário no AuthGate, removido antes do commit. O desvio
   tem de olhar a URL (`demo=1`), não o `localStorage`: o demo só é ligado pelo Shell, que fica
   dentro do AuthGate. O desvio também gera erro de hidratação no console; some ao remover.
+- Push não garante publicação: em 12/11 o build da Vercel falhou em 17 s ao buscar a fonte Sora
+  (`next/font/google queries have exactly one entry`), com `tsc` e build local limpos, e o site
+  ficou na versão antiga sem aviso. Depois de todo push: `vercel ls tradingdash` (site em
+  `tradingdash-psi.vercel.app`). Falhou na fonte: `vercel redeploy <url do deploy>` resolveu.
 - Banco checa `chk_direcao_coerente`: stop de compra abaixo da entrada. Saída no zero a zero com
   stop já movido não serve como stop do registro; gravar `NULL` (03/11).
 - Backtests do Setup C com gatilho de 1 min olhavam o futuro. Ver
