@@ -63,7 +63,16 @@ export const ESTRATEGIA_REVERSAO_HTF = "reversao_htf";
  * A Reversão HTF (RHT) vale em qualquer hora, das 09:00 às 12:00, dentro da cota da hora
  * (decisão do operador em 03/10/2026).
  */
-export const REGRAS_DA_HORA: Record<"ABERTURA" | "PRIME" | "VALIDA", { setups: string[]; maxTrades: number; nome: string }> = {
+export interface RegraDaHora {
+  setups: string[];
+  maxTrades: number; // 0 = a conta não opera nessa hora
+  nome: string;
+  aPartirDeMin?: number; // minutos desde 00:00 (SP): antes disso a hora ainda não libera entrada
+}
+export type RegrasDaHora = Record<"ABERTURA" | "PRIME" | "VALIDA", RegraDaHora>;
+
+/** As regras da conta real. A prova tem as dela (lib/prova.ts, regrasDaHoraDaConta). */
+export const REGRAS_DA_HORA: RegrasDaHora = {
   ABERTURA: { setups: [ESTRATEGIA_PRIMEIRA_PERNA, ESTRATEGIA_REVERSAO_HTF], maxTrades: 1, nome: "1ª hora" },
   PRIME: { setups: [ESTRATEGIA_BARRA_10, ESTRATEGIA_CONTINUIDADE, ESTRATEGIA_REVERSAO_HTF], maxTrades: 3, nome: "2ª hora" },
   VALIDA: { setups: [ESTRATEGIA_CONTINUIDADE, ESTRATEGIA_REVERSAO_HTF], maxTrades: 2, nome: "3ª hora" },
@@ -139,6 +148,23 @@ export function avaliarLimitesDia(
   };
 }
 
+/** Minutos desde 00:00 em America/Sao_Paulo. */
+export function minutosSP(agora: Date): number {
+  const formatter = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(agora);
+  const hour = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0", 10);
+  const minute = parseInt(parts.find((p) => p.type === "minute")?.value ?? "0", 10);
+  return hour * 60 + minute;
+}
+
+/** 690 vira "11:30". */
+export const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
 /**
  * Converte agora para America/Sao_Paulo e classifica a janela de operação:
  * - ABERTURA: 09:00-09:59 (1ª hora) — só o trade contra a primeira perna, 1 trade
@@ -155,18 +181,7 @@ export function avaliarLimitesDia(
  * Entradas ate 11:59 desde 01/10/2026 (antes: 11:29). A tela fecha as 12:00.
  */
 export function classificarJanela(agora: Date): Janela {
-  const formatter = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const parts = formatter.formatToParts(agora);
-  const hourStr = parts.find((p) => p.type === "hour")?.value ?? "0";
-  const minuteStr = parts.find((p) => p.type === "minute")?.value ?? "0";
-  const hour = parseInt(hourStr, 10);
-  const minute = parseInt(minuteStr, 10);
-  const minutos = hour * 60 + minute;
+  const minutos = minutosSP(agora);
 
   if (minutos >= 540 && minutos < 600) {
     return "ABERTURA";
@@ -211,7 +226,8 @@ export function avaliarGate(
   tradeAbertoId?: string | null,
   preSessaoFechada?: boolean,
   temPrint?: boolean,
-  hora?: ContextoHora
+  hora?: ContextoHora,
+  regrasHora: RegrasDaHora = REGRAS_DA_HORA
 ): GateResult {
   const janela = classificarJanela(agora);
   const scoreMinimo = scoreMinimoEfetivo(janela, scoreMinimoBase);
@@ -234,9 +250,13 @@ export function avaliarGate(
   }
 
   if (janela !== "FORA") {
-    const regra = REGRAS_DA_HORA[janela];
+    const regra = regrasHora[janela];
     const permitidos = regra.setups.map((id) => NOME_SETUP[id]).join(" ou ");
-    if (!hora || !regra.setups.includes(hora.estrategiaId)) {
+    if (regra.maxTrades === 0) {
+      motivos.push(`${regra.nome}: esta conta não opera nessa hora`);
+    } else if (regra.aPartirDeMin !== undefined && minutosSP(agora) < regra.aPartirDeMin) {
+      motivos.push(`${regra.nome}: entrada só a partir das ${hhmm(regra.aPartirDeMin)}`);
+    } else if (!hora || !regra.setups.includes(hora.estrategiaId)) {
       motivos.push(`${regra.nome}: só ${permitidos}`);
     } else if (hora.operacoesNaHora >= regra.maxTrades) {
       motivos.push(`${regra.nome}: limite de ${regra.maxTrades} ${regra.maxTrades === 1 ? "trade" : "trades"} atingido`);

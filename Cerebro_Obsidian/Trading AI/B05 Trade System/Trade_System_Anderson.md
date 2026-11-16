@@ -180,6 +180,24 @@ por ciclo. A promoção fala em "10 dias na incubadora". Confirmar com a mesa po
 
 No cockpit: perfil **Prova** na barra lateral (`lib/prova.ts`, `SPEC_CONTAS.md`).
 
+### Ajuste de 16/11/2026 (prova em −R$ 3.552 bruto depois de 16 trades em 3 pregões)
+
+O que os 16 trades mostraram: a 1ª hora teve 6 trades e 6 perdas (−R$ 2.072); das 10h em
+diante, 10 trades e −R$ 1.480, com dois ganhos de 5 pts. Os trades com 15 e 20 contratos (o
+plano era 10) somam −R$ 2.165, 61% da perda. Em 12/11 foram 8 operações com limite de 5.
+
+Decisão do operador, vale só para a prova:
+
+- **Sem 1ª hora.** Nenhuma entrada antes das 10:00.
+- **3 trades por dia:** 2 na hora das 10:00 e 1 a partir das 11:30 (abertura de NY de novembro
+  a março), se o setup aparecer.
+- **2 stops seguidos encerram o dia.**
+- **5 contratos:** o recuo dos R$ 3.200 já valia; a mão só volta a 10 com o acumulado no zero.
+  O risco por trade desce junto: R$ 265 (265 pts com 5 contratos).
+
+Com isso o pior dia custa perto de R$ 530 e a folga até os R$ 6.500 (R$ 2.948 no bruto,
+R$ 2.796 no líquido da mesa) aguenta 5 dias ruins seguidos, contra 2 no ritmo anterior.
+
 ## 3. Timeframes
 
 | Papel | Timeframe |

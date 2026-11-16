@@ -4,7 +4,7 @@ import { montarCalendarioMes } from "../lib/calendario-resultados";
 import { degrauDezembro, montarMeta, pregoesDoMes, requisitosDezembro } from "../lib/meta-fim-de-ano";
 import { tradesDemoDoMes, tradesDemoProva } from "../lib/demo";
 import { CONTA_PROVA_ZERO7, CONTA_REAL_PADRAO } from "../lib/contas";
-import { avaliarLimitesProva, calcularProva, contratosPermitidos, montarProva, riscoDoTradeRs, validarRiscoProva } from "../lib/prova";
+import { avaliarLimitesProva, calcularProva, contratosPermitidos, montarProva, REGRAS_DA_HORA_PROVA, regrasDaHoraDaConta, riscoDoTradeRs, riscoMaximoTrade, validarRiscoProva } from "../lib/prova";
 import { lerPreco } from "../lib/metricas";
 import { TRADES_DESIGN } from "./fixture-design";
 import {
@@ -1284,7 +1284,7 @@ report(
   const risco = (riscoRs: number, pnlDia: number, resumo = zero) => validarRiscoProva(prova, riscoRs, { pnlDia, resumo });
   const quaseFora = calcularProva([tp("2026-11-12", -6200, -3100)], prova);
   report("Prova: risco do trade (teto R$ 530, cabe no dia, cabe na perda total)",
-    risco(400, 0).length === 0 && risco(531, 0).length === 1 && risco(500, -800).length === 1 && risco(400, 0, quaseFora).length === 1 && riscoDoTradeRs(167500, 167300, 10) === 400,
+    risco(400, 0).length === 0 && risco(531, 0).length === 1 && risco(500, -800).length === 1 && risco(400, 0, quaseFora).some((m) => m.includes("perda total")) && risco(400, 0, quaseFora).length === 2 && riscoDoTradeRs(167500, 167300, 10) === 400,
     `${risco(531, 0)} | ${risco(500, -800)} | ${risco(400, 0, quaseFora)}`);
 
   const card = montarProva([tp("2026-11-12", 800, 400), tp("2026-11-13", -400, -200)], prova, "2026-11-13")!;
@@ -1297,6 +1297,45 @@ report(
   report("Card da prova: meta batida, eliminada e conta real",
     montarProva(cincoDias.map((d) => tp(d, 1020, 510)), prova, "2026-11-18")!.status === "META_BATIDA" &&
       montarProva([tp("2026-11-12", -6500, -3250)], prova, "2026-11-12")!.status === "ELIMINADA" && montarProva([], real, "2026-11-12") === null, "");
+
+  // Plano de 16/11/2026: sem 1ª hora, 2 trades às 10h, 1 a partir das 11:30, 2 stops encerram
+  const ghp = (h: number, m: number, c: ReturnType<typeof ctx>) =>
+    avaliarGate(itens80, "BULLISH", makeSPDate(h, m), 65, limLiberado, null, true, true, c, regrasDaHoraDaConta(prova));
+  const casosProva: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]> = [
+    ["09:30 RHT -> bloqueado (sem 1ª hora)", false, ghp(9, 30, ctx("reversao_htf")), "não opera nessa hora"],
+    ["09:30 primeira perna -> bloqueado", false, ghp(9, 30, ctx("primeira_perna")), "não opera nessa hora"],
+    ["10:30 setup das 10, 1 feito -> liberado", true, ghp(10, 30, ctx("varrida_barra_10", 1)), ""],
+    ["10:30 setup das 10, 2 feitos -> bloqueado", false, ghp(10, 30, ctx("varrida_barra_10", 2)), "limite de 2 trades"],
+    ["11:15 continuidade -> bloqueado (só 11:30)", false, ghp(11, 15, ctx("continuidade_tendencia")), "a partir das 11:30"],
+    ["11:30 continuidade -> liberado", true, ghp(11, 30, ctx("continuidade_tendencia")), ""],
+    ["11:45 continuidade, 1 feito -> bloqueado", false, ghp(11, 45, ctx("continuidade_tendencia", 1)), "limite de 1 trade "],
+  ];
+  for (const [nome, esperado, g, trecho] of casosProva) {
+    report(`Prova, hora: ${nome}`, g.liberado === esperado && (esperado || g.motivos.some((m) => m.includes(trecho))), JSON.stringify(g.motivos));
+  }
+  const somaCotas = REGRAS_DA_HORA_PROVA.ABERTURA.maxTrades + REGRAS_DA_HORA_PROVA.PRIME.maxTrades + REGRAS_DA_HORA_PROVA.VALIDA.maxTrades;
+  report("Prova: 3 trades no dia (0 · 2 · 1) e 2 stops encerram; a conta real segue 1 · 3 · 2",
+    prova.max_operacoes_dia === 3 && somaCotas === 3 && prova.max_perdas_seguidas === 2 &&
+      avaliarLimitesDia(2, 2, { maxPerdasSeguidas: prova.max_perdas_seguidas, maxOperacoesDia: prova.max_operacoes_dia }).bloqueado &&
+      regrasDaHoraDaConta(real).ABERTURA.maxTrades === 1 && regrasDaHoraDaConta(real).VALIDA.aPartirDeMin === undefined, `cotas=${somaCotas}`);
+  report("Prova: no recuo o risco por trade desce com a mão (R$ 265 com 5 contratos)",
+    riscoMaximoTrade(prova, true) === 265 && riscoMaximoTrade(prova, false) === 530 && riscoMaximoTrade(real, true) === 160 &&
+      risco(265, 0, rRecuo).length === 0 && risco(266, 0, rRecuo).length === 1, `${risco(266, 0, rRecuo)}`);
+
+  // Os 16 trades reais da prova até 16/11 (relatório do Profit): −R$ 3.552 bruto em 3 pregões
+  const reais: Array<[string, number, number]> = [
+    ["2026-11-12", -420, -140], ["2026-11-12", -465, -155], ["2026-11-12", 0, 0], ["2026-11-12", 15, 5], ["2026-11-12", -135, -45],
+    ["2026-11-12", 0, 0], ["2026-11-12", 0, 0], ["2026-11-12", -160, -80],
+    ["2026-11-13", -845, -211.25], ["2026-11-13", -330, -82.5],
+    ["2026-11-16", -310, -155], ["2026-11-16", -227, -227], ["2026-11-16", -60, -30], ["2026-11-16", -300, -150], ["2026-11-16", 15, 5], ["2026-11-16", -330, -165],
+  ];
+  const rReal = calcularProva(reais.map(([d, p, pts]) => tp(d, p, pts)), prova);
+  const cardReal = montarProva(reais.map(([d, p, pts]) => tp(d, p, pts)), prova, "2026-11-16")!;
+  const blocoReal = (label: string) => cardReal.blocos.find((b) => b.label === label)!;
+  report("Prova real em 16/11: −R$ 3.552 em 3 pregões, mão em 5 contratos, folga de R$ 2.948",
+    rReal.pnlBruto === -3552 && rReal.pregoes === 3 && rReal.emRecuo && contratosPermitidos(prova, rReal.emRecuo) === 5 &&
+      rReal.porDia["2026-11-16"] === -1212 && blocoReal("Perda total usada").valor === "R$ 3.552" && blocoReal("Mão da próxima entrada").valor === "5 contratos",
+    `${JSON.stringify(rReal.porDia)} | ${JSON.stringify(cardReal.blocos.map((b) => `${b.label}=${b.valor} (${b.sub})`))}`);
 
   const demoProva = tradesDemoProva("2026-11-12");
   report("Demo: prova fictícia com 10 contratos e no máximo 6 pregões",

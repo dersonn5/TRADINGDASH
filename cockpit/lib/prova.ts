@@ -11,7 +11,24 @@
  * desce quando a prova aperta e a saida e na meta mais uma folga para custos.
  */
 import type { Conta } from "./contas";
-import type { LimitesDia } from "./gate";
+import { REGRAS_DA_HORA, type LimitesDia, type RegrasDaHora } from "./gate";
+
+/**
+ * Horas da prova (decisao do operador em 16/11/2026, com a prova em -R$ 3.552 depois de 16
+ * trades): nada na 1a hora (6 trades, 6 perdas, -R$ 2.072), 2 trades na hora das 10:00 e 1 a
+ * partir das 11:30 (abertura de NY fora do horario de verao dos EUA). 3 trades no dia, e 2
+ * stops encerram: sao max_operacoes_dia e max_perdas_seguidas da conta (migration_prova_plano.sql).
+ */
+export const REGRAS_DA_HORA_PROVA: RegrasDaHora = {
+  ABERTURA: { ...REGRAS_DA_HORA.ABERTURA, maxTrades: 0 },
+  PRIME: { ...REGRAS_DA_HORA.PRIME, maxTrades: 2 },
+  VALIDA: { ...REGRAS_DA_HORA.VALIDA, maxTrades: 1, aPartirDeMin: 11 * 60 + 30 },
+};
+
+/** Setups e cotas por hora da conta: a prova tem as dela, a real segue o plano por hora. */
+export function regrasDaHoraDaConta(conta: Conta): RegrasDaHora {
+  return conta.tipo === "PROVA" ? REGRAS_DA_HORA_PROVA : REGRAS_DA_HORA;
+}
 
 /** A mesa corta o dia em R$ 1.247; o plano para antes: o proximo stop tem de caber aqui. */
 export const CORTE_PERDA_DIA_RS = 1200;
@@ -125,6 +142,15 @@ export function contratosPermitidos(conta: Conta, emRecuo: boolean): number {
   return Math.min(CONTRATOS_RECUO, conta.max_contratos);
 }
 
+/**
+ * Risco maximo de um trade em R$: o da conta vale para a mao cheia. No recuo ele desce junto
+ * com a mao (10 contratos e R$ 530 viram 5 e R$ 265), para o stop continuar em 265 pts.
+ */
+export function riscoMaximoTrade(conta: Conta, emRecuo: boolean): number {
+  if (conta.tipo !== "PROVA" || conta.max_contratos <= 0) return conta.max_risco_trade_rs;
+  return (conta.max_risco_trade_rs * contratosPermitidos(conta, emRecuo)) / conta.max_contratos;
+}
+
 const brl = (v: number) => `${v < 0 ? "−" : ""}R$ ${Math.abs(Math.round(v)).toLocaleString("pt-BR")}`;
 const brl2 = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -177,8 +203,9 @@ export function validarRiscoProva(conta: Conta, riscoRs: number, e: EstadoProva)
   if (conta.tipo !== "PROVA" || !(riscoRs > 0)) return [];
   const erros: string[] = [];
 
-  if (riscoRs > conta.max_risco_trade_rs) {
-    erros.push(`Risco de ${brl(riscoRs)} acima do máximo de ${brl(conta.max_risco_trade_rs)} por trade`);
+  const riscoMax = riscoMaximoTrade(conta, e.resumo.emRecuo);
+  if (riscoRs > riscoMax) {
+    erros.push(`Risco de ${brl(riscoRs)} acima do máximo de ${brl(riscoMax)} por trade${e.resumo.emRecuo ? " (mão reduzida)" : ""}`);
   }
 
   const cabeNoDia = CORTE_PERDA_DIA_RS + e.pnlDia;

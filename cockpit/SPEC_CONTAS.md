@@ -64,7 +64,10 @@ Os trades herdam a conta pela sessão (sem coluna nova em `copa_trades`).
   sessão do dia) filtram pela conta ativa.
 - **FR-004** `lib/gate.ts` recebe os limites da conta em vez de ler as constantes
   `MAX_CONTRATOS`, `MAX_RISCO_TRADE_RS`, `MAX_PERDAS_DIA`, `MAX_OPERACOES_DIA`. As cotas por
-  hora (1 · 3 · 2) continuam iguais nas duas contas.
+  hora eram iguais nas duas contas (1 · 3 · 2). **Desde 16/11/2026 a prova tem as dela:** sem
+  1ª hora, 2 trades às 10h, 1 a partir das 11:30, 3 trades no dia e 2 stops encerram
+  (`REGRAS_DA_HORA_PROVA` em `lib/prova.ts` + `supabase/migration_prova_plano.sql`). No recuo
+  o risco por trade desce com a mão (`riscoMaximoTrade`).
 - **FR-005** Na prova, o gate bloqueia a entrada se o risco do trade levar a perda do dia
   além de `limite_perda_diaria_rs` ou a perda total além de `limite_perda_total_rs`.
 - **FR-006** Card "Prova" na Visão Geral (só em conta `PROVA`): resultado contra a meta;

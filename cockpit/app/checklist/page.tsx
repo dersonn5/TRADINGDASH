@@ -13,9 +13,9 @@ import {
   estadoDosPassos,
   alternarPasso,
   avaliarLimitesDia,
+  hhmm,
   classificarJanela,
   ESTRATEGIA_PRIMEIRA_PERNA,
-  REGRAS_DA_HORA,
   GateResult,
   ItemAvaliado,
   LimitesDia,
@@ -43,7 +43,7 @@ import {
   SetupCModo,
 } from "@/lib/copa-db";
 import { getContaAtiva } from "@/lib/contas";
-import { avaliarLimitesProva, contratosPermitidos, validarRiscoProva, CORTE_PERDA_DIA_RS } from "@/lib/prova";
+import { avaliarLimitesProva, contratosPermitidos, regrasDaHoraDaConta, validarRiscoProva, CORTE_PERDA_DIA_RS } from "@/lib/prova";
 import { PrintUpload } from "@/components/print-upload";
 import { CARD, LBL, H2, SEGMENTADO, opcaoSegmentada, chip, INPUT, botaoPrimario, BOTAO_SECUNDARIO } from "@/components/v2/estilos";
 import { formatarBRL, lerPreco, NOMES_COMPLETOS, SIGLAS } from "@/lib/metricas";
@@ -51,6 +51,7 @@ import { formatarBRL, lerPreco, NOMES_COMPLETOS, SIGLAS } from "@/lib/metricas";
 export default function ChecklistPage() {
   // Conta ativa (SPEC_CONTAS.md): fixa enquanto a tela esta montada, o Shell remonta ao trocar
   const conta = getContaAtiva();
+  const regrasHora = regrasDaHoraDaConta(conta); // a prova tem cotas e horas proprias
   // Estratégia selecionada (padrão: REVERSAO_HTF)
   const [selectedStrategy, setSelectedStrategy] = useState<Strategy>(REVERSAO_HTF);
   const [checklist, setChecklist] = useState<LiveChecklist | null>(null);
@@ -173,7 +174,7 @@ export default function ChecklistPage() {
   // operador escolhe; o padrao e o primeiro da lista.
   const janelaAgora = classificarJanela(now);
   const janelaDeRegra = janelaAgora === "FORA" ? (now.getHours() < 10 ? "ABERTURA" : "VALIDA") : janelaAgora;
-  const setupsDaHora = REGRAS_DA_HORA[janelaDeRegra].setups
+  const setupsDaHora = regrasHora[janelaDeRegra].setups
     .map((id) => DEFAULT_STRATEGIES.find((s) => s.id === id))
     .filter(Boolean) as Strategy[];
   const [escolhaPorHora, setEscolhaPorHora] = useState<Record<string, string>>({});
@@ -260,9 +261,10 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxHora
+      ctxHora,
+      regrasHora
     );
-  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath, ctxHora]);
+  }, [checklist, now, selectedStrategy, limites, resumo?.trade_aberto_id, preSessao?.fechada_em, tradePrintPath, ctxHora, regrasHora]);
 
   const itensAvaliados: ItemAvaliado[] = useMemo(() => {
     if (!checklist) return [];
@@ -316,7 +318,8 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxHora
+      ctxHora,
+      regrasHora
     );
 
     setChecklist({
@@ -348,7 +351,8 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxHora
+      ctxHora,
+      regrasHora
     );
 
     setChecklist({
@@ -370,7 +374,8 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxHora
+      ctxHora,
+      regrasHora
     );
     setChecklist({
       ...checklist,
@@ -397,7 +402,8 @@ export default function ChecklistPage() {
       resumo?.trade_aberto_id,
       Boolean(preSessao?.fechada_em),
       Boolean(tradePrintPath),
-      ctxHora
+      ctxHora,
+      regrasHora
     );
     setChecklist({
       ...checklist,
@@ -699,13 +705,17 @@ export default function ChecklistPage() {
   const trilhaFrase = feitos >= totalKills ? "Trilha completa" : `Agora: passo ${feitos + 1} de ${totalKills}`;
   const tagSetup = SIGLAS[selectedStrategy.id] ?? selectedStrategy.id;
   const minimoMarcador = gate.scoreMinimo === Infinity ? selectedStrategy.score_minimo || 65 : gate.scoreMinimo;
+  const cotaTxt = (n: number) => `${n} ${n === 1 ? "trade" : "trades"}`;
+  const inicioValida = hhmm(regrasHora.VALIDA.aPartirDeMin ?? 660);
   const janelaCard =
     gate.janela === "ABERTURA"
-      ? { rot: "Abertura · 1ª perna", txt: `09:00–09:59 · 1 trade · mínimo ${gate.scoreMinimo}`, destaque: true }
+      ? regrasHora.ABERTURA.maxTrades === 0
+        ? { rot: "1ª hora · sem entrada", txt: "esta conta só opera a partir das 10:00", destaque: false }
+        : { rot: "Abertura · 1ª perna", txt: `09:00–09:59 · ${cotaTxt(regrasHora.ABERTURA.maxTrades)} · mínimo ${gate.scoreMinimo}`, destaque: true }
       : gate.janela === "PRIME"
-      ? { rot: "Janela · Prime", txt: `10:00–10:59 · mínimo ${gate.scoreMinimo}`, destaque: true }
+      ? { rot: "Janela · Prime", txt: `10:00–10:59 · ${cotaTxt(regrasHora.PRIME.maxTrades)} · mínimo ${gate.scoreMinimo}`, destaque: true }
       : gate.janela === "VALIDA"
-        ? { rot: "Janela · Válida", txt: `11:00–11:59 · mínimo ${gate.scoreMinimo}`, destaque: true }
+        ? { rot: "Janela · Válida", txt: `${inicioValida}–11:59 · ${cotaTxt(regrasHora.VALIDA.maxTrades)} · mínimo ${gate.scoreMinimo}`, destaque: true }
         : { rot: "Fora da janela", txt: "entrada 10:00–11:59", destaque: false };
   const pnlDia = resumo?.pnl_dia ?? 0;
   const podeRegistrar = gate.liberado && formularioValido && !submittingOrdem && !resumo?.trade_aberto_id;

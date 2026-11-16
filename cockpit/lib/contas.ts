@@ -60,8 +60,9 @@ export const CONTA_PROVA_ZERO7: Conta = {
   status: "ATIVA",
   max_contratos: 10,
   max_risco_trade_rs: 530,
-  max_perdas_seguidas: 3,
-  max_operacoes_dia: 5,
+  // 16/11/2026: 2 stops encerram e 3 trades no dia (eram 3 e 5). Ver REGRAS_DA_HORA_PROVA.
+  max_perdas_seguidas: 2,
+  max_operacoes_dia: 3,
   limite_perda_diaria_rs: 1247,
   limite_perda_total_rs: 6500,
   meta_rs: 4997,

@@ -1,12 +1,16 @@
 # Checkpoint — Cognitive Trading (cockpit v2)
 
-Atualizado: 12/11/2026 · Claude
+Atualizado: 16/11/2026 · Claude
 
 ## Onde estamos
 **Prova da mesa Zero7 (plano Pleno), comprada em 11/11/2026: só a prova é operada, a conta real
 está parada** e o plano de fim de ano, suspenso. O cockpit tem dois perfis, Real e Prova
-(`SPEC_CONTAS.md`); o código está no ar, mas **a `migration_contas.sql` ainda não foi rodada**:
-até lá só existe a conta real e nada muda nas telas.
+(`SPEC_CONTAS.md`), com a `migration_contas.sql` já rodada.
+**A prova está em −R$ 3.552 bruto (−R$ 3.703,70 líquido na mesa) depois de 16 trades em 3 pregões
+(12, 13 e 16/11); a perda total é R$ 6.500.** Em 16/11 o operador mudou o plano da prova: sem 1ª
+hora, 2 trades às 10h, 1 a partir das 11:30, 2 stops encerram, 5 contratos (Trade System §2.2).
+Os 16 trades ainda **não estão no banco**: sem eles o cockpit acha a prova zerada e libera 10
+contratos.
 Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data).
 
 ## Pronto e verificado
@@ -28,14 +32,18 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
   card); no demo, seletor Real/Prova trocando Visão Geral, Histórico, Calendário e Estratégias, com a
   escolha mantida ao recarregar. **Não provado com dados reais:** filtro por conta no banco, faixa da
   prova no Checklist e bloqueios do gate na prova. Dependem da migração e do login do operador.
+- Plano da prova de 16/11 no gate — prova: `npx tsc --noEmit` limpo e `npx tsx scripts/verify.ts`
+  com 149 testes (7 casos de hora da prova, cotas 0 · 2 · 1, risco de R$ 265 no recuo e os 16
+  trades reais dando −R$ 3.552 e mão de 5). **Não conferido na tela nem com dados reais.**
 - Filtro "Tudo" na Visão Geral (03/11) — prova: teste no verify.ts e print no demo.
 
 ## Próximo
-- [ ] Anderson roda, nesta ordem: SQL dos 8 trades de 03/11 (se ainda não rodou) e depois
-      `cockpit/supabase/migration_contas.sql`. Conferência no fim da migração: conta real com as
-      sessões e os trades de antes, prova zerada.
-- [ ] Depois da migração, conferir logado: trocar para Prova, fechar uma pré-sessão, ver a faixa da
-      prova no Checklist e o card na Visão Geral batendo com a Área do Trader da Zero7.
+- [ ] Anderson roda `cockpit/supabase/migration_prova_plano.sql` (2 stops, 3 trades) e o SQL dos
+      16 trades da prova (entregue no chat em 16/11; conferência: 16 trades, −3.552).
+- [ ] Depois disso, conferir logado na conta Prova: card com perda total usada de R$ 3.552, mão de
+      5 contratos, Checklist bloqueando antes das 10:00 e entre 11:00 e 11:29.
+- [ ] Trades da prova: faltam setup, gatilho, stop planejado e nota de cada um (lançados com
+      "setup a confirmar" e horário aproximado ao minuto).
 - [ ] Perguntar à Zero7 por escrito: incubadora de 10 dias (promoção) ou ciclo de 30 dias com margem
       de R$ 4.997 (regulamento); limites de contratos e de perda na conta real; se a margem é o capital.
 - [ ] Trades de 03/11: faltam setup e gatilho dos 3 da 1ª hora, gatilhos dos das 10h e nota A/B/C.
@@ -69,6 +77,10 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
   da mesa (R$ 1.247) corta o dia depois de 2 stops, então a prova não acelera e a eliminação dobra.
   Perda total tratada como R$ 6.500 **fixos** (palavra do operador e tela da compra; o regulamento
   traz R$ 4.997 e não diz se é fixa). Cockpit soma sem custos: a saída é em R$ 5.100, não em R$ 4.997.
+- Plano da prova de 16/11: as cotas por hora da prova ficam no código (`REGRAS_DA_HORA_PROVA`),
+  não no banco, como o corte do dia e o recuo: são plano do operador, não regra da mesa. No banco
+  só o que já era coluna (stops seguidos e trades do dia). O trade das 11:30 é a 3ª hora com
+  início às 11:30 (`aPartirDeMin`), não uma janela nova.
 - Contas: a conta ativa é estado de módulo em `lib/contas.ts`, definido pelo Shell antes de montar
   as telas; trocar de conta remonta a tela (key). Alternativa descartada: passar a conta por
   parâmetro em toda função do `copa-db.ts` (dezenas de chamadas). Sem a migração ou sem conta
