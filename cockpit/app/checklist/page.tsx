@@ -794,7 +794,7 @@ export default function ChecklistPage() {
           <span>Acumulado {formatarBRL(resumo.resumo_prova.pnlBruto)}</span>
           <span>Vale para a meta {formatarBRL(resumo.resumo_prova.resultadoValido, false)} de {formatarBRL(conta.meta_rs, false)}</span>
           <span>Hoje {formatarBRL(pnlDia)} · corte de perda em {formatarBRL(CORTE_PERDA_DIA_RS, false)}</span>
-          <span>Mão: {maxContratos} contratos{resumo.resumo_prova.emRecuo ? " (recuo)" : ""}</span>
+          <span>Mão: {maxContratos} contratos{maxContratos < conta.max_contratos ? " (recuo)" : ""}</span>
         </div>
       )}
 

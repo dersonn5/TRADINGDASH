@@ -192,11 +192,16 @@ Decisão do operador, vale só para a prova:
 - **3 trades por dia:** 2 na hora das 10:00 e 1 a partir das 11:30 (abertura de NY de novembro
   a março), se o setup aparecer.
 - **2 stops seguidos encerram o dia.**
-- **5 contratos:** o recuo dos R$ 3.200 já valia; a mão só volta a 10 com o acumulado no zero.
-  O risco por trade desce junto: R$ 265 (265 pts com 5 contratos).
+- **5 contratos até o fim da prova.** A mão não volta a 10 quando o acumulado zerar (o plano
+  de 11/11 previa a volta). O risco por trade desce junto: R$ 265 (265 pts com 5 contratos).
 
 Com isso o pior dia custa perto de R$ 530 e a folga até os R$ 6.500 (R$ 2.948 no bruto,
 R$ 2.796 no líquido da mesa) aguenta 5 dias ruins seguidos, contra 2 no ritmo anterior.
+
+O custo de manter 5 contratos: de −R$ 3.552 até a saída em R$ 5.100 faltam R$ 8.652, e com 5
+contratos cada ponto vale R$ 1, então são 8.652 pontos líquidos. Com a volta a 10 contratos
+no zero seriam 6.102. O alvo de 8 pregões do plano de 11/11 deixa de valer; o prazo da mesa é
+ilimitado.
 
 ## 3. Timeframes
 

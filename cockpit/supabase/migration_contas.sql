@@ -46,12 +46,13 @@ SELECT DISTINCT q.user_id, 'Conta real', 'REAL', 3, 160, 3, 5
 ON CONFLICT (user_id, nome) DO NOTHING;
 
 -- Prova Zero7, plano Pleno (regulamento de 14/10/2026 + tela da compra):
--- 10 contratos, risco maximo de R$ 530 por trade (265 pts), perda diaria R$ 1.247,
+-- 5 contratos, risco maximo de R$ 265 por trade (265 pts; ate 16/11/2026 eram 10 contratos e
+-- R$ 530, ver migration_prova_plano.sql), perda diaria R$ 1.247,
 -- perda total R$ 6.500 (valor da compra; o regulamento traz R$ 4.997), meta R$ 4.997,
 -- minimo de 5 pregoes, um pregao conta ate 50% da meta, 10 pts ou menos nao contam.
 INSERT INTO copa_contas (user_id, nome, tipo, max_contratos, max_risco_trade_rs, max_perdas_seguidas, max_operacoes_dia,
                          limite_perda_diaria_rs, limite_perda_total_rs, meta_rs, min_pregoes, teto_dia_pct, pts_minimos_validos)
-SELECT id, 'Prova Zero7 (Pleno)', 'PROVA', 10, 530, 2, 3, 1247, 6500, 4997, 5, 0.5, 10
+SELECT id, 'Prova Zero7 (Pleno)', 'PROVA', 5, 265, 2, 3, 1247, 6500, 4997, 5, 0.5, 10
   FROM auth.users WHERE email = 'trader@copa.btg'
 ON CONFLICT (user_id, nome) DO NOTHING;
 

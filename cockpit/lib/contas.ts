@@ -58,8 +58,10 @@ export const CONTA_PROVA_ZERO7: Conta = {
   nome: "Prova Zero7 (Pleno)",
   tipo: "PROVA",
   status: "ATIVA",
-  max_contratos: 10,
-  max_risco_trade_rs: 530,
+  // 16/11/2026: 5 contratos ate o fim da prova (eram 10), com o risco na mesma distancia de
+  // stop: 265 pts = R$ 265 (eram R$ 530).
+  max_contratos: 5,
+  max_risco_trade_rs: 265,
   // 16/11/2026: 2 stops encerram e 3 trades no dia (eram 3 e 5). Ver REGRAS_DA_HORA_PROVA.
   max_perdas_seguidas: 2,
   max_operacoes_dia: 3,
@@ -74,7 +76,8 @@ export const CONTA_PROVA_ZERO7: Conta = {
 /** Contas do modo demonstracao: nada disso existe no banco. */
 export const CONTAS_DEMO: Conta[] = [
   { ...CONTA_REAL_PADRAO, id: "demo-real" },
-  { ...CONTA_PROVA_ZERO7, id: "demo-prova" },
+  // os trades ficticios da prova (lib/demo.ts) tem 10 contratos: a conta do demo segue a mao deles
+  { ...CONTA_PROVA_ZERO7, id: "demo-prova", max_contratos: 10, max_risco_trade_rs: 530 },
 ];
 
 const CHAVE = "cognitive-conta";

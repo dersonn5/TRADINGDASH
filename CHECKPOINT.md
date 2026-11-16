@@ -8,9 +8,9 @@ está parada** e o plano de fim de ano, suspenso. O cockpit tem dois perfis, Rea
 (`SPEC_CONTAS.md`), com a `migration_contas.sql` já rodada.
 **A prova está em −R$ 3.552 bruto (−R$ 3.703,70 líquido na mesa) depois de 16 trades em 3 pregões
 (12, 13 e 16/11); a perda total é R$ 6.500.** Em 16/11 o operador mudou o plano da prova: sem 1ª
-hora, 2 trades às 10h, 1 a partir das 11:30, 2 stops encerram, 5 contratos (Trade System §2.2).
-Os 16 trades ainda **não estão no banco**: sem eles o cockpit acha a prova zerada e libera 10
-contratos.
+hora, 2 trades às 10h, 1 a partir das 11:30, 2 stops encerram, 5 contratos até o fim da prova
+(Trade System §2.2). Os 16 trades estão no banco (lançados por SQL em 16/11, sem stop e com
+setup a confirmar).
 Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data).
 
 ## Pronto e verificado
@@ -33,15 +33,20 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
   escolha mantida ao recarregar. **Não provado com dados reais:** filtro por conta no banco, faixa da
   prova no Checklist e bloqueios do gate na prova. Dependem da migração e do login do operador.
 - Plano da prova de 16/11 no gate — prova: `npx tsc --noEmit` limpo e `npx tsx scripts/verify.ts`
-  com 149 testes (7 casos de hora da prova, cotas 0 · 2 · 1, risco de R$ 265 no recuo e os 16
-  trades reais dando −R$ 3.552 e mão de 5). **Não conferido na tela nem com dados reais.**
+  com 152 testes (7 casos de hora da prova, cotas 0 · 2 · 1, 5 contratos e R$ 265 fixos com o
+  acumulado negativo ou de volta ao zero, e os 16 trades reais dando −R$ 3.552).
+  **Não conferido na tela nem com dados reais.**
 - Filtro "Tudo" na Visão Geral (03/11) — prova: teste no verify.ts e print no demo.
 
 ## Próximo
-- [ ] Anderson roda `cockpit/supabase/migration_prova_plano.sql` (2 stops, 3 trades) e o SQL dos
-      16 trades da prova (entregue no chat em 16/11; conferência: 16 trades, −3.552).
+- [ ] Anderson roda `cockpit/supabase/migration_prova_plano.sql` (2 stops, 3 trades, 5 contratos,
+      R$ 265). Sem ela o banco ainda diz 10 contratos: a mão fica em 5 só pelo recuo, e voltaria
+      a 10 com o acumulado no zero.
 - [ ] Depois disso, conferir logado na conta Prova: card com perda total usada de R$ 3.552, mão de
-      5 contratos, Checklist bloqueando antes das 10:00 e entre 11:00 e 11:29.
+      5 contratos "fixa até o fim da prova", Checklist bloqueando antes das 10:00 e entre 11:00 e
+      11:29.
+- [ ] Card da prova: a linha de ritmo ainda fala em fechar em 8 pregões (`PREGOES_ALVO`), alvo do
+      plano de 10 contratos. Decidir com o operador se sai ou muda.
 - [ ] Trades da prova: faltam setup, gatilho, stop planejado e nota de cada um (lançados com
       "setup a confirmar" e horário aproximado ao minuto).
 - [ ] Fonte Sora local (`next/font/local`): o build da Vercel falhou ao buscar a fonte no Google em
@@ -77,6 +82,10 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
 - Prova Zero7 (11/11/2026, Trade System §2.2): 10 contratos fixos, não 5 nem 15. Simulação: o
   operador quer aprovar em até 8 pregões; 5 contratos dão ~18 pregões; acima de 10 a perda diária
   da mesa (R$ 1.247) corta o dia depois de 2 stops, então a prova não acelera e a eliminação dobra.
+  **Em 16/11 o operador trocou por 5 contratos até o fim da prova** (sem volta a 10 no zero),
+  aceitando a prova mais longa: faltam 8.652 pontos líquidos até a saída. A mão e o risco ficam
+  nas colunas da conta (`max_contratos` 5, `max_risco_trade_rs` 265); o recuo do código continua
+  existindo e não muda nada numa conta de 5. O demo mantém uma prova fictícia de 10 contratos.
   Perda total tratada como R$ 6.500 **fixos** (palavra do operador e tela da compra; o regulamento
   traz R$ 4.997 e não diz se é fixa). Cockpit soma sem custos: a saída é em R$ 5.100, não em R$ 4.997.
 - Plano da prova de 16/11: as cotas por hora da prova ficam no código (`REGRAS_DA_HORA_PROVA`),

@@ -16,8 +16,9 @@ import { REGRAS_DA_HORA, type LimitesDia, type RegrasDaHora } from "./gate";
 /**
  * Horas da prova (decisao do operador em 16/11/2026, com a prova em -R$ 3.552 depois de 16
  * trades): nada na 1a hora (6 trades, 6 perdas, -R$ 2.072), 2 trades na hora das 10:00 e 1 a
- * partir das 11:30 (abertura de NY fora do horario de verao dos EUA). 3 trades no dia, e 2
- * stops encerram: sao max_operacoes_dia e max_perdas_seguidas da conta (migration_prova_plano.sql).
+ * partir das 11:30 (abertura de NY fora do horario de verao dos EUA). 3 trades no dia, 2 stops
+ * encerram e 5 contratos ate o fim da prova: sao max_operacoes_dia, max_perdas_seguidas e
+ * max_contratos da conta (migration_prova_plano.sql).
  */
 export const REGRAS_DA_HORA_PROVA: RegrasDaHora = {
   ABERTURA: { ...REGRAS_DA_HORA.ABERTURA, maxTrades: 0 },
@@ -34,7 +35,11 @@ export function regrasDaHoraDaConta(conta: Conta): RegrasDaHora {
 export const CORTE_PERDA_DIA_RS = 1200;
 /** A mesa so conta ate 50% da meta (R$ 2.498,50) por pregao; acima de R$ 2.400 o dia acaba. */
 export const TETO_GANHO_DIA_RS = 2400;
-/** Metade da folga de R$ 6.500: com esse prejuizo acumulado a mao desce. */
+/**
+ * Metade da folga de R$ 6.500: com esse prejuizo acumulado a mao desce. Desde 16/11/2026 a
+ * conta da prova ja tem 5 contratos fixos ate o fim (max_contratos), entao o recuo nao muda
+ * nada nela; a regra continua valendo para uma conta de prova com mao maior.
+ */
 export const RECUO_PERDA_RS = 3200;
 export const CONTRATOS_RECUO = 5;
 /** Meta de R$ 4.997 mais folga para custos (R$ 0,37 por contrato de WIN). */
@@ -205,7 +210,7 @@ export function validarRiscoProva(conta: Conta, riscoRs: number, e: EstadoProva)
 
   const riscoMax = riscoMaximoTrade(conta, e.resumo.emRecuo);
   if (riscoRs > riscoMax) {
-    erros.push(`Risco de ${brl(riscoRs)} acima do máximo de ${brl(riscoMax)} por trade${e.resumo.emRecuo ? " (mão reduzida)" : ""}`);
+    erros.push(`Risco de ${brl(riscoRs)} acima do máximo de ${brl(riscoMax)} por trade${riscoMax < conta.max_risco_trade_rs ? " (mão reduzida)" : ""}`);
   }
 
   const cabeNoDia = CORTE_PERDA_DIA_RS + e.pnlDia;
@@ -360,12 +365,17 @@ export function montarProva(trades: TradeProva[], conta: Conta, hojeIso: string)
   }
 
   const maoAtual = contratosPermitidos(conta, r.emRecuo);
+  const maoFixa = conta.max_contratos <= CONTRATOS_RECUO; // a conta ja opera na mao do recuo
   blocos.push({
     label: "Mão da próxima entrada",
     valor: `${maoAtual} contratos`,
-    sub: r.emRecuo ? `recuo: desce de ${conta.max_contratos} até o acumulado voltar ao zero` : `recua para ${Math.min(CONTRATOS_RECUO, conta.max_contratos)} com ${brl(RECUO_PERDA_RS)} de prejuízo acumulado`,
+    sub: maoFixa
+      ? `fixa até o fim da prova · risco máximo de ${brl(riscoMaximoTrade(conta, r.emRecuo))} por trade`
+      : r.emRecuo
+        ? `recuo: desce de ${conta.max_contratos} até o acumulado voltar ao zero`
+        : `recua para ${Math.min(CONTRATOS_RECUO, conta.max_contratos)} com ${brl(RECUO_PERDA_RS)} de prejuízo acumulado`,
     pct: null,
-    tom: r.emRecuo ? "atencao" : "ok",
+    tom: !maoFixa && r.emRecuo ? "atencao" : "ok",
   });
 
   return { nome: conta.nome, status, frase, ritmo, blocos };

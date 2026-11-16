@@ -1264,7 +1264,10 @@ report(
 // 6. Contas e prova da mesa (SPEC_CONTAS.md)
 {
   const real = CONTA_REAL_PADRAO;
-  const prova = CONTA_PROVA_ZERO7;
+  // plano original da prova (10 contratos, R$ 530): e nele que o recuo muda a mao
+  const prova = { ...CONTA_PROVA_ZERO7, max_contratos: 10, max_risco_trade_rs: 530 };
+  // a conta de verdade desde 16/11/2026: 5 contratos e R$ 265 ate o fim da prova
+  const provaAtual = CONTA_PROVA_ZERO7;
   report("Contas: a real padrão tem os limites do gate (3 contratos, R$ 160, 3 stops, 5 trades)",
     real.max_contratos === 3 && real.max_risco_trade_rs === 160 && real.max_perdas_seguidas === 3 && real.max_operacoes_dia === 5 && real.meta_rs === null, JSON.stringify(real));
   report("Contas: limites do dia por conta (2 stops encerram quando a conta diz 2)",
@@ -1345,13 +1348,28 @@ report(
     ["2026-11-13", -845, -211.25], ["2026-11-13", -330, -82.5],
     ["2026-11-16", -310, -155], ["2026-11-16", -227, -227], ["2026-11-16", -60, -30], ["2026-11-16", -300, -150], ["2026-11-16", 15, 5], ["2026-11-16", -330, -165],
   ];
-  const rReal = calcularProva(reais.map(([d, p, pts]) => tp(d, p, pts)), prova);
-  const cardReal = montarProva(reais.map(([d, p, pts]) => tp(d, p, pts)), prova, "2026-11-16")!;
+  const rReal = calcularProva(reais.map(([d, p, pts]) => tp(d, p, pts)), provaAtual);
+  const cardReal = montarProva(reais.map(([d, p, pts]) => tp(d, p, pts)), provaAtual, "2026-11-16")!;
   const blocoReal = (label: string) => cardReal.blocos.find((b) => b.label === label)!;
   report("Prova real em 16/11: −R$ 3.552 em 3 pregões, mão em 5 contratos, folga de R$ 2.948",
-    rReal.pnlBruto === -3552 && rReal.pregoes === 3 && rReal.emRecuo && contratosPermitidos(prova, rReal.emRecuo) === 5 &&
+    rReal.pnlBruto === -3552 && rReal.pregoes === 3 && rReal.emRecuo && contratosPermitidos(provaAtual, rReal.emRecuo) === 5 &&
       rReal.porDia["2026-11-16"] === -1212 && blocoReal("Perda total usada").valor === "R$ 3.552" && blocoReal("Mão da próxima entrada").valor === "5 contratos",
     `${JSON.stringify(rReal.porDia)} | ${JSON.stringify(cardReal.blocos.map((b) => `${b.label}=${b.valor} (${b.sub})`))}`);
+
+  // 16/11/2026: 5 contratos ate o fim da prova, mesmo com o acumulado de volta ao zero
+  const riscoAtual = (riscoRs: number, resumo = zero) => validarRiscoProva(provaAtual, riscoRs, { pnlDia: 0, resumo });
+  const maoReal = blocoReal("Mão da próxima entrada");
+  const cardZerado = montarProva([tp("2026-11-12", -3552, -1776), tp("2026-11-17", 3600, 3600)], provaAtual, "2026-11-17")!;
+  const maoZerado = cardZerado.blocos.find((b) => b.label === "Mão da próxima entrada")!;
+  report("Prova desde 16/11: 5 contratos e R$ 265 fixos, com o acumulado negativo ou de volta ao zero",
+    provaAtual.max_contratos === 5 && provaAtual.max_risco_trade_rs === 265 &&
+      contratosPermitidos(provaAtual, true) === 5 && contratosPermitidos(provaAtual, false) === 5 &&
+      riscoMaximoTrade(provaAtual, true) === 265 && riscoMaximoTrade(provaAtual, false) === 265 &&
+      riscoAtual(265).length === 0 && riscoAtual(266).length === 1 && !riscoAtual(266)[0].includes("mão reduzida") &&
+      riscoAtual(265, rReal).length === 0 && riscoAtual(266, rReal).length === 1 &&
+      maoReal.sub.includes("fixa até o fim da prova") && maoReal.tom === "ok" &&
+      maoZerado.valor === "5 contratos" && maoZerado.sub.includes("fixa até o fim da prova"),
+    `${riscoAtual(266)} | ${maoReal.sub} | ${maoZerado.valor} (${maoZerado.sub})`);
 
   const demoProva = tradesDemoProva("2026-11-12");
   report("Demo: prova fictícia com 10 contratos e no máximo 6 pregões",

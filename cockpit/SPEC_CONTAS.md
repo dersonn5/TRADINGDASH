@@ -66,8 +66,10 @@ Os trades herdam a conta pela sessão (sem coluna nova em `copa_trades`).
   `MAX_CONTRATOS`, `MAX_RISCO_TRADE_RS`, `MAX_PERDAS_DIA`, `MAX_OPERACOES_DIA`. As cotas por
   hora eram iguais nas duas contas (1 · 3 · 2). **Desde 16/11/2026 a prova tem as dela:** sem
   1ª hora, 2 trades às 10h, 1 a partir das 11:30, 3 trades no dia e 2 stops encerram
-  (`REGRAS_DA_HORA_PROVA` em `lib/prova.ts` + `supabase/migration_prova_plano.sql`). No recuo
-  o risco por trade desce com a mão (`riscoMaximoTrade`).
+  (`REGRAS_DA_HORA_PROVA` em `lib/prova.ts` + `supabase/migration_prova_plano.sql`). A mão da
+  prova é de 5 contratos até o fim, com risco de R$ 265 por trade (`max_contratos` e
+  `max_risco_trade_rs` da conta, na mesma migração); o recuo de `lib/prova.ts` só muda a mão
+  de uma conta com mais de 5 contratos.
 - **FR-005** Na prova, o gate bloqueia a entrada se o risco do trade levar a perda do dia
   além de `limite_perda_diaria_rs` ou a perda total além de `limite_perda_total_rs`.
 - **FR-006** Card "Prova" na Visão Geral (só em conta `PROVA`): resultado contra a meta;
