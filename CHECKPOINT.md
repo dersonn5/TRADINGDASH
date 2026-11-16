@@ -44,6 +44,8 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
       5 contratos, Checklist bloqueando antes das 10:00 e entre 11:00 e 11:29.
 - [ ] Trades da prova: faltam setup, gatilho, stop planejado e nota de cada um (lançados com
       "setup a confirmar" e horário aproximado ao minuto).
+- [ ] Fonte Sora local (`next/font/local`): o build da Vercel falhou ao buscar a fonte no Google em
+      2 dos 3 últimos pushes (12/11 e 16/11); hoje o conserto é `vercel redeploy` na mão.
 - [ ] Perguntar à Zero7 por escrito: incubadora de 10 dias (promoção) ou ciclo de 30 dias com margem
       de R$ 4.997 (regulamento); limites de contratos e de perda na conta real; se a margem é o capital.
 - [ ] Trades de 03/11: faltam setup e gatilho dos 3 da 1ª hora, gatilhos dos das 10h e nota A/B/C.
@@ -119,6 +121,8 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
   `tradingdash-psi.vercel.app`). Falhou na fonte: `vercel redeploy <url do deploy>` resolveu.
 - Banco checa `chk_direcao_coerente`: stop de compra abaixo da entrada. Saída no zero a zero com
   stop já movido não serve como stop do registro; gravar `NULL` (03/11).
+- Candles depois de 12/11 estão no cache do Profit da prova (`Profit_profitprova`), não no original:
+  `profit/ler_cache_profit.py` passou a ler e juntar as duas instalações.
 - Backtests do Setup C com gatilho de 1 min olhavam o futuro. Ver
   `Cerebro_Obsidian/.../Estudo_Barra_das_10.md` itens 6–9.
 

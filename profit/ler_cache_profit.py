@@ -32,7 +32,10 @@ import struct
 import sys
 from pathlib import Path
 
-CACHE = Path.home() / "AppData/Roaming/Nelogica/Profit/database/assets"
+# Duas instalacoes desde 12/11/2026: a original e a da prova da mesa (Profit_profitprova).
+# As duas sao lidas e juntadas; em horario repetido vale o arquivo gravado por ultimo.
+NELOGICA = Path.home() / "AppData/Roaming/Nelogica"
+CACHES = [NELOGICA / "Profit/database/assets", NELOGICA / "Profit_profitprova/database/assets"]
 SAIDA = Path(__file__).parent
 REGISTRO = 128
 DELPHI_ZERO = dt.datetime(1899, 12, 30)
@@ -55,10 +58,12 @@ def main():
     ativo = sys.argv[1] if len(sys.argv) > 1 else "WINFUT"
     minutos = sys.argv[2] if len(sys.argv) > 2 else "1"
 
-    pasta = CACHE / f"{ativo}_F_0"
-    arquivos = sorted(pasta.glob(f"{ativo}_F_0_1_{minutos}_1_1_0_*.min"))
+    arquivos = []
+    for cache in CACHES:
+        arquivos += (cache / f"{ativo}_F_0").glob(f"{ativo}_F_0_1_{minutos}_1_1_0_*.min")
+    arquivos.sort(key=lambda a: a.stat().st_mtime)  # o mais recente por ultimo: ele ganha no dedup
     if not arquivos:
-        sys.exit(f"Nenhum arquivo de {minutos} min para {ativo} em {pasta}")
+        sys.exit(f"Nenhum arquivo de {minutos} min para {ativo} em {[str(c) for c in CACHES]}")
 
     barras = {}
     for arq in arquivos:
