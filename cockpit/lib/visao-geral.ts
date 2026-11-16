@@ -186,7 +186,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const tabFrase = !n
     ? "Os resultados por estratégia aparecem com o primeiro trade fechado"
     : estr.length > 1
-      ? `${maisP.nome} carrega ${tudo ? "o período" : "o mês"} com ${maisP.pnlTxt}; ${pior.nome}${pior.pnl < 0 ? " está negativa: " : " tem o menor resultado: "}${pior.pnlTxt}`
+      ? maisP.pnl > 0
+        ? `${maisP.nome} carrega ${tudo ? "o período" : "o mês"} com ${maisP.pnlTxt}; ${pior.nome}${pior.pnl < 0 ? " está negativa: " : " tem o menor resultado: "}${pior.pnlTxt}`
+        : `Nenhuma estratégia está positiva ${noPeriodo}; a maior perda é de ${pior.nome}: ${pior.pnlTxt}`
       : `${maisP.nome}: ${maisP.pnlTxt} ${noPeriodo}`;
   const tradesComStopGlobal = trades.filter((t) => t.stop !== null && t.stop !== undefined);
   const tot = {
@@ -199,7 +201,7 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
   const hb = faixas.map((f) => {
     const ts = trades.filter((t) => classificarFaixaHorario(t.hora_entrada) === f);
     const tsRs = ts.map(rDoTrade).filter((r): r is number => r !== null);
-    return { f, n: ts.length, rm: tsRs.length ? media(tsRs) : 0 };
+    return { f, n: ts.length, nR: tsRs.length, rm: tsRs.length ? media(tsRs) : 0 };
   });
   const hmax = Math.max(1, Math.ceil(Math.max(...hb.map((b) => Math.abs(b.rm))) * 2) / 2);
   const hpt = 20, hpb = 50, plotH = 220 - hpt - hpb, y0 = hpt + plotH / 2, slot = (504 - 36) / 6;
@@ -208,16 +210,19 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
     const cx = 36 + i * slot + slot / 2;
     return {
       f: b.f, cx: cx.toFixed(1), x: (cx - 22).toFixed(1), y: (b.rm >= 0 ? y0 - h : y0).toFixed(1),
-      h: Math.max(h, b.n ? 2 : 0).toFixed(1), fill: fill(b.rm), val: b.n ? formatarR(b.rm) : "—",
+      h: Math.max(h, b.n ? 2 : 0).toFixed(1), fill: fill(b.rm), val: b.nR ? formatarR(b.rm) : "—",
       vy: (b.rm >= 0 ? y0 - h - 6 : y0 + h + 14).toFixed(1), nTxt: plural(b.n, "trade", "trades"),
     };
   });
-  const melhor = [...hb].filter((b) => b.n).sort((a, b) => b.rm - a.rm)[0];
+  // so faixa com R calculado (trade com stop registrado) e resultado positivo e "a melhor"
+  const comR = [...hb].filter((b) => b.nR).sort((a, b) => b.rm - a.rm);
+  const melhor = comR[0] && comR[0].rm > 0 ? comR[0] : undefined;
+  const horaSemMelhor = !n ? "Nenhum trade dentro da janela" : comR.length ? "Nenhuma faixa de horário está positiva" : "Sem R por horário: os trades estão sem stop registrado";
   const hmaxTxt = String(hmax).replace(".", ",");
   const hora = {
     bars, y0: y0.toFixed(1), y0t: (y0 + 4).toFixed(1), yTop: hpt + 4, yBot: (hpt + plotH + 4).toFixed(1),
     topTxt: `+${hmaxTxt}R`, botTxt: `−${hmaxTxt}R`,
-    frase: melhor ? `Melhor faixa: ${melhor.f}–${fimDaFaixa(melhor.f)} · ${formatarR(melhor.rm)} médio · ${plural(melhor.n, "trade", "trades")}` : "Nenhum trade dentro da janela",
+    frase: melhor ? `Melhor faixa: ${melhor.f}–${fimDaFaixa(melhor.f)} · ${formatarR(melhor.rm)} médio · ${plural(melhor.n, "trade", "trades")}` : horaSemMelhor,
     pequena: Boolean(melhor) && melhor!.n < 10,
   };
 
@@ -393,7 +398,9 @@ export function montarVisaoGeral(trades: TradeVG[], anteriores: TradeVG[], ano: 
 
   const sujeito = tudo ? "O período todo" : `${nomeMes[0].toUpperCase()}${nomeMes.slice(1)}`;
   const resumo = n
-    ? `${sujeito} está em ${formatarBRL(total)} com ${plural(n, "trade", "trades")} (${formatarR(totalR)}).${maisP ? ` ${maisP.nome} carrega ${tudo ? "o período" : "o mês"}` : ""}${melhor ? `; o melhor horário é ${melhor.f}–${fimDaFaixa(melhor.f)}.` : "."}`
+    ? `${sujeito} está em ${formatarBRL(total)} com ${plural(n, "trade", "trades")}${rs.length ? ` (${formatarR(totalR)})` : ""}. ${
+        maisP && maisP.pnl > 0 ? `${maisP.nome} carrega ${tudo ? "o período" : "o mês"}` : "Nenhuma estratégia está positiva"
+      }${melhor ? `; o melhor horário é ${melhor.f}–${fimDaFaixa(melhor.f)}.` : comR.length ? "; nenhum horário está positivo." : "."}`
     : `${sujeito} ainda não tem trades fechados. Os números aparecem aqui conforme você fecha trades pelo checklist.`;
 
   // a meta e de um mes do plano de fim de ano: nao existe no periodo todo

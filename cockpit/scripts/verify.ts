@@ -1245,6 +1245,22 @@ report(
   report("Escada: novembro sem requisitos -> 3 contratos", degrauDezembro(novSorte, []).contratos === 3, "");
 }
 
+// Visão Geral com tudo negativo e sem stop (os 16 trades da prova lançados por SQL em 16/11):
+// a frase do topo não pode dizer que um setup "carrega o mês" nem apontar "melhor horário"
+{
+  const tn = (strategy_id: string, hora: string, pnl_real: number, stop: number | null) =>
+    ({ data: "2026-11-12", strategy_id, direcao: "COMPRA" as const, entrada: 172500, stop, pontos_real: pnl_real / 2, pnl_real, hora_entrada: `2026-11-12T${hora}:00-03:00` });
+  const semStop = montarVisaoGeral([tn("varrida_barra_10", "10:49", -420, null), tn("continuidade_tendencia", "11:36", -160, null)], [], 2026, 11, "2026-11-16");
+  report("Visão Geral: mês negativo e sem stop -> sem R, sem 'carrega o mês' e sem 'melhor horário'",
+    semStop.resumo === "Novembro está em −R$ 580 com 2 trades. Nenhuma estratégia está positiva." &&
+      semStop.tabFrase.startsWith("Nenhuma estratégia está positiva no mês") && semStop.hora.frase.startsWith("Sem R por horário"),
+    `${semStop.resumo} | ${semStop.tabFrase} | ${semStop.hora.frase}`);
+  const comStop = montarVisaoGeral([tn("varrida_barra_10", "10:49", -420, 172300), tn("continuidade_tendencia", "11:36", -160, 172400)], [], 2026, 11, "2026-11-16");
+  report("Visão Geral: mês negativo com stop -> mostra o R e diz que nenhum horário está positivo",
+    comStop.resumo.includes("(−") && comStop.resumo.endsWith("Nenhuma estratégia está positiva; nenhum horário está positivo.") && comStop.hora.frase === "Nenhuma faixa de horário está positiva",
+    `${comStop.resumo} | ${comStop.hora.frase}`);
+}
+
 // 6. Contas e prova da mesa (SPEC_CONTAS.md)
 {
   const real = CONTA_REAL_PADRAO;
