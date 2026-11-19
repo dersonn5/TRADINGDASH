@@ -136,5 +136,10 @@ Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data
   `Cerebro_Obsidian/.../Estudo_Barra_das_10.md` itens 6–9.
 
 ## Aberto / bloqueado
+- Segunda mesa (NQ) adiada em 18/11 pelo operador para focar na Zero7. Escolha feita, se voltar:
+  Top One Futures Elite Access 50K (US$ 39 com BOGO = 2 avaliações; drawdown estático na
+  avaliação; financiada EOD + DLL US$ 1.000; ativação US$ 189, ou US$ 142 com ACTIVATE25 até
+  01/12/2026), plataforma BlackArrow (Tradovate+TradingView exigiria pagar dados CME).
+  Apex descartada: drawdown intraday na Legacy e consistência de 30%.
 - Chave `service_role` vazou no histórico do GitHub (commit ccdcc8b); repo privado.
   Trocar no painel do Supabase quando der.
