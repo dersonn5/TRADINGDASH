@@ -11,19 +11,20 @@
  * desce quando a prova aperta e a saida e na meta mais uma folga para custos.
  */
 import type { Conta } from "./contas";
-import { REGRAS_DA_HORA, type LimitesDia, type RegrasDaHora } from "./gate";
+import { ESTRATEGIA_BARRA_10, REGRAS_DA_HORA, type LimitesDia, type RegrasDaHora } from "./gate";
 
 /**
- * Horas da prova (decisao do operador em 16/11/2026, com a prova em -R$ 3.552 depois de 16
- * trades): nada na 1a hora (6 trades, 6 perdas, -R$ 2.072), 2 trades na hora das 10:00 e 1 a
- * partir das 11:30 (abertura de NY fora do horario de verao dos EUA). 3 trades no dia, 2 stops
- * encerram e 5 contratos ate o fim da prova: sao max_operacoes_dia, max_perdas_seguidas e
- * max_contratos da conta (migration_prova_plano.sql).
+ * Horas da prova. 16/11/2026 (prova em -R$ 3.552 depois de 16 trades): nada na 1a hora (6
+ * trades, 6 perdas, -R$ 2.072), 2 trades na hora das 10:00 e 1 a partir das 11:30.
+ * 23/11/2026 (decisao do operador, "castigo, preciso entrar na linha"): so a hora das 10:00 e
+ * so o setup das 10 (MAV), 2 trades; a 3a hora fecha. 2 stops encerram e 5 contratos ate o fim
+ * da prova: max_perdas_seguidas e max_contratos da conta (migration_prova_plano.sql). O
+ * max_operacoes_dia do banco (3) nao chega a valer: a cota da hora (2) bloqueia antes.
  */
 export const REGRAS_DA_HORA_PROVA: RegrasDaHora = {
   ABERTURA: { ...REGRAS_DA_HORA.ABERTURA, maxTrades: 0 },
-  PRIME: { ...REGRAS_DA_HORA.PRIME, maxTrades: 2 },
-  VALIDA: { ...REGRAS_DA_HORA.VALIDA, maxTrades: 1, aPartirDeMin: 11 * 60 + 30 },
+  PRIME: { ...REGRAS_DA_HORA.PRIME, setups: [ESTRATEGIA_BARRA_10], maxTrades: 2 },
+  VALIDA: { ...REGRAS_DA_HORA.VALIDA, maxTrades: 0 },
 };
 
 /** Setups e cotas por hora da conta: a prova tem as dela, a real segue o plano por hora. */

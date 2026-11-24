@@ -198,6 +198,38 @@ Decisão do operador, vale só para a prova:
 Com isso o pior dia custa perto de R$ 530 e a folga até os R$ 6.500 (R$ 2.948 no bruto,
 R$ 2.796 no líquido da mesa) aguenta 5 dias ruins seguidos, contra 2 no ritmo anterior.
 
+### Ajuste de 23/11/2026: só a hora das 10, só o setup das 10
+
+Decisão do operador ("castigo, preciso entrar na linha"), vale só para a prova:
+
+- **Entrada só das 10:00 às 10:59**, só o setup das 10 (MAV). Sem continuidade, sem RHT, sem
+  3ª hora. 2 trades no dia; 2 stops encerram; 5 contratos.
+
+**O trade, passo a passo** (Setup C do `Estudo_Barra_das_10.md`, itens 7 e 8):
+
+1. **Marcar a barra das 10** (15 min, 10:00–10:14): máxima e mínima.
+2. **Esperar a varrida.** O preço passa da máxima ou da mínima da barra das 10 (C1), ou a
+   barra das 10 passa de um topo/fundo de 15 min anterior (C2). Antes da varrida, nada: em
+   16/11 a compra das 10:00 entrou antes de a mínima ser varrida.
+3. **Dupla varrida** (varreu um lado e depois o outro, 35 de 109 dias em abr–set): vale só a
+   **última**. Em 16/11 a 2ª compra foi contra a última varrida, que era de venda.
+4. **Gatilho no 1 min:** quebra de estrutura (MSS) contra a varrida + FVG. Sem MSS, sem trade.
+5. **Stop atrás do extremo varrido.** Se a distância passa de 265 pts (R$ 265 com 5
+   contratos), não entra: o trade não cabe na mão.
+6. **Alvo escrito antes de clicar:** o outro lado da barra das 10 (alcançado em 65–70% das
+   varridas nos 5 anos, item 8); se a estrutura deixar, a próxima liquidez acima ou abaixo.
+7. **Stop no zero só depois de 1R.** Em 9 dos 16 trades da prova o preço andou 200+ pts a
+   favor e o trade saiu no zero.
+
+Base: o gatilho de 1 min deu +0,21R por trade em 5 meses (86 trades, t 1,8), o dobro da base,
+ainda não significativo. Entrar no fechamento do 15 min, sem o 1 min, fica abaixo do empate.
+O contexto da 1ª hora (reversão × continuação) não separou nos 5 anos: não serve de filtro.
+
+**Confirmações em teste (anotar, não usar como gatilho):** saldo de agressão na varrida
+(indicador "TR - Volume de Agressão - Saldo": agressão forte a favor da varrida e o preço não
+segue = absorção) e o saldo das corretoras na hora da varrida (a maior compradora/vendedora
+continua ou para). Nenhuma das duas tem teste; viram regra só se 20 trades mostrarem diferença.
+
 O custo de manter 5 contratos: de −R$ 3.552 até a saída em R$ 5.100 faltam R$ 8.652, e com 5
 contratos cada ponto vale R$ 1, então são 8.652 pontos líquidos. Com a volta a 10 contratos
 no zero seriam 6.102. O alvo de 8 pregões do plano de 11/11 deixa de valer; o prazo da mesa é

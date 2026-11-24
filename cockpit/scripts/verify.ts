@@ -1317,7 +1317,7 @@ report(
     montarProva(cincoDias.map((d) => tp(d, 1020, 510)), prova, "2026-11-18")!.status === "META_BATIDA" &&
       montarProva([tp("2026-11-12", -6500, -3250)], prova, "2026-11-12")!.status === "ELIMINADA" && montarProva([], real, "2026-11-12") === null, "");
 
-  // Plano de 16/11/2026: sem 1ª hora, 2 trades às 10h, 1 a partir das 11:30, 2 stops encerram
+  // Plano de 23/11/2026: só a hora das 10:00, só o setup das 10 (MAV), 2 trades; 2 stops encerram
   const ghp = (h: number, m: number, c: ReturnType<typeof ctx>) =>
     avaliarGate(itens80, "BULLISH", makeSPDate(h, m), 65, limLiberado, null, true, true, c, regrasDaHoraDaConta(prova));
   const casosProva: Array<[string, boolean, ReturnType<typeof avaliarGate>, string]> = [
@@ -1325,16 +1325,17 @@ report(
     ["09:30 primeira perna -> bloqueado", false, ghp(9, 30, ctx("primeira_perna")), "não opera nessa hora"],
     ["10:30 setup das 10, 1 feito -> liberado", true, ghp(10, 30, ctx("varrida_barra_10", 1)), ""],
     ["10:30 setup das 10, 2 feitos -> bloqueado", false, ghp(10, 30, ctx("varrida_barra_10", 2)), "limite de 2 trades"],
-    ["11:15 continuidade -> bloqueado (só 11:30)", false, ghp(11, 15, ctx("continuidade_tendencia")), "a partir das 11:30"],
-    ["11:30 continuidade -> liberado", true, ghp(11, 30, ctx("continuidade_tendencia")), ""],
-    ["11:45 continuidade, 1 feito -> bloqueado", false, ghp(11, 45, ctx("continuidade_tendencia", 1)), "limite de 1 trade "],
+    ["10:30 continuidade -> bloqueado (só o setup das 10)", false, ghp(10, 30, ctx("continuidade_tendencia")), "só MAV"],
+    ["10:30 reversão HTF -> bloqueado (só o setup das 10)", false, ghp(10, 30, ctx("reversao_htf")), "só MAV"],
+    ["11:30 continuidade -> bloqueado (3ª hora fechada)", false, ghp(11, 30, ctx("continuidade_tendencia")), "não opera nessa hora"],
+    ["11:05 setup das 10 -> bloqueado (3ª hora fechada)", false, ghp(11, 5, ctx("varrida_barra_10")), "não opera nessa hora"],
   ];
   for (const [nome, esperado, g, trecho] of casosProva) {
     report(`Prova, hora: ${nome}`, g.liberado === esperado && (esperado || g.motivos.some((m) => m.includes(trecho))), JSON.stringify(g.motivos));
   }
   const somaCotas = REGRAS_DA_HORA_PROVA.ABERTURA.maxTrades + REGRAS_DA_HORA_PROVA.PRIME.maxTrades + REGRAS_DA_HORA_PROVA.VALIDA.maxTrades;
-  report("Prova: 3 trades no dia (0 · 2 · 1) e 2 stops encerram; a conta real segue 1 · 3 · 2",
-    prova.max_operacoes_dia === 3 && somaCotas === 3 && prova.max_perdas_seguidas === 2 &&
+  report("Prova: 2 trades no dia (0 · 2 · 0) e 2 stops encerram; a conta real segue 1 · 3 · 2",
+    prova.max_operacoes_dia === 3 && somaCotas === 2 && prova.max_perdas_seguidas === 2 &&
       avaliarLimitesDia(2, 2, { maxPerdasSeguidas: prova.max_perdas_seguidas, maxOperacoesDia: prova.max_operacoes_dia }).bloqueado &&
       regrasDaHoraDaConta(real).ABERTURA.maxTrades === 1 && regrasDaHoraDaConta(real).VALIDA.aPartirDeMin === undefined, `cotas=${somaCotas}`);
   report("Prova: no recuo o risco por trade desce com a mão (R$ 265 com 5 contratos)",

@@ -8,7 +8,8 @@ está parada** e o plano de fim de ano, suspenso. O cockpit tem dois perfis, Rea
 (`SPEC_CONTAS.md`), com a `migration_contas.sql` já rodada.
 **A prova está em −R$ 3.552 bruto (−R$ 3.703,70 líquido na mesa) depois de 16 trades em 3 pregões
 (12, 13 e 16/11); a perda total é R$ 6.500.** Em 16/11 o operador mudou o plano da prova: sem 1ª
-hora, 2 trades às 10h, 1 a partir das 11:30, 2 stops encerram, 5 contratos até o fim da prova
+hora, 2 stops encerram, 5 contratos até o fim da prova. **Desde 23/11: só das 10:00 às 10:59 e só o
+setup das 10 (MAV), 2 trades** (passo a passo no Trade System §2.2)
 (Trade System §2.2). Os 16 trades estão no banco (lançados por SQL em 16/11, sem stop e com
 setup a confirmar).
 Dia 1 do cockpit: 19/10/2026 (o operador pediu para apagar tudo antes dessa data).

@@ -64,9 +64,9 @@ Os trades herdam a conta pela sessão (sem coluna nova em `copa_trades`).
   sessão do dia) filtram pela conta ativa.
 - **FR-004** `lib/gate.ts` recebe os limites da conta em vez de ler as constantes
   `MAX_CONTRATOS`, `MAX_RISCO_TRADE_RS`, `MAX_PERDAS_DIA`, `MAX_OPERACOES_DIA`. As cotas por
-  hora eram iguais nas duas contas (1 · 3 · 2). **Desde 16/11/2026 a prova tem as dela:** sem
-  1ª hora, 2 trades às 10h, 1 a partir das 11:30, 3 trades no dia e 2 stops encerram
-  (`REGRAS_DA_HORA_PROVA` em `lib/prova.ts` + `supabase/migration_prova_plano.sql`). A mão da
+  hora eram iguais nas duas contas (1 · 3 · 2). **Desde 16/11/2026 a prova tem as dela;** desde
+  23/11, só a hora das 10:00 e só o setup das 10 (MAV), 2 trades (0 · 2 · 0), e 2 stops
+  encerram (`REGRAS_DA_HORA_PROVA` em `lib/prova.ts` + `supabase/migration_prova_plano.sql`). A mão da
   prova é de 5 contratos até o fim, com risco de R$ 265 por trade (`max_contratos` e
   `max_risco_trade_rs` da conta, na mesma migração); o recuo de `lib/prova.ts` só muda a mão
   de uma conta com mais de 5 contratos.

@@ -707,6 +707,8 @@ export default function ChecklistPage() {
   const minimoMarcador = gate.scoreMinimo === Infinity ? selectedStrategy.score_minimo || 65 : gate.scoreMinimo;
   const cotaTxt = (n: number) => `${n} ${n === 1 ? "trade" : "trades"}`;
   const inicioValida = hhmm(regrasHora.VALIDA.aPartirDeMin ?? 660);
+  const operaValida = regrasHora.VALIDA.maxTrades > 0;
+  const fimEntradas = operaValida ? "11:59" : "10:59";
   const janelaCard =
     gate.janela === "ABERTURA"
       ? regrasHora.ABERTURA.maxTrades === 0
@@ -715,8 +717,10 @@ export default function ChecklistPage() {
       : gate.janela === "PRIME"
       ? { rot: "Janela · Prime", txt: `10:00–10:59 · ${cotaTxt(regrasHora.PRIME.maxTrades)} · mínimo ${gate.scoreMinimo}`, destaque: true }
       : gate.janela === "VALIDA"
-        ? { rot: "Janela · Válida", txt: `${inicioValida}–11:59 · ${cotaTxt(regrasHora.VALIDA.maxTrades)} · mínimo ${gate.scoreMinimo}`, destaque: true }
-        : { rot: "Fora da janela", txt: "entrada 10:00–11:59", destaque: false };
+        ? operaValida
+          ? { rot: "Janela · Válida", txt: `${inicioValida}–11:59 · ${cotaTxt(regrasHora.VALIDA.maxTrades)} · mínimo ${gate.scoreMinimo}`, destaque: true }
+          : { rot: "3ª hora · sem entrada", txt: "esta conta só opera das 10:00 às 10:59", destaque: false }
+        : { rot: "Fora da janela", txt: `entrada 10:00–${fimEntradas}`, destaque: false };
   const pnlDia = resumo?.pnl_dia ?? 0;
   const podeRegistrar = gate.liberado && formularioValido && !submittingOrdem && !resumo?.trade_aberto_id;
   const motivosGate = gate.motivos.map((m) => m.replace(/^falta obrigatório: .*/, "")).filter(Boolean);

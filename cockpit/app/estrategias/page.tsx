@@ -47,7 +47,7 @@ export default function EstrategiasPage() {
   const nTrades = (n: number) => `${n} ${n === 1 ? "trade" : "trades"}`;
   const limites =
     conta.tipo === "PROVA"
-      ? `${conta.max_perdas_seguidas} stops encerram · ${conta.max_operacoes_dia} trades (${cotas}, sem 1ª hora e o da 3ª hora só a partir das 11:30) · ${conta.max_contratos <= CONTRATOS_RECUO ? `${conta.max_contratos} contratos fixos até o fim da prova` : `${conta.max_contratos} contratos fixos, ${CONTRATOS_RECUO} no recuo (−R$ ${RECUO_PERDA_RS.toLocaleString("pt-BR")} acumulado)`} · risco máximo de R$ ${conta.max_risco_trade_rs} por trade · o dia acaba em −R$ ${CORTE_PERDA_DIA_RS.toLocaleString("pt-BR")} ou +R$ ${TETO_GANHO_DIA_RS.toLocaleString("pt-BR")}`
+      ? `${conta.max_perdas_seguidas} stops encerram · ${rh.ABERTURA.maxTrades + rh.PRIME.maxTrades + rh.VALIDA.maxTrades} trades (${cotas}: só das 10:00 às 10:59, só o setup das 10) ·${conta.max_contratos <= CONTRATOS_RECUO ? `${conta.max_contratos} contratos fixos até o fim da prova` : `${conta.max_contratos} contratos fixos, ${CONTRATOS_RECUO} no recuo (−R$ ${RECUO_PERDA_RS.toLocaleString("pt-BR")} acumulado)`} · risco máximo de R$ ${conta.max_risco_trade_rs} por trade · o dia acaba em −R$ ${CORTE_PERDA_DIA_RS.toLocaleString("pt-BR")} ou +R$ ${TETO_GANHO_DIA_RS.toLocaleString("pt-BR")}`
       : `${MAX_PERDAS_DIA} stops encerram · ${MAX_OPERACOES_DIA} trades (${cotas}) · 2 a ${conta.max_contratos} contratos na entrada, até ${MAX_CONTRATOS_ESCALONADO} escalonando a favor · perda máxima de R$ ${MAX_RISCO_TRADE_RS} por trade`;
   const horario = d.horarios_validos?.length ? `${d.horarios_validos[0].inicio} – ${d.horarios_validos[d.horarios_validos.length - 1].fim}` : "10:00 – 11:30";
   const fatos = [
